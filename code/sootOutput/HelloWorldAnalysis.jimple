@@ -1,0 +1,152 @@
+public class HelloWorldAnalysis extends java.lang.Object
+{
+
+    public void <init>()
+    {
+        HelloWorldAnalysis r0;
+
+        r0 := @this: HelloWorldAnalysis;
+
+        specialinvoke r0.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+
+    public static void main(java.lang.String[])
+    {
+        soot.Body $r31;
+        soot.PackManager $r10, $r12;
+        soot.options.Options $r0, $r1, $r2, $r3, $r4, $r5, $r11;
+        boolean $z0, $z1;
+        soot.Scene $r7, $r8;
+        java.util.List $r6, $r14;
+        java.lang.StringBuilder $r18, $r20, $r22, $r24, $r26, $r28;
+        java.lang.String[] r32;
+        soot.SootMethod r17;
+        java.lang.String $r21, $r23, $r27, $r29;
+        java.io.PrintStream $r13, $r19, $r25, $r30;
+        java.util.Iterator $r15;
+        soot.SootClass $r9;
+        java.lang.Object $r16;
+
+        r32 := @parameter0: java.lang.String[];
+
+        staticinvoke <soot.G: void reset()>();
+
+        $r0 = staticinvoke <soot.options.Options: soot.options.Options v()>();
+
+        virtualinvoke $r0.<soot.options.Options: void set_whole_program(boolean)>(1);
+
+        $r1 = staticinvoke <soot.options.Options: soot.options.Options v()>();
+
+        virtualinvoke $r1.<soot.options.Options: void set_allow_phantom_refs(boolean)>(1);
+
+        $r2 = staticinvoke <soot.options.Options: soot.options.Options v()>();
+
+        virtualinvoke $r2.<soot.options.Options: void set_prepend_classpath(boolean)>(1);
+
+        $r3 = staticinvoke <soot.options.Options: soot.options.Options v()>();
+
+        virtualinvoke $r3.<soot.options.Options: void set_src_prec(int)>(1);
+
+        $r4 = staticinvoke <soot.options.Options: soot.options.Options v()>();
+
+        virtualinvoke $r4.<soot.options.Options: void set_output_format(int)>(1);
+
+        $r5 = staticinvoke <soot.options.Options: soot.options.Options v()>();
+
+        $r6 = staticinvoke <java.util.Collections: java.util.List singletonList(java.lang.Object)>("target/classes");
+
+        virtualinvoke $r5.<soot.options.Options: void set_process_dir(java.util.List)>($r6);
+
+        $r7 = staticinvoke <soot.Scene: soot.Scene v()>();
+
+        virtualinvoke $r7.<soot.Scene: void loadNecessaryClasses()>();
+
+        $r8 = staticinvoke <soot.Scene: soot.Scene v()>();
+
+        $r9 = virtualinvoke $r8.<soot.Scene: soot.SootClass loadClassAndSupport(java.lang.String)>("HelloWorld");
+
+        virtualinvoke $r9.<soot.SootClass: void setApplicationClass()>();
+
+        $r10 = staticinvoke <soot.PackManager: soot.PackManager v()>();
+
+        virtualinvoke $r10.<soot.PackManager: void runPacks()>();
+
+        $r11 = staticinvoke <soot.options.Options: soot.options.Options v()>();
+
+        virtualinvoke $r11.<soot.options.Options: void set_output_dir(java.lang.String)>("SootOutput");
+
+        $r12 = staticinvoke <soot.PackManager: soot.PackManager v()>();
+
+        virtualinvoke $r12.<soot.PackManager: void writeOutput()>();
+
+        $r13 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r13.<java.io.PrintStream: void println(java.lang.String)>("Analysis complete");
+
+        $r14 = virtualinvoke $r9.<soot.SootClass: java.util.List getMethods()>();
+
+        $r15 = interfaceinvoke $r14.<java.util.List: java.util.Iterator iterator()>();
+
+     label1:
+        $z0 = interfaceinvoke $r15.<java.util.Iterator: boolean hasNext()>();
+
+        if $z0 == 0 goto label4;
+
+        $r16 = interfaceinvoke $r15.<java.util.Iterator: java.lang.Object next()>();
+
+        r17 = (soot.SootMethod) $r16;
+
+        $r19 = <java.lang.System: java.io.PrintStream out>;
+
+        $r18 = new java.lang.StringBuilder;
+
+        specialinvoke $r18.<java.lang.StringBuilder: void <init>()>();
+
+        $r20 = virtualinvoke $r18.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("SootClass: ");
+
+        $r21 = virtualinvoke $r9.<soot.SootClass: java.lang.String getName()>();
+
+        $r22 = virtualinvoke $r20.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r21);
+
+        $r23 = virtualinvoke $r22.<java.lang.StringBuilder: java.lang.String toString()>();
+
+        virtualinvoke $r19.<java.io.PrintStream: void println(java.lang.String)>($r23);
+
+        $z1 = virtualinvoke r17.<soot.SootMethod: boolean hasActiveBody()>();
+
+        if $z1 == 0 goto label2;
+
+        $r30 = <java.lang.System: java.io.PrintStream out>;
+
+        $r31 = virtualinvoke r17.<soot.SootMethod: soot.Body retrieveActiveBody()>();
+
+        virtualinvoke $r30.<java.io.PrintStream: void println(java.lang.Object)>($r31);
+
+        goto label3;
+
+     label2:
+        $r25 = <java.lang.System: java.io.PrintStream out>;
+
+        $r24 = new java.lang.StringBuilder;
+
+        specialinvoke $r24.<java.lang.StringBuilder: void <init>()>();
+
+        $r26 = virtualinvoke $r24.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>("No active body for method: ");
+
+        $r27 = virtualinvoke r17.<soot.SootMethod: java.lang.String getName()>();
+
+        $r28 = virtualinvoke $r26.<java.lang.StringBuilder: java.lang.StringBuilder append(java.lang.String)>($r27);
+
+        $r29 = virtualinvoke $r28.<java.lang.StringBuilder: java.lang.String toString()>();
+
+        virtualinvoke $r25.<java.io.PrintStream: void println(java.lang.String)>($r29);
+
+     label3:
+        goto label1;
+
+     label4:
+        return;
+    }
+}
