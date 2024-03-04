@@ -1,0 +1,28 @@
+class B extends java.lang.Object implements tests.I
+{
+
+    void <init>()
+    {
+        B r0;
+
+        r0 := @this: B;
+
+        specialinvoke r0.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+
+    public tests.I f()
+    {
+        B r1;
+        tests.A $r0;
+
+        r1 := @this: B;
+
+        $r0 = new tests.A;
+
+        specialinvoke $r0.<tests.A: void <init>()>();
+
+        return $r0;
+    }
+}

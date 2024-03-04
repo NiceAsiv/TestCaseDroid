@@ -1,3 +1,5 @@
+package basic;
+
 import soot.*;
 import soot.options.Options;
 import java.util.*;
