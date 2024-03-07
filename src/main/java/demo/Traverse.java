@@ -66,6 +66,5 @@ public class Traverse {
             "-pp",
             "-process-dir", args[0]+args[1]
         });
-        return;
     }
 }
