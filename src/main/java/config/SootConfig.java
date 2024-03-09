@@ -30,7 +30,6 @@ public class SootConfig {
     public  static void setupSoot(String ClassName, boolean constructCallGraph)
     {
         G.reset();//清空soot之前所有操作遗留下的缓存值
-        Options.v().set_prepend_classpath(true); // 设置是否在类路径前加上Soot的类路径
         Options.v().set_allow_phantom_refs(true); // 设置是否允许加载未被解析的类
         Options.v().set_keep_line_number(true); // 设置是否记录源代码的所在行
         Options.v().set_soot_classpath(sootClassPath); // 设置Soot的类路径
