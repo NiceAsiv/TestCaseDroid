@@ -48,8 +48,8 @@ public class TestCallGraph extends SceneTransformer {
 
 
         //enable call graph
-        enableCHACallGraph();
-        //enableSparkCallGraph();
+//        enableCHACallGraph();
+        enableSparkCallGraph();
         dotGraph = new DotGraph("callgraph");
 
         //start working
@@ -96,6 +96,10 @@ public class TestCallGraph extends SceneTransformer {
             excludeList.add("com.ibm.");
             excludeList.add("com.apple.");
             excludeList.add("apple.awt.");
+            //Ignore <clinit> and <init> methods
+            excludeList.add("<clinit>");
+            excludeList.add("<init>");
+            excludeList.add("jdk.");
         }
         return excludeList;
     }
@@ -116,18 +120,52 @@ public class TestCallGraph extends SceneTransformer {
                         callGraph.edgesOutOf(m));
 
                 while (targets.hasNext()) {
-
-                    numOfEdges++;
-
                     SootMethod tgt = (SootMethod) targets.next();
-                    System.out.println(m + " may call " + tgt);
-                    dotGraph.drawEdge(m.toString(), tgt.toString());
+                    if (!isExcludedMethod(m))
+                    {
+                        numOfEdges++;
+                        System.out.println(m + " may call " + tgt);
+                        dotGraph.drawEdge(m.toString(), tgt.toString());
+                    }
                 }
             }
         }
 
         System.err.println("Total Edges:" + numOfEdges);
         dotGraph.plot("./sootOutput/callgraph.dot");
+        try {
+            convertDotToPng("./sootOutput/callgraph.dot", "./sootOutput/callgraph.png");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
+    }
+
+    private boolean isExcludedMethod(SootMethod method)
+    {
+        String declaringClassName = method.getDeclaringClass().getName();
+        for(String s : excludeList())
+        {
+            if(declaringClassName.startsWith(s))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Convert a dot file to a png file
+     * @param dotFilePath the dot file path
+     * @param outputFilePath the output png file path
+     * @throws Exception if the conversion failed
+     */
+    public void convertDotToPng(String dotFilePath, String outputFilePath) throws Exception{
+        try {
+            String dotPath = "D:\\APPdata\\Graphviz\\bin\\dot.exe"; //Graphviz software installed location
+            String[] cmd = new String[]{dotPath, "-Tpng", dotFilePath, "-o", outputFilePath};
+            Runtime rt = Runtime.getRuntime();
+            rt.exec(cmd);
+        } catch (Exception ex) {
+            System.out.println("Error: " + ex.getMessage());
+        }
     }
 }
