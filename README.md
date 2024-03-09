@@ -22,8 +22,9 @@
 
 基于Soot的拓展项目：
 
-- [ByteCodeDL](https://github.com/BytecodeDL/ByteCodeDL/discussions)：使用soot生成fact，使用souffle作为datalog引擎，最后使用neo4j进行可视化，实现了多种程序分析算法；(个人觉得讨论区的案例是比较有价值的)
-- [Tabby](https://github.com/wh1t3p1g/tabby)：基于soot生成代码属性图，应用案例比较多
+[ByteCodeDL](https://github.com/BytecodeDL/ByteCodeDL/discussions)：使用soot生成fact，使用souffle作为datalog引擎，最后使用neo4j进行可视化，实现了多种程序分析算法；(个人觉得讨论区的案例是比较有价值的)
+
+[Tabby](https://github.com/wh1t3p1g/tabby)：基于soot生成代码属性图，应用案例比较多
 
 ## 简介
 
@@ -1398,7 +1399,7 @@ sanitizer即无害化处理，表示污染源数据通过一些操作解除了�
 
 10.https://blog.csdn.net/TheSnowBoy_2/article/details/53436042
 
-11.[https://people.cs.vt.edu/ryder/515/f05/lectures/Sootlecture-Weilei.pdf](https://people.cs.vt.edu/ryder/515/f05/lectures/Sootlecture-Weilei.pdf#:~:text=Phase in Soot In SOOT%2C each phase is,collection of transformers%2C each corresponding to a subphase.)
+11.[https://people.cs.vt.edu/ryder/515/f05/lectures/Sootlecture-Weilei.pdf](https://people.cs.vt.edu/ryder/515/f05/lectures/Sootlecture-Weilei.pdf)
 
 12.https://mp.weixin.qq.com/s/vc8ZDkrSxUV237C020E5Ag
 

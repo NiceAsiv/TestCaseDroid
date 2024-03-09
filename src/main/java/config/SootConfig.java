@@ -7,48 +7,70 @@ package config;
 
 import soot.*;
 import soot.options.Options;
-import soot.util.Chain;
+import soot.util.dot.DotGraph;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.io.File;
+import java.util.*;
+
+import static utils.SootUtils.excludeClassesList;
 
 public class SootConfig {
 
-    //class path
-    public  static  final String  sootClassPath = "./target/classes";
-    public String callGraphAlgorithm = "Spark";
-    public  static  List<String> excludeClassesList ;
-
+    private  static  final String  javaPath = System.getProperty("java.class.path");
+    private  static  final String  jreDir = System.getProperty("java.home")+"/lib/rt.jar";
+    public  static  final String  sootClassPath = javaPath + File.pathSeparator +  jreDir;
+    private String callGraphAlgorithm = "Spark";
+    public  static  LinkedList<String> excludeClassesList ;
+    private static DotGraph dotGraph;
 
     public void setCallGraphAlgorithm(String callGraphAlgorithm) {
         this.callGraphAlgorithm = callGraphAlgorithm;
     }
 
-    //设置Soot的参数
-    public  static void setupSoot(String ClassName, boolean constructCallGraph)
+    public static LinkedList<String> getExcludeClassesList() {
+        return excludeClassesList;
+    }
+
+    /**
+     * Soot configuration
+     * @param ClassName the main class name e.g. "tests.CallGraph"
+     * @param constructCallGraph whether to construct call graph
+     */
+    public void setupSoot(String ClassName, Boolean constructCallGraph)
     {
-        G.reset();//清空soot之前所有操作遗留下的缓存值
-        Options.v().set_allow_phantom_refs(true); // 设置是否允许加载未被解析的类
-        Options.v().set_keep_line_number(true); // 设置是否记录源代码的所在行
-        Options.v().set_soot_classpath(sootClassPath); // 设置Soot的类路径
-        Options.v().set_output_format(Options.output_format_jimple); // 设置输出格式为Jimple
-        Options.v().set_process_dir(Collections.singletonList(sootClassPath)); // 设置要处理的目录
-        Options.v().set_whole_program(constructCallGraph); //以全局应用的模式运行Soot
-        Options.v().set_verbose(true); // 设置是否显示详细信息
+        G.reset();//clear all the previous cached values of soot
+        //set soot class path
+        Scene.v().setSootClassPath(sootClassPath);
 
-        //
-        Options.v().setPhaseOption("jb","use-original-names:true"); // 设置Jimple阶段选项
+        //whole program analysis
+        Options.v().set_whole_program(true);
 
-        Scene.v().loadNecessaryClasses(); // load necessary classes
-        SootClass sootClass = Scene.v().loadClassAndSupport(ClassName); // load the class
-        sootClass.setApplicationClass(); // set the class as application class
+        excludeJDKLibrary(); // exclude jdk and other libraries
 
-        //添加to-exclude选项，排除特定的类
-        Options.v().set_exclude(addExcludeClassesList());
+        //load and set main class
+        Options.v().set_app(true);
+        SootClass appClass = Scene.v().loadClassAndSupport(ClassName);
+        Scene.v().setMainClass(appClass);
+        Scene.v().loadNecessaryClasses();
 
-        PackManager.v().runPacks();//运行Soot的包
+
+        Options.v().set_keep_line_number(true); // set to keep line number
+        Options.v().set_output_format(Options.output_format_jimple); // set output format
+
+        Options.v().set_verbose(true); // set to see  verbose information
+
+        //set to keep variable names
+        Options.v().setPhaseOption("jb","use-original-names:true");
+//        Options.v().setPhaseOption("jb.dae","only-stack-locals:true"); // 不去优化b = $stack5;的语句，保持原汁原味
+//        Options.v().setPhaseOption("jb.cp", "enabled:false");
+//        Options.v().setPhaseOption("jb.ls","enabled:false");
+//        Options.v().setPhaseOption("jb.dae","enabled:false");
+//        Options.v().setPhaseOption("jb.ulp","unsplit-original-locals:false");
+//        Options.v().setPhaseOption("jb.a","enabled:false");
+//        Options.v().setPhaseOption("jb.cp","enabled:false");
+
+
+        PackManager.v().runPacks();//run soot
 
 
 
@@ -80,38 +102,14 @@ public class SootConfig {
 
     }
 
-    public static void getBasicInfo(){
-        // 获取主类
-        SootClass mainClass = Scene.v().getMainClass();
-        System.out.println("Main class is "+ mainClass);
-        // 打印主类的所有方法
-        for (SootMethod m: mainClass.getMethods()) {
-            System.out.println("Method "+ m);
-        }
-       //获取运行时类 应用类 基础类 所有类
-       Chain<SootClass> libraryClasses = Scene.v().getLibraryClasses();
-       Chain<SootClass> applicationClasses = Scene.v().getApplicationClasses();
-       Set<String> basicClasses = Scene.v().getBasicClasses();
-       Chain<SootClass> classes = Scene.v().getClasses();
-
-
+    private static void excludeJDKLibrary()
+    {
+        //exclude jdk classes
+        Options.v().set_exclude(excludeClassesList());
+        //this option must be disabled for a sound call graph
+        Options.v().set_no_bodies_for_excluded(true);
+        Options.v().set_allow_phantom_refs(true);
     }
 
-    /**
-     * 添加to-exclude选项，排除特定的类
-     * @return 返回排除的类列表
-     */
-    public static List<String> addExcludeClassesList() {
-        if (excludeClassesList == null) {
-            excludeClassesList = new ArrayList<String>();
-        }
-        //排除特定的类
-        excludeClassesList.add("java.");
-        excludeClassesList.add("sun.");
-        excludeClassesList.add("com.sun.");
-        excludeClassesList.add("javax.");
-
-        return excludeClassesList;
-    }
 
 }

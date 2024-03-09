@@ -1,16 +1,11 @@
 digraph "callgraph" {
     "<tests.CallGraph: void main(java.lang.String[])>";
-    "<java.lang.Object: void <clinit>()>";
-    "<tests.CallGraph: void main(java.lang.String[])>"->"<java.lang.Object: void <clinit>()>";
     "<tests.CallGraph: void doStuff()>";
     "<tests.CallGraph: void main(java.lang.String[])>"->"<tests.CallGraph: void doStuff()>";
-    "<tests.CallGraph: void doStuff()>"->"<java.lang.Object: void <clinit>()>";
     "<tests.D: void foo()>";
     "<tests.CallGraph: void doStuff()>"->"<tests.D: void foo()>";
     "<tests.D: void <init>()>";
     "<tests.CallGraph: void doStuff()>"->"<tests.D: void <init>()>";
-    "<java.lang.Object: void <init>()>";
-    "<tests.D: void <init>()>"->"<java.lang.Object: void <init>()>";
     "<tests.D: void bar()>";
     "<tests.D: void foo()>"->"<tests.D: void bar()>";
 }

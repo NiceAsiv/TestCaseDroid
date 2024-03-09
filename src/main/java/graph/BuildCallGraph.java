@@ -1,43 +1,64 @@
 package graph;
 
 import config.SootConfig;
-import soot.Scene;
-import soot.SootClass;
-import soot.SootMethod;
+import soot.*;
+import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Targets;
+import soot.util.dot.DotGraph;
 
-import java.lang.annotation.Target;
+import java.util.Iterator;
+import java.util.Map;
 
-public class BuildCallGraph {
-    public static String  targetClassName;
-    public static String entryMethodName;
+import static utils.SootUtils.convertDotToPng;
+import static utils.SootUtils.isExcludedMethod;
 
-    public BuildCallGraph(String className, String methodName) throws Exception {
-        BuildCallGraph.targetClassName =   className;
-        BuildCallGraph.entryMethodName = methodName;
-        SootConfig.setupSoot(className, true);
-        buildCG();
+public class BuildCallGraph  extends SceneTransformer {
+
+    static DotGraph dotGraph ;
+    public static void main(String[] args) {
+        String mainClass = "tests.CallGraph";
+        SootConfig sootConfig = new SootConfig();
+        sootConfig.setCallGraphAlgorithm("Spark");
+        sootConfig.setupSoot(mainClass, true);
+
+        //add an intra-procedural analysis phase to Soot
+        BuildCallGraph analysis = new BuildCallGraph();
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraph", analysis));
+
+        dotGraph = new DotGraph("callgraph");
+        PackManager.v().runPacks();
+
     }
+    @Override
+    protected void internalTransform(String phaseName, Map options) {
 
+        int numOfEdges = 0;
+        int maxDepth = 10;
+        CallGraph callGraph = Scene.v().getCallGraph();
+        for(SootClass sc : Scene.v().getApplicationClasses()){
+            for(SootMethod m : sc.getMethods()){
 
-    public static void buildCG() throws Exception {
+                Iterator<MethodOrMethodContext> targets = new Targets(
+                        callGraph.edgesOutOf(m));
 
-        SootClass sootClass = Scene.v().getSootClass(targetClassName);
-        if (sootClass == null) {
-            throw new Exception("Class not found: " + targetClassName);
+                int depth = 0;
+                while (targets.hasNext() && depth < maxDepth) {
+                    SootMethod tgt = (SootMethod) targets.next();
+                    if (!isExcludedMethod(tgt)) {
+                        numOfEdges++;
+                        System.out.println(m + " may call " + tgt);
+                        dotGraph.drawEdge(m.toString(), tgt.toString());
+                        depth++;
+                    }
+                }
+            }
         }
-        SootMethod sootMethod = sootClass.getMethodByName(entryMethodName);
-        if (sootMethod == null) {
-            throw new Exception("Method not found: " + entryMethodName);
+        System.err.println("Total Edges:" + numOfEdges);
+        dotGraph.plot("./sootOutput/dot/callgraph.dot");
+        try {
+            convertDotToPng("./sootOutput/dot/callgraph.dot", "./sootOutput/pic/callgraph.png");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-
-
-
-        SootConfig.getBasicInfo();
-        SootConfig.addExcludeClassesList();
     }
-
-
-
-
 }
