@@ -1,6 +1,6 @@
-package graph;
+package edu.xjtu.OSSTest.graph;
 
-import config.SootConfig;
+import edu.xjtu.OSSTest.config.SootConfig;
 import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
@@ -10,8 +10,8 @@ import java.awt.*;
 import java.util.Iterator;
 import java.util.Map;
 
-import static utils.SootUtils.convertDotToPng;
-import static utils.SootUtils.isExcludedMethod;
+import static edu.xjtu.OSSTest.utils.SootUtils.convertDotToPng;
+import static edu.xjtu.OSSTest.utils.SootUtils.isExcludedMethod;
 
 public class BuildCallGraph  extends SceneTransformer {
 

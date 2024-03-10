@@ -33,7 +33,7 @@ public class SootConfig {
 
     /**
      * Soot configuration
-     * @param ClassName the main class name e.g. "tests.CallGraph"
+     * @param ClassName the main class name e.g. "edu.xjtu.OSSTest.tests.CallGraph"
      * @param constructCallGraph whether to construct call graph
      */
     public void setupSoot(String ClassName, Boolean constructCallGraph)
