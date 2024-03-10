@@ -6,7 +6,6 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 import soot.util.dot.DotGraph;
 
-import java.awt.*;
 import java.util.Iterator;
 import java.util.Map;
 

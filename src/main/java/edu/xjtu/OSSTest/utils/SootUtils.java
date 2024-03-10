@@ -13,9 +13,8 @@ public class SootUtils {
      * Convert a dot file to a png file
      * @param dotFilePath the dot file path
      * @param outputFilePath the output png file path
-     * @throws Exception if the conversion failed
      */
-    public static void convertDotToPng(String dotFilePath, String outputFilePath) throws Exception{
+    public static void convertDotToPng(String dotFilePath, String outputFilePath) {
         try {
             String graphvizFilePath = System.getenv("GRAPHVIZ");
             String graphvizPath;
@@ -59,7 +58,7 @@ public class SootUtils {
      */
     public static LinkedList<String> excludeClassesList() {
         if (excludeClassesList == null) {
-            excludeClassesList = new LinkedList<String>();
+            excludeClassesList = new LinkedList<>();
             //排除特定的类
             excludeClassesList.add("java.");
             excludeClassesList.add("sun.");

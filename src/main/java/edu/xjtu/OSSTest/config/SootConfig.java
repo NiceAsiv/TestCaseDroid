@@ -1,10 +1,5 @@
 package edu.xjtu.OSSTest.config;
 
-/**
- * This class is used to configure the Soot environment.
- @see <a href="https://www.sable.mcgill.ca/soot/">Soot</a>
- */
-
 import soot.*;
 import soot.options.Options;
 import soot.util.dot.DotGraph;
@@ -14,6 +9,10 @@ import java.util.*;
 
 import static edu.xjtu.OSSTest.utils.SootUtils.excludeClassesList;
 
+
+/**
+ * Soot configuration
+ */
 public class SootConfig {
 
     private  static  final String  javaPath = System.getProperty("java.class.path");
@@ -21,7 +20,6 @@ public class SootConfig {
     public  static  final String  sootClassPath = javaPath + File.pathSeparator +  jreDir;
     private String callGraphAlgorithm = "Spark";
     public  static  LinkedList<String> excludeClassesList ;
-    private static DotGraph dotGraph;
 
     public void setCallGraphAlgorithm(String callGraphAlgorithm) {
         this.callGraphAlgorithm = callGraphAlgorithm;
