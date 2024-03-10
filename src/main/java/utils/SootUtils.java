@@ -2,7 +2,9 @@ package utils;
 
 import soot.SootMethod;
 
+import java.io.File;
 import java.util.LinkedList;
+
 
 public class SootUtils {
     public  static  LinkedList<String> excludeClassesList ;
@@ -15,14 +17,24 @@ public class SootUtils {
      */
     public static void convertDotToPng(String dotFilePath, String outputFilePath) throws Exception{
         try {
-            String dotPath = "D:\\APPdata\\Graphviz\\bin\\dot.exe"; //Graphviz software installed location
-            String[] cmd = new String[]{dotPath, "-Tpng", dotFilePath, "-o", outputFilePath};
+            String graphvizFilePath = System.getenv("GRAPHVIZ");
+            String graphvizPath;
+            if (graphvizFilePath == null) {
+                throw new RuntimeException("\nPlease set the folder for graphviz as an environment variable and name it \"GRAPHVIZ\".\n" +
+                        "You can download graphviz at https://graphviz.org/download/.\n" +
+                        "When you finish that, please restart your IDE.\n");
+            } else {
+                graphvizPath = graphvizFilePath + File.separator + "bin" + File.separator + "dot.exe";
+            }
+            //String dotPath = "D:\\APPdata\\Graphviz\\bin\\dot.exe"; //Graphviz software installed location
+            String[] cmd = new String[]{graphvizPath, "-Tpng", dotFilePath, "-o", outputFilePath};
             Runtime rt = Runtime.getRuntime();
             rt.exec(cmd);
         } catch (Exception ex) {
             System.out.println("Error: " + ex.getMessage());
         }
     }
+
 
     /**
      * Check if a method is excluded
@@ -34,8 +46,9 @@ public class SootUtils {
         String declaringClassName = method.getDeclaringClass().getName();
         for(String s : excludeClassesList())
         {
-            if(declaringClassName.startsWith(s))
+            if(declaringClassName.startsWith(s)) {
                 return true;
+            }
         }
         return false;
     }
