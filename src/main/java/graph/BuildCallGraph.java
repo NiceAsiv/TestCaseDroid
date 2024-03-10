@@ -6,6 +6,7 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 import soot.util.dot.DotGraph;
 
+import java.awt.*;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -15,8 +16,9 @@ import static utils.SootUtils.isExcludedMethod;
 public class BuildCallGraph  extends SceneTransformer {
 
     static DotGraph dotGraph ;
+    public static String mainClass = "tests.CallGraph";
     public static void main(String[] args) {
-        String mainClass = "tests.CallGraph";
+
         SootConfig sootConfig = new SootConfig();
         sootConfig.setCallGraphAlgorithm("Spark");
         sootConfig.setupSoot(mainClass, true);
@@ -54,9 +56,13 @@ public class BuildCallGraph  extends SceneTransformer {
             }
         }
         System.err.println("Total Edges:" + numOfEdges);
-        dotGraph.plot("./sootOutput/dot/callgraph.dot");
+
+        String callGraphPath = "./sootOutput/dot/"+mainClass+".CG.dot";
+        String outputPath= "./sootOutput/pic/"+mainClass+".CG.png";
+
+        dotGraph.plot(callGraphPath);
         try {
-            convertDotToPng("./sootOutput/dot/callgraph.dot", "./sootOutput/pic/callgraph.png");
+            convertDotToPng(callGraphPath, outputPath);
         } catch (Exception e) {
             e.printStackTrace();
         }
