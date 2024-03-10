@@ -15,7 +15,8 @@ import static edu.xjtu.OSSTest.utils.SootUtils.isExcludedMethod;
 public class BuildCallGraph  extends SceneTransformer {
 
     static DotGraph dotGraph ;
-    public static String mainClass = "edu.xjtu.OSSTest.test.CallGraph";
+    public static String mainClass = "edu.xjtu.OSSTest.test.FastJsonTest";
+    public static String targetPackageName = "edu.xjtu.OSSTest";
     public static void main(String[] args) {
 
         SootConfig sootConfig = new SootConfig();
@@ -45,7 +46,7 @@ public class BuildCallGraph  extends SceneTransformer {
                 int depth = 0;
                 while (targets.hasNext() && depth < maxDepth) {
                     SootMethod tgt = (SootMethod) targets.next();
-                    if (!isExcludedMethod(tgt)) {
+                    if (!isExcludedMethod(tgt)&&tgt.getDeclaringClass().getName().startsWith(targetPackageName)) {
                         numOfEdges++;
                         System.out.println(m + " may call " + tgt);
                         dotGraph.drawEdge(m.toString(), tgt.toString());
