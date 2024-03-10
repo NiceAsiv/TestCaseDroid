@@ -1,36 +1,33 @@
-package edu.xjtu.OSSTest.graph;
+package graph;
 
-import edu.xjtu.OSSTest.config.SootConfig;
+import config.SootConfig;
 import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 import soot.util.dot.DotGraph;
-import soot.util.dot.DotGraphNode;
 
+import java.awt.*;
 import java.util.Iterator;
 import java.util.Map;
 
-import static edu.xjtu.OSSTest.utils.SootUtils.convertDotToPng;
-import static edu.xjtu.OSSTest.utils.SootUtils.isExcludedMethod;
+import static utils.SootUtils.convertDotToPng;
+import static utils.SootUtils.isExcludedMethod;
 
 public class BuildCallGraph  extends SceneTransformer {
 
     static DotGraph dotGraph ;
-
-    public static String mainClass;
+    public static String mainClass = "tests.CallGraph";
     public static void main(String[] args) {
-        String mainClass = "tests.CallGraph";
-        BuildCallGraph.mainClass = mainClass;
+
         SootConfig sootConfig = new SootConfig();
         sootConfig.setCallGraphAlgorithm("Spark");
         sootConfig.setupSoot(mainClass, true);
 
-        //add an intra-procedural edu.xjtu.OSSTest.analysis phase to Soot
+        //add an intra-procedural analysis phase to Soot
         BuildCallGraph analysis = new BuildCallGraph();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraph", analysis));
 
         dotGraph = new DotGraph("callgraph");
-
         PackManager.v().runPacks();
 
     }
@@ -38,7 +35,7 @@ public class BuildCallGraph  extends SceneTransformer {
     protected void internalTransform(String phaseName, Map options) {
 
         int numOfEdges = 0;
-        int maxDepth = 5;
+        int maxDepth = 10;
         CallGraph callGraph = Scene.v().getCallGraph();
         for(SootClass sc : Scene.v().getApplicationClasses()){
             for(SootMethod m : sc.getMethods()){
@@ -51,30 +48,21 @@ public class BuildCallGraph  extends SceneTransformer {
                     SootMethod tgt = (SootMethod) targets.next();
                     if (!isExcludedMethod(tgt)) {
                         numOfEdges++;
-                        depth++;
                         System.out.println(m + " may call " + tgt);
-                        DotGraphNode srcNode = dotGraph.drawNode(m.toString());
-                        DotGraphNode tgtNode = dotGraph.drawNode(tgt.toString());
-                        srcNode.setAttribute("shape", "box");
-                        tgtNode.setAttribute("shape", "box");
-                        if (numOfEdges == 1) {
-                            srcNode.setAttribute("color", "gray");
-                            srcNode.setAttribute("style", "filled");
-                        }
-                        //set font
-                        srcNode.setAttribute("fontname", "JetBrains Mono");
-                        tgtNode.setAttribute("fontname", "JetBrains Mono");
                         dotGraph.drawEdge(m.toString(), tgt.toString());
+                        depth++;
                     }
                 }
             }
         }
         System.err.println("Total Edges:" + numOfEdges);
-        String dotFileName = BuildCallGraph.mainClass + ".dot";
-        dotGraph.setGraphLabel(BuildCallGraph.mainClass + " call graph");
-        dotGraph.plot("./sootOutput/dot/" + dotFileName);
+
+        String callGraphPath = "./sootOutput/dot/"+mainClass+".CG.dot";
+        String outputPath= "./sootOutput/pic/"+mainClass+".CG.png";
+
+        dotGraph.plot(callGraphPath);
         try {
-            convertDotToPng("./sootOutput/dot/" + dotFileName, "./sootOutput/pic/" + BuildCallGraph.mainClass + ".png");
+            convertDotToPng(callGraphPath, outputPath);
         } catch (Exception e) {
             e.printStackTrace();
         }
