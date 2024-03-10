@@ -1,0 +1,12 @@
+digraph "callgraph" {
+    label="tests.CallGraph call graph";
+    "<tests.CallGraph: void main(java.lang.String[])>" [shape=box,color=gray,style=filled,fontname=JetBrains Mono,];
+    "<tests.CallGraph: void doStuff()>" [shape=box,fontname=JetBrains Mono,];
+    "<tests.CallGraph: void main(java.lang.String[])>"->"<tests.CallGraph: void doStuff()>";
+    "<tests.D: void foo()>" [shape=box,fontname=JetBrains Mono,];
+    "<tests.CallGraph: void doStuff()>"->"<tests.D: void foo()>";
+    "<tests.D: void <init>()>" [shape=box,fontname=JetBrains Mono,];
+    "<tests.CallGraph: void doStuff()>"->"<tests.D: void <init>()>";
+    "<tests.D: void bar()>" [shape=box,fontname=JetBrains Mono,];
+    "<tests.D: void foo()>"->"<tests.D: void bar()>";
+}

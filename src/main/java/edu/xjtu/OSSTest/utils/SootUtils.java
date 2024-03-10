@@ -1,4 +1,4 @@
-package utils;
+package edu.xjtu.OSSTest.utils;
 
 import soot.SootMethod;
 
@@ -16,7 +16,8 @@ public class SootUtils {
     public static void convertDotToPng(String dotFilePath, String outputFilePath) throws Exception{
         try {
             String dotPath = "D:\\APPdata\\Graphviz\\bin\\dot.exe"; //Graphviz software installed location
-            String[] cmd = new String[]{dotPath, "-Tpng", dotFilePath, "-o", outputFilePath};
+            String[] cmd = new String[]{dotPath, "-Nfontname = JetBrains Mono",
+                    "-Tpng", dotFilePath, "-o", outputFilePath};
             Runtime rt = Runtime.getRuntime();
             rt.exec(cmd);
         } catch (Exception ex) {

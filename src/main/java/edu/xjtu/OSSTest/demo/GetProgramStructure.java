@@ -1,4 +1,4 @@
-package demo;
+package edu.xjtu.OSSTest.demo;
 
 import soot.*;
 import soot.toolkits.graph.BriefUnitGraph;

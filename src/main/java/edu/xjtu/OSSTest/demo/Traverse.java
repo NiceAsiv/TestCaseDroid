@@ -1,6 +1,5 @@
-package demo;
+package edu.xjtu.OSSTest.demo;
 
-import soot.Body;
 import soot.PackManager;
 import soot.Scene;
 import soot.SceneTransformer;
@@ -8,7 +7,6 @@ import soot.SootClass;
 import soot.SootField;
 import soot.SootMethod;
 import soot.Transform;
-import soot.Unit;
 import soot.util.Chain;
 
 import java.util.Map;

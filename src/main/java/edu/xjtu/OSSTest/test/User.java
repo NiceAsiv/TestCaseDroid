@@ -1,4 +1,4 @@
-package tests;
+package edu.xjtu.OSSTest.test;
 
 public class User {
     public int age;

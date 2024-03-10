@@ -1,4 +1,4 @@
-package demo;
+package edu.xjtu.OSSTest.demo;
 
 import java.util.HashSet;
 import java.util.Set;

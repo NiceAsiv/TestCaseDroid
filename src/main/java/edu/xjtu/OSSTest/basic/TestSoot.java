@@ -1,4 +1,4 @@
-package basic;
+package edu.xjtu.OSSTest.basic;
 
 import soot.*;
 import soot.jimple.Stmt;

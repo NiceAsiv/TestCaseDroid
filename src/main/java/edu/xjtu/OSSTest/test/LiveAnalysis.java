@@ -1,4 +1,4 @@
-package tests;
+package edu.xjtu.OSSTest.test;
 
 public class LiveAnalysis {
     // private static int x=0,y=0,z=0,t=0,a=0,b=0,c=0;

@@ -1,4 +1,4 @@
-package basic;
+package edu.xjtu.OSSTest.basic;
 
 /**
  * 这个程序的作用是测试JVM 方法签名和方法描述

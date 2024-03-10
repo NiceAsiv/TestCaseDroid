@@ -1,4 +1,4 @@
-package config;
+package edu.xjtu.OSSTest.config;
 
 /**
  * This class is used to configure the Soot environment.
@@ -12,7 +12,7 @@ import soot.util.dot.DotGraph;
 import java.io.File;
 import java.util.*;
 
-import static utils.SootUtils.excludeClassesList;
+import static edu.xjtu.OSSTest.utils.SootUtils.excludeClassesList;
 
 public class SootConfig {
 
@@ -42,7 +42,7 @@ public class SootConfig {
         //set soot class path
         Scene.v().setSootClassPath(sootClassPath);
 
-        //whole program analysis
+        //whole program edu.xjtu.OSSTest.analysis
         Options.v().set_whole_program(true);
 
         excludeJDKLibrary(); // exclude jdk and other libraries
