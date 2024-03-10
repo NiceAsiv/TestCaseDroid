@@ -15,7 +15,7 @@ import static edu.xjtu.OSSTest.utils.SootUtils.isExcludedMethod;
 public class BuildCallGraph  extends SceneTransformer {
 
     static DotGraph dotGraph ;
-    public static String mainClass = "tests.CallGraph";
+    public static String mainClass = "edu.xjtu.OSSTest.test.CallGraph";
     public static void main(String[] args) {
 
         SootConfig sootConfig = new SootConfig();

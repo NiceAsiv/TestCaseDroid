@@ -19,9 +19,10 @@ public class SootUtils {
             String graphvizFilePath = System.getenv("GRAPHVIZ");
             String graphvizPath;
             if (graphvizFilePath == null) {
-                throw new RuntimeException("\nPlease set the folder for graphviz as an environment variable and name it \"GRAPHVIZ\".\n" +
+                throw new RuntimeException("\nPlease set the installation folder for graphviz as an environment variable and name it \"GRAPHVIZ\".\n" +
+                        "Like this: \"D:\\APPdata\\Graphviz\".\n" +
                         "You can download graphviz at https://graphviz.org/download/.\n" +
-                        "When you finish that, please restart your IDE.\n");
+                        "When you finish that, please restart your IDE or computer.\n");
             } else {
                 graphvizPath = graphvizFilePath + File.separator + "bin" + File.separator + "dot.exe";
             }
@@ -30,7 +31,7 @@ public class SootUtils {
             Runtime rt = Runtime.getRuntime();
             rt.exec(cmd);
         } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
+            System.err.println("\nError: " + ex.getMessage());
         }
     }
 
