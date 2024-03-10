@@ -491,6 +491,10 @@ How *application-specific Data*（abstraction） *Flows*（safe-approximation）
 
 ###### 可达性分析
 
+可达呀？可达鸭！
+
+![image-20240310120425238](./README.assets/image-20240310120425238.png)
+
 TODO
 
 ###### 活跃变量分析
