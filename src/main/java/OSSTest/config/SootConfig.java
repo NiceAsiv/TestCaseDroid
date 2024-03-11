@@ -18,15 +18,15 @@ public class SootConfig {
     private  static  final String  jreDir = System.getProperty("java.home")+"/lib/rt.jar";
     public  static  final String  sootClassPath = javaPath + File.pathSeparator +  jreDir;
     private String callGraphAlgorithm = "Spark";
-    public  static  LinkedList<String> excludeClassesList ;
 
     public void setCallGraphAlgorithm(String callGraphAlgorithm) {
         this.callGraphAlgorithm = callGraphAlgorithm;
     }
 
-    public static LinkedList<String> getExcludeClassesList() {
-        return excludeClassesList;
+    public String getCallGraphAlgorithm() {
+        return callGraphAlgorithm;
     }
+
 
     /**
      * Soot configuration
