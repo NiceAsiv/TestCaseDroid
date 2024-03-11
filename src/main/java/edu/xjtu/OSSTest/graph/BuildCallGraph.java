@@ -15,7 +15,7 @@ import static edu.xjtu.OSSTest.utils.SootUtils.isExcludedMethod;
 public class BuildCallGraph  extends SceneTransformer {
 
     static DotGraph dotGraph ;
-    public static String mainClass = "edu.xjtu.OSSTest.test.FastJsonTest";
+    public static String mainClass = "edu.xjtu.OSSTest.test.MainCFA";
     public static String targetPackageName = "edu.xjtu.OSSTest";
     public static void main(String[] args) {
 
@@ -43,14 +43,23 @@ public class BuildCallGraph  extends SceneTransformer {
                 Iterator<MethodOrMethodContext> targets = new Targets(
                         callGraph.edgesOutOf(m));
 
-                int depth = 0;
-                while (targets.hasNext() && depth < maxDepth) {
+//                int depth = 0;
+//                while (targets.hasNext() && depth < maxDepth) {
+//                    SootMethod tgt = (SootMethod) targets.next();
+//                    if (!isExcludedMethod(tgt)&&tgt.getDeclaringClass().getName().startsWith(targetPackageName)) {
+//                        numOfEdges++;
+//                        System.out.println(m + " may call " + tgt);
+//                        dotGraph.drawEdge(m.toString(), tgt.toString());
+//                        depth++;
+//                    }
+//                }
+                while (targets.hasNext())
+                {
                     SootMethod tgt = (SootMethod) targets.next();
                     if (!isExcludedMethod(tgt)&&tgt.getDeclaringClass().getName().startsWith(targetPackageName)) {
                         numOfEdges++;
                         System.out.println(m + " may call " + tgt);
                         dotGraph.drawEdge(m.toString(), tgt.toString());
-                        depth++;
                     }
                 }
             }

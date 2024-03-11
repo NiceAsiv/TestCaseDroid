@@ -42,11 +42,11 @@ public class SootConfig {
 
         //whole program edu.xjtu.OSSTest.analysis
         Options.v().set_whole_program(true);
+        Options.v().set_app(true);
 
         excludeJDKLibrary(); // exclude jdk and other libraries
 
         //load and set main class
-        Options.v().set_app(true);
         SootClass appClass = Scene.v().loadClassAndSupport(ClassName);
         Scene.v().setMainClass(appClass);
         Scene.v().loadNecessaryClasses();
