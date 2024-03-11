@@ -1,4 +1,4 @@
-package edu.xjtu.OSSTest.demo;
+package OSSTest.demo;
 
 import soot.*;
 import soot.toolkits.graph.BriefUnitGraph;
@@ -9,7 +9,7 @@ import java.util.Map;
  * GetProgramStructure类
  * 这个类是用来获取程序结构的。
  * 使用方法：java GetProgramStructure <classpath> <classfile>
- * 例如：java GetProgramStructure ./target/classes tests.LiveAnalysis
+ * 例如：java GetProgramStructure ./target/classes OSSTest.tests.LiveAnalysis
  */
 public class GetProgramStructure {
 

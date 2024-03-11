@@ -1,13 +1,12 @@
-package edu.xjtu.OSSTest.config;
+package OSSTest.config;
 
 import soot.*;
 import soot.options.Options;
-import soot.util.dot.DotGraph;
 
 import java.io.File;
 import java.util.*;
 
-import static edu.xjtu.OSSTest.utils.SootUtils.excludeClassesList;
+import static OSSTest.utils.SootUtils.excludeClassesList;
 
 
 /**
@@ -31,7 +30,7 @@ public class SootConfig {
 
     /**
      * Soot configuration
-     * @param ClassName the main class name e.g. "edu.xjtu.OSSTest.tests.CallGraph"
+     * @param ClassName the main class name e.g. "OSSTest.tests.CallGraph"
      * @param constructCallGraph whether to construct call graph
      */
     public void setupSoot(String ClassName, Boolean constructCallGraph)

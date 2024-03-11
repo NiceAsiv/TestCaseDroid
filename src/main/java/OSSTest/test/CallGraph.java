@@ -1,4 +1,4 @@
-package edu.xjtu.OSSTest.test;
+package OSSTest.test;
 
 public class CallGraph {
     public static void main(String[] args) {

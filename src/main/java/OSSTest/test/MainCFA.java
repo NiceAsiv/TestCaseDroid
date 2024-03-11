@@ -1,4 +1,4 @@
-package edu.xjtu.OSSTest.test;
+package OSSTest.test;
 
 interface I {
 	I f();

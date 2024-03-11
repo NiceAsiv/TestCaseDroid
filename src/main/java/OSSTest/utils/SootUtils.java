@@ -1,4 +1,4 @@
-package edu.xjtu.OSSTest.utils;
+package OSSTest.utils;
 
 import soot.SootMethod;
 

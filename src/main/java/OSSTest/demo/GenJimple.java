@@ -1,10 +1,10 @@
-package edu.xjtu.OSSTest.demo;
+package OSSTest.demo;
 
 /**
  * GenJimple类
  * 这个类是用来生成Jimple代码的。
  * 使用方法：java GenJimple <classpath> <classfile>
- * 例如：java GenJimple ./target/classes tests.Main
+ * 例如：java GenJimple ./target/classes OSSTest.tests.Main
  */
 public class GenJimple {
 

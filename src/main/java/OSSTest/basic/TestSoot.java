@@ -1,4 +1,4 @@
-package edu.xjtu.OSSTest.basic;
+package OSSTest.basic;
 
 import soot.*;
 import soot.jimple.Stmt;
@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class TestSoot extends BodyTransformer {
     public static void main(String[] args) {
-        String mainclass = "tests.HelloThread";
+        String mainclass = "OSSTest.tests.HelloThread";
 
 
         //设置Soot的 classpath

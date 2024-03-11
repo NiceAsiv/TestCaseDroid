@@ -1,4 +1,4 @@
-package edu.xjtu.OSSTest.demo;
+package OSSTest.demo;
 
 import soot.PackManager;
 import soot.Scene;
@@ -16,7 +16,7 @@ import java.util.List;
  * Traverse类
  * 这个类的主要功能是遍历应用程序的类、方法和字段。
  * 使用方法：java Traverse <classpath> <directory>
- * 例如：java Traverse ./target/classes tests
+ * 例如：java Traverse ./target/classes OSSTest.tests
  */
 
 public class Traverse {

@@ -1,4 +1,4 @@
-package edu.xjtu.OSSTest.test;
+package OSSTest.test;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;

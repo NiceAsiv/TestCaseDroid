@@ -1,6 +1,7 @@
-package edu.xjtu.OSSTest.graph;
+package OSSTest.graph;
 
-import edu.xjtu.OSSTest.config.SootConfig;
+import OSSTest.config.SootConfig;
+import OSSTest.utils.SootUtils;
 import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
@@ -9,14 +10,11 @@ import soot.util.dot.DotGraph;
 import java.util.Iterator;
 import java.util.Map;
 
-import static edu.xjtu.OSSTest.utils.SootUtils.convertDotToPng;
-import static edu.xjtu.OSSTest.utils.SootUtils.isExcludedMethod;
-
 public class BuildCallGraph  extends SceneTransformer {
 
     static DotGraph dotGraph ;
-    public static String mainClass = "edu.xjtu.OSSTest.test.MainCFA";
-    public static String targetPackageName = "edu.xjtu.OSSTest";
+    public static String mainClass = "OSSTest.test.MainCFA";
+    public static String targetPackageName = "OSSTest";
     public static void main(String[] args) {
 
         SootConfig sootConfig = new SootConfig();
@@ -56,7 +54,7 @@ public class BuildCallGraph  extends SceneTransformer {
                 while (targets.hasNext())
                 {
                     SootMethod tgt = (SootMethod) targets.next();
-                    if (!isExcludedMethod(tgt)&&tgt.getDeclaringClass().getName().startsWith(targetPackageName)) {
+                    if (!SootUtils.isExcludedMethod(tgt)&&tgt.getDeclaringClass().getName().startsWith(targetPackageName)) {
                         numOfEdges++;
                         System.out.println(m + " may call " + tgt);
                         dotGraph.drawEdge(m.toString(), tgt.toString());
@@ -66,12 +64,12 @@ public class BuildCallGraph  extends SceneTransformer {
         }
         System.err.println("Total Edges:" + numOfEdges);
 
-        String callGraphPath = "./sootOutput/dot/"+mainClass+".CG.dot";
-        String outputPath= "./sootOutput/pic/"+mainClass+".CG.png";
+        String callGraphPath = "./sootOutput/dot/"+mainClass+".cg.dot";
+        String outputPath= "./sootOutput/pic/"+mainClass+".cg.png";
 
         dotGraph.plot(callGraphPath);
         try {
-            convertDotToPng(callGraphPath, outputPath);
+            SootUtils.convertDotToPng(callGraphPath, outputPath);
         } catch (Exception e) {
             e.printStackTrace();
         }
