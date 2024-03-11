@@ -1,7 +1,6 @@
 package edu.xjtu.OSSTest.graph;
 
 import edu.xjtu.OSSTest.config.SootConfig;
-import heros.InterproceduralCFG;
 import soot.*;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 import soot.toolkits.graph.ExceptionalUnitGraph;
@@ -11,11 +10,12 @@ import soot.util.dot.DotGraph;
 import java.util.Map;
 
 import static edu.xjtu.OSSTest.utils.SootUtils.convertDotToPng;
+import static edu.xjtu.OSSTest.utils.SootUtils.isExcludedMethod;
 
 public class BuildICFG extends SceneTransformer {
 
     static DotGraph dotGraph ;
-    public static String mainClass = "edu.xjtu.OSSTest.test.MainCFA";
+    public static String mainClass = "edu.xjtu.OSSTest.test.FastJsonTest";
     public static String targetPackageName = "edu.xjtu.OSSTest";
 
     public static void main(String[] args) {
@@ -36,7 +36,7 @@ public class BuildICFG extends SceneTransformer {
         JimpleBasedInterproceduralCFG icfg = new JimpleBasedInterproceduralCFG();
         for(SootClass sc : Scene.v().getApplicationClasses()){
             for(SootMethod m : sc.getMethods()){
-                if(m.hasActiveBody()){
+                if(m.hasActiveBody()&&!isExcludedMethod(m)&&m.getDeclaringClass().getName().startsWith(targetPackageName)){
                     UnitGraph g = new ExceptionalUnitGraph(m.getActiveBody());
                     for(Unit u : g){
                         for(Unit v : icfg.getSuccsOf(u)){
@@ -51,8 +51,6 @@ public class BuildICFG extends SceneTransformer {
         String dotFilePath = "./sootOutput/dot/"+ mainClass + ".icfg.dot";
         dotGraph.plot(dotFilePath);
         String outputFilePath = "./sootOutput/pic/"+ mainClass + ".icfg.png";
-        dotGraph.plot(outputFilePath);
-
         try {
             convertDotToPng(dotFilePath, outputFilePath);
         } catch (Exception e) {
