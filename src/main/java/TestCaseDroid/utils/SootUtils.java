@@ -23,13 +23,26 @@ public class SootUtils {
             String graphvizPath;
             if (graphvizFilePath == null) {
                 throw new RuntimeException("\nPlease set the installation folder for graphviz as an environment variable and name it \"GRAPHVIZ\".\n" +
-                        "Like this: \"D:\\APPdata\\Graphviz\".\n" +
+                        "The graphviz folder is like this: \"D:\\APPdata\\Graphviz-10.0.1-win64\".\n" +
                         "You can download graphviz at https://graphviz.org/download/.\n" +
-                        "When you finish that, please restart your IDE or computer.\n");
+                        "When you finish that, please restart your IDE.\n");
             } else {
                 graphvizPath = graphvizFilePath + File.separator + "bin" + File.separator + "dot.exe";
             }
             //String dotPath = "D:\\APPdata\\Graphviz\\bin\\dot.exe"; //Graphviz software installed location
+
+            // Check if pic output folder exist
+            File folder = new File(outputFilePath.substring(0, outputFilePath.lastIndexOf("/")));
+            if (!folder.exists()) {
+                if (folder.mkdirs()) {
+                    System.out.println("Create pic output folder：" + folder.getAbsolutePath());
+                } else {
+                    System.err.println("Unable to create pic output folder：" + folder.getAbsolutePath());
+                }
+            } else {
+                System.out.println("Pic output folder exist in：" + folder.getAbsolutePath());
+            }
+
             String[] cmd = new String[]{graphvizPath, "-Tpng", dotFilePath, "-o", outputFilePath};
             Runtime rt = Runtime.getRuntime();
             rt.exec(cmd);
