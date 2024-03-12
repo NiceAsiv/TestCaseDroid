@@ -22,9 +22,8 @@
 
 基于Soot的拓展项目：
 
-[ByteCodeDL](https://github.com/BytecodeDL/ByteCodeDL/discussions)：使用soot生成fact，使用souffle作为datalog引擎，最后使用neo4j进行可视化，实现了多种程序分析算法；(个人觉得讨论区的案例是比较有价值的)
-
-[Tabby](https://github.com/wh1t3p1g/tabby)：基于soot生成代码属性图，应用案例比较多
+- [ByteCodeDL](https://github.com/BytecodeDL/ByteCodeDL/discussions)：使用soot生成fact，使用souffle作为datalog引擎，最后使用neo4j进行可视化，实现了多种程序分析算法；(个人觉得讨论区的案例是比较有价值的)
+- [Tabby](https://github.com/wh1t3p1g/tabby)：基于soot生成代码属性图，应用案例比较多
 
 ## 简介
 
@@ -432,7 +431,7 @@ public class JimpleAnalysis {
 
 ###### 控制流图CFG
 
-一个CFG是表示**一个方法内**的程序执行流的图，它由一系列基本块（edu.xjtu.TestCaseDroid.basic block）组成，其中每个基本块是一组按顺序执行的语句。控制流图中的节点通常代表基本块，而边则表示程序执行的控制流转移，例如条件语句、循环或函数调用等。例如语句A执行后的下一条语句是B，则CFG中应有一条从A到B的有向边。
+一个CFG是表示**一个方法内**的程序执行流的图，它由一系列基本块（basic block）组成，其中每个基本块是一组按顺序执行的语句。控制流图中的节点通常代表基本块，而边则表示程序执行的控制流转移，例如条件语句、循环或函数调用等。例如语句A执行后的下一条语句是B，则CFG中应有一条从A到B的有向边。
 
 - 通常所有的控制流分析（Control Flow Analysis）指的就是创建控制流图（Control Flow Graph）； 
 - CFG是静态程序分析的基本结构；
@@ -490,10 +489,6 @@ How *application-specific Data*（abstraction） *Flows*（safe-approximation）
 
 
 ###### 可达性分析
-
-可达呀？可达鸭！
-
-![image-20240310120425238](./README.assets/image-20240310120425238.png)
 
 TODO
 
@@ -554,7 +549,7 @@ public static void main(String[] args) {
 
 ##### **jtb && jop && jap Pack**
 
-**jtp**默认是可用且是空的。通常在这里进行==过程内分析(intra-procedural edu.xjtu.TestCaseDroid.analysis)==。
+**jtp**默认是可用且是空的。通常在这里进行==过程内分析(intra-procedural analysis)==。
 
 **jop**包含一套Jimple优化操作。它默认未启用，可以通过Soot的命令行 **-o** 或者 **-p jop enabled** 来启用。
 
@@ -801,7 +796,7 @@ Pointer Analysis即指针分析；如果我们使用CHA创建CallGraph，我们�
 
 - 指针分析是基础的静态分析，计算一个指针能够指向内存中的哪些地址
 - 对于面向对象语言，以 JAVA 为例，指针分析计算一个指针（*variable or field*）能够指向哪些对象
-- 指针分析可以看作一种 *may edu.xjtu.TestCaseDroid.analysis*，计算结果是一个 *over-approximation*
+- 指针分析可以看作一种 *may analysis*，计算结果是一个 *over-approximation*
 
 ![img](./README.assets/202207281010951.png)
 
@@ -1241,7 +1236,7 @@ private static void visit(CallGraph cg, SootMethod method) {
 
 ### 控制流图CFG
 
-一个CFG是表示**一个方法内**的程序执行流的图，它由一系列基本块（edu.xjtu.TestCaseDroid.basic block）组成，其中每个基本块是一组按顺序执行的语句。控制流图中的节点通常代表基本块，而边则表示程序执行的控制流转移，例如条件语句、循环或函数调用等。例如语句A执行后的下一条语句是B，则CFG中应有一条从A到B的有向边。
+一个CFG是表示**一个方法内**的程序执行流的图，它由一系列基本块（basic block）组成，其中每个基本块是一组按顺序执行的语句。控制流图中的节点通常代表基本块，而边则表示程序执行的控制流转移，例如条件语句、循环或函数调用等。例如语句A执行后的下一条语句是B，则CFG中应有一条从A到B的有向边。
 
 示例代码
 
@@ -1369,7 +1364,7 @@ public class HelloWorld {
 
 ### 污点分析
 
-污点分析(taint edu.xjtu.TestCaseDroid.analysis)：是一项跟踪并分析污点信息在程序中流动的技术,该技术通过对系统中的敏感数据进行标记, 继而跟踪标记数据在程序中的传播, 检测系统安全问题。
+污点分析(taint analysis)：是一项跟踪并分析污点信息在程序中流动的技术,该技术通过对系统中的敏感数据进行标记, 继而跟踪标记数据在程序中的传播, 检测系统安全问题。
 
 **它可以抽象为一个三元组<source, sink, sanitizers>形式：**
 
@@ -1403,7 +1398,7 @@ sanitizer即无害化处理，表示污染源数据通过一些操作解除了�
 
 10.https://blog.csdn.net/TheSnowBoy_2/article/details/53436042
 
-11.[https://people.cs.vt.edu/ryder/515/f05/lectures/Sootlecture-Weilei.pdf](https://people.cs.vt.edu/ryder/515/f05/lectures/Sootlecture-Weilei.pdf)
+11.[https://people.cs.vt.edu/ryder/515/f05/lectures/Sootlecture-Weilei.pdf](https://people.cs.vt.edu/ryder/515/f05/lectures/Sootlecture-Weilei.pdf#:~:text=Phase in Soot In SOOT%2C each phase is,collection of transformers%2C each corresponding to a subphase.)
 
 12.https://mp.weixin.qq.com/s/vc8ZDkrSxUV237C020E5Ag
 
