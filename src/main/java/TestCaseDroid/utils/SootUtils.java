@@ -6,11 +6,11 @@ import soot.toolkits.graph.UnitGraph;
 import soot.util.dot.DotGraph;
 
 import java.io.File;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 
 public class SootUtils {
-    public  static  LinkedList<String> excludeClassesList ;
+    public  static  ArrayList<String> excludeClassesList = addExcludeClassesList();
 
     /**
      * Convert a dot file to a png file
@@ -57,25 +57,25 @@ public class SootUtils {
      * @param method the method to check
      * @return true if the method is excluded, false otherwise
      */
-    public static boolean isExcludedMethod(SootMethod method)
+    public static boolean isNotExcludedMethod(SootMethod method)
     {
         String declaringClassName = method.getDeclaringClass().getName();
-        for(String s : excludeClassesList())
+        for(String s : excludeClassesList)
         {
             if(declaringClassName.startsWith(s)) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
      * Get the list of excluded classes
      * @return the list of excluded classes
      */
-    public static LinkedList<String> excludeClassesList() {
+    protected static ArrayList<String> addExcludeClassesList() {
         if (excludeClassesList == null) {
-            excludeClassesList = new LinkedList<>();
+            excludeClassesList = new ArrayList<String>();
             //排除特定的类
             excludeClassesList.add("java.");
             excludeClassesList.add("sun.");

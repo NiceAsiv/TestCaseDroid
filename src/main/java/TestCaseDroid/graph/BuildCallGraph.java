@@ -13,7 +13,7 @@ import java.util.Map;
 public class BuildCallGraph  extends SceneTransformer {
 
     static DotGraph dotGraph ;
-    public static String mainClass = "TestCaseDroid.test.MainCFA";
+    public static String mainClass = "TestCaseDroid.test.FastJsonTest";
     public static String targetPackageName = "TestCaseDroid";
     public static void main(String[] args) {
 
@@ -38,8 +38,7 @@ public class BuildCallGraph  extends SceneTransformer {
         for(SootClass sc : Scene.v().getApplicationClasses()){
             for(SootMethod m : sc.getMethods()){
 
-                Iterator<MethodOrMethodContext> targets = new Targets(
-                        callGraph.edgesOutOf(m));
+                Iterator<MethodOrMethodContext> targets = new Targets(callGraph.edgesOutOf(m)); //获取所有被m调用的方法
 
 //                int depth = 0;
 //                while (targets.hasNext() && depth < maxDepth) {
@@ -54,7 +53,7 @@ public class BuildCallGraph  extends SceneTransformer {
                 while (targets.hasNext())
                 {
                     SootMethod tgt = (SootMethod) targets.next();
-                    if (!SootUtils.isExcludedMethod(tgt)&&tgt.getDeclaringClass().getName().startsWith(targetPackageName)) {
+                    if (SootUtils.isNotExcludedMethod(tgt)) {
                         numOfEdges++;
                         System.out.println(m + " may call " + tgt);
                         dotGraph.drawEdge(m.toString(), tgt.toString());

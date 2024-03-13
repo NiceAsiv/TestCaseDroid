@@ -34,7 +34,7 @@ public class BuildICFG extends SceneTransformer {
         JimpleBasedInterproceduralCFG icfg = new JimpleBasedInterproceduralCFG();
         for(SootClass sc : Scene.v().getApplicationClasses()){
             for(SootMethod m : sc.getMethods()){
-                if(m.hasActiveBody()&&!SootUtils.isExcludedMethod(m)&&m.getDeclaringClass().getName().startsWith(targetPackageName)){
+                if(m.hasActiveBody()&& SootUtils.isNotExcludedMethod(m) &&m.getDeclaringClass().getName().startsWith(targetPackageName)){
                     UnitGraph g = new ExceptionalUnitGraph(m.getActiveBody());
                     for(Unit u : g){
                         for(Unit v : icfg.getSuccsOf(u)){

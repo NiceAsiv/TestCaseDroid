@@ -66,9 +66,8 @@ public class SootConfig {
 //        Options.v().setPhaseOption("jb.cp","enabled:false");
 
 
-        PackManager.v().runPacks();//run soot
 
-
+//        PackManager.v().runPacks();//run soot
 
         //构建控制流图选项，默认是SPARK
         if (constructCallGraph) {
@@ -101,7 +100,7 @@ public class SootConfig {
     private static void excludeJDKLibrary()
     {
         //exclude jdk classes
-        Options.v().set_exclude(excludeClassesList());
+        Options.v().set_exclude(excludeClassesList);
         //this option must be disabled for a sound call graph
         Options.v().set_no_bodies_for_excluded(true);
         Options.v().set_allow_phantom_refs(true);
