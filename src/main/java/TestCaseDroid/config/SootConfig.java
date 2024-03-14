@@ -12,8 +12,14 @@ import static TestCaseDroid.utils.SootUtils.excludeClassesList;
  * Soot configuration
  */
 public class SootConfig {
-
+    /**
+     * javaPath collects all dependency libraries in the project.
+     * jreDir is path to rt.jar
+     * sootClassPath combines javaPath and jreDir to form the analysis environment.
+     */
     private  static  final String  javaPath = System.getProperty("java.class.path");
+
+
     private  static  final String  jreDir = System.getProperty("java.home")+"/lib/rt.jar";
     public  static  final String  sootClassPath = javaPath + File.pathSeparator +  jreDir;
     private String callGraphAlgorithm = "Spark";
@@ -34,26 +40,30 @@ public class SootConfig {
      */
     public void setupSoot(String ClassName, Boolean constructCallGraph)
     {
-        G.reset();//clear all the previous cached values of soot
+        //clear all the previous cached values of soot
+        G.reset();
         //set soot class path
-        Scene.v().setSootClassPath(sootClassPath);
-
+        Options.v().set_soot_classpath(sootClassPath);
+//        Scene.v().setSootClassPath(sootClassPath);
         //whole program analysis
         Options.v().set_whole_program(true);
+        //set application class to analyze application class only
         Options.v().set_app(true);
-
-        excludeJDKLibrary(); // exclude jdk and other libraries
+        // exclude jdk and other libraries
+        excludeJDKLibrary();
 
         //load and set main class
         SootClass appClass = Scene.v().loadClassAndSupport(ClassName);
+
         Scene.v().setMainClass(appClass);
         Scene.v().loadNecessaryClasses();
 
-
-        Options.v().set_keep_line_number(true); // set to keep line number
-        Options.v().set_output_format(Options.output_format_jimple); // set output format
-
-        Options.v().set_verbose(true); // set to see  verbose information
+        // set to keep line number
+        Options.v().set_keep_line_number(true);
+        // set output format
+        Options.v().set_output_format(Options.output_format_jimple);
+        // set to see  verbose information
+        Options.v().set_verbose(true);
 
         //set to keep variable names
         Options.v().setPhaseOption("jb","use-original-names:true");
