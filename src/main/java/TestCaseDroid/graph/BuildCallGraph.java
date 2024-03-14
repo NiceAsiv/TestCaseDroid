@@ -26,6 +26,12 @@ public class BuildCallGraph  extends SceneTransformer {
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraph", analysis));
 
         dotGraph = new DotGraph("callgraph");
+
+        // 判断被分析的主类是什么类，并统计类中的方法数量
+        SootClass sc = Scene.v().getSootClass(mainClass);
+        System.out.println(String.format("The class %s is an %s class, loaded with %d methods! ",
+                sc.getName(), sc.isApplicationClass() ? "Application" : "Library", sc.getMethodCount()));
+
         PackManager.v().runPacks();
 
     }

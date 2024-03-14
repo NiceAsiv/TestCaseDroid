@@ -38,32 +38,35 @@ public class SootConfig {
      */
     public void setupSoot(String ClassName, Boolean constructCallGraph)
     {
-        //clear all the previous cached values of soot
+        //清除soot之前留下的所有缓存
         G.reset();
-        //set soot class path
+        //设置Soot类路径
         Options.v().set_soot_classpath(sootClassPath);
 //        Scene.v().setSootClassPath(sootClassPath);
-        //whole program analysis
+        //全程序分析
         Options.v().set_whole_program(true);
-        //set application class to analyze application class only
+        //设置应用类，并仅分析应用类
         Options.v().set_app(true);
-        // exclude jdk and other libraries
+        //排除JDK和其他库
         excludeJDKLibrary();
 
-        //load and set main class
+        //加载必要类
         SootClass appClass = Scene.v().loadClassAndSupport(ClassName);
-
+        //设置主类
         Scene.v().setMainClass(appClass);
+        //将待分析类设为应用类
+        appClass.setApplicationClass();
+        //加载 Soot 依赖的类和命令行指定的类
         Scene.v().loadNecessaryClasses();
 
-        // set to keep line number
+        //set to keep line number
         Options.v().set_keep_line_number(true);
-        // set output format
+        //设置输出格式
         Options.v().set_output_format(Options.output_format_jimple);
-        // set to see  verbose information
+        //设置展示详细信息
         Options.v().set_verbose(true);
 
-        //set to keep variable names
+        //设置保持原变量名
         Options.v().setPhaseOption("jb","use-original-names:true");
 //        Options.v().setPhaseOption("jb.dae","only-stack-locals:true"); // 不去优化b = $stack5;的语句，保持原汁原味
 //        Options.v().setPhaseOption("jb.cp", "enabled:false");
