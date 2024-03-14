@@ -18,8 +18,6 @@ public class SootConfig {
      * sootClassPath combines javaPath and jreDir to form the analysis environment.
      */
     private  static  final String  javaPath = System.getProperty("java.class.path");
-
-
     private  static  final String  jreDir = System.getProperty("java.home")+"/lib/rt.jar";
     public  static  final String  sootClassPath = javaPath + File.pathSeparator +  jreDir;
     private String callGraphAlgorithm = "Spark";
