@@ -54,8 +54,6 @@ public class SootAnalysisUtils {
                 System.out.printf("Add all methods in %s as entrypoint!\n",tgtClass);
             }
 
-
-
             //设置入口方法
             if (setAll){
                 List<SootMethod> entryPoints = new ArrayList<>(sc.getMethods());
