@@ -1,6 +1,8 @@
 package TestCaseDroid.graph;
 
 import TestCaseDroid.config.SootConfig;
+import TestCaseDroid.utils.SootAnalysisUtils;
+import TestCaseDroid.utils.SootInfoUtils;
 import TestCaseDroid.utils.SootUtils;
 import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
@@ -27,11 +29,12 @@ public class BuildCallGraph  extends SceneTransformer {
 
         dotGraph = new DotGraph("callgraph");
 
-        // 判断被分析的主类是什么类，并统计类中的方法数量
-        SootClass sc = Scene.v().getSootClass(mainClass);
-        System.out.println(String.format("The class %s is an %s class, loaded with %d methods! ",
-                sc.getName(), sc.isApplicationClass() ? "Application" : "Library", sc.getMethodCount()));
-
+        //判断mainClass是否为应用类
+        SootInfoUtils.isApplicationClass(mainClass);
+        //输出当前分析环境下的application类和每个类所加载的函数签名
+        SootInfoUtils.reportSootApplicationClassInfo();
+        //设置入口方法
+        SootAnalysisUtils.setEntryPoints(mainClass,"main","testFunction");
         PackManager.v().runPacks();
 
     }
