@@ -36,7 +36,12 @@ public class SootInfoUtils {
         System.out.print(SootVisualizeUtils.TextColor.RESET.getCode());
         int index=0;
         System.out.println("--------------------------------");
-        System.out.println("Current entrypoints are:");
+        if(Scene.v().getEntryPoints().size()==1){
+            System.out.println("Current entrypoint is:");
+        }else {
+            System.out.println("Current entrypoint are:");
+        }
+
         for(SootMethod m:Scene.v().getEntryPoints()){
             index++;
             System.out.printf("[%d] %s\n",index,m.getSignature());

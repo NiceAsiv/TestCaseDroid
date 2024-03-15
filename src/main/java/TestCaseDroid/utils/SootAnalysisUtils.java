@@ -12,7 +12,12 @@ public class SootAnalysisUtils {
         //设置入口方法，默认入口方法是psvm，如果没有main方法的话则会出现找不到入口报错
         try {
             List<SootMethod> entryPoints = new ArrayList<>();
-            System.out.printf("Add %d methods in %s as entrypoints!\n",entryMethods.length,tgtClass);
+            if (entryMethods.length == 1) {
+                System.out.printf("Add %d method in %s as entrypoint!\n",entryMethods.length,tgtClass);
+            } else {
+                System.out.printf("Add %d methods in %s as entrypoint!\n",entryMethods.length,tgtClass);
+            }
+
             //加载目标类
             SootClass sc = Scene.v().loadClass(tgtClass, SootClass.BODIES);
 
@@ -41,9 +46,15 @@ public class SootAnalysisUtils {
     public static void setEntryPoints(String tgtClass,Boolean setAll){
         //重载，将目标方法中所有的方法设为入口类
         try {
-            System.out.printf("Add all methods in %s as entrypoints!\n",tgtClass);
             //加载目标类
             SootClass sc = Scene.v().loadClass(tgtClass, SootClass.BODIES);
+            if(sc.getMethods().size()==1){
+                System.out.printf("Add all method in %s as entrypoint!\n",tgtClass);
+            }else {
+                System.out.printf("Add all methods in %s as entrypoint!\n",tgtClass);
+            }
+
+
 
             //设置入口方法
             if (setAll){
