@@ -29,7 +29,6 @@ public class SootUtils {
             } else {
                 graphvizPath = graphvizFilePath + File.separator + "bin" + File.separator + "dot.exe";
             }
-            //String dotPath = "D:\\APPdata\\Graphviz\\bin\\dot.exe"; //Graphviz software installed location
 
             // Check if pic output folder exist
             File folder = new File(outputFilePath.substring(0, outputFilePath.lastIndexOf("/")));
@@ -75,7 +74,7 @@ public class SootUtils {
      */
     protected static ArrayList<String> addExcludeClassesList() {
         if (excludeClassesList == null) {
-            excludeClassesList = new ArrayList<String>();
+            excludeClassesList = new ArrayList<>();
             //排除特定的类
             excludeClassesList.add("java.");
             excludeClassesList.add("sun.");

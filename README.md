@@ -1028,6 +1028,17 @@ public static void main(String[] args){
 
 当使用 Soot 进行 Java 字节码分析时，Options API 提供了一种灵活的方式来配置 Soot 的行为。
 
+其中
+
+- `Options` 类通常包含了一系列可以配置Soot行为的全局选项。
+- `.v()` 方法是获取单例对象或者静态方法，用来访问或修改Soot的全局选项集
+
+注意：
+
+`Options.v().set_app(true)`;
+
+> `set_app(true)` 是设置某个具体的选项值，这里的`app`选项通常指的是处理整个应用程序（Application）而非库文件（Library）。当设置为`true`时，Soot会按照处理完整的应用程序的方式来运行，这意味着它可能包括对主类（即包含`main`方法的类）以及所有依赖项的处
+
 ```java
 		Printertemp printertemp = new Printertemp();
 		Transform t0 = new Transform("wjtp.Printertemp", printertemp);

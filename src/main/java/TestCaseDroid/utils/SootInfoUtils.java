@@ -9,8 +9,8 @@ public class SootInfoUtils {
         // 判断被分析的类是否为应用类，并统计类中的方法数量
         System.out.println("--------------------------------");
         SootClass sc = Scene.v().getSootClass(tgtClass);
-        System.out.println(String.format("The target class %s is an %s class, loaded with %d methods! ",
-                sc.getName(), sc.isApplicationClass() ? "Application" : "Library", sc.getMethodCount()));
+        System.out.printf("The target class %s is an %s class, loaded with %d methods! %n",
+                sc.getName(), sc.isApplicationClass() ? "Application" : "Library", sc.getMethodCount());
         System.out.println("--------------------------------");
         return sc.isApplicationClass();
     }
