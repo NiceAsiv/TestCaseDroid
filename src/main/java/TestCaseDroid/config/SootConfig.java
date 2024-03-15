@@ -45,11 +45,10 @@ public class SootConfig {
 //        Scene.v().setSootClassPath(sootClassPath);
         //全程序分析
         Options.v().set_whole_program(true);
-        //设置应用类，并仅分析应用类
-        Options.v().set_app(true);
+        //设将类路径中的类均设为应用类，并仅分析应用类
+//        Options.v().set_app(true);
         //排除JDK和其他库
         excludeJDKLibrary();
-
         //加载必要类
         SootClass appClass = Scene.v().loadClassAndSupport(ClassName);
         //设置主类
