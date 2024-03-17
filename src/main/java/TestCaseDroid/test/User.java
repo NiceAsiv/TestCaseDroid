@@ -1,11 +1,13 @@
 package TestCaseDroid.test;
 
+import static TestCaseDroid.test.Main.sqr;
+
 public class User {
     public int age;
     public String name;
 
     public User(int age, String name) {
-        this.age = age;
+        this.age =  sqr(age);
         this.name = name;
     }
 

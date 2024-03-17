@@ -2,7 +2,7 @@ package TestCaseDroid.test;
 
 public class Main {
 	
-	private static int sqr(int x) {
+	public static int sqr(int x) {
 		return x * x;
 	}
 	
