@@ -13,7 +13,7 @@ import java.util.Map;
 public class BuildCallGraph  extends SceneTransformer {
 
     static DotGraph dotGraph ;
-    public static String mainClass = "TestCaseDroid.test.FastJsonTest";
+    public static String mainClass = "TestCaseDroid.test.CallGraphs";
     public static String targetPackageName = "TestCaseDroid";
     public static void main(String[] args) {
 
@@ -32,7 +32,7 @@ public class BuildCallGraph  extends SceneTransformer {
         //输出当前分析环境下的application类和每个类所加载的函数签名
         SootInfoUtils.reportSootApplicationClassInfo();
         //设置入口方法
-        SootAnalysisUtils.setEntryPoints(mainClass,"main","testFunction");
+        SootAnalysisUtils.setEntryPoints(mainClass,"main");
         //运行分析
         PackManager.v().runPacks();
 
