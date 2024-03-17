@@ -16,6 +16,7 @@ public class DotGraphWrapper {
 
     /**
      * Constructor
+     *
      * @param graphName the name of the graph
      */
     public DotGraphWrapper(String graphName) {
@@ -24,6 +25,7 @@ public class DotGraphWrapper {
         this.dotGraph.setNodeShape("box");
 //        this.dotGraph.setGraphAttribute("fontname", "Helvetica");
 //        this.dotGraph.setGraphAttribute("fontsize", "12");
+        //graphname这个参数有啥用捏
 
     }
 
@@ -37,15 +39,16 @@ public class DotGraphWrapper {
 
     /**
      * Plot the graph
+     *
      * @param mainClass the main class
      * @param graphType the type of graph including "cg", "cfg", "icfg"
      */
-    public void plot(String mainClass,String graphType) {
+    public void plot(String mainClass, String graphType) {
 
         switch (graphType) {
             case "cg":
-                String callGraphPath = "./sootOutput/dot/"+mainClass+".cg.dot";
-                String outputPath= "./sootOutput/pic/"+mainClass+".cg.png";
+                String callGraphPath = "./sootOutput/dot/" + mainClass + ".cg.dot";
+                String outputPath = "./sootOutput/pic/" + mainClass + ".cg.png";
                 this.dotGraph.plot(callGraphPath);
                 try {
                     SootUtils.convertDotToPng(callGraphPath, outputPath);
@@ -54,9 +57,9 @@ public class DotGraphWrapper {
                 }
                 break;
             case "cfg":
-                String cfgPath = "./sootOutput/dot/"+mainClass+".cfg.dot";
-                String cfgOutputPath= "./sootOutput/pic/"+mainClass+".cfg.png";
-                this.dotGraph.plot(cfgPath);
+                String cfgPath = "./sootOutput/dot/" + mainClass + ".cfg.dot";
+                String cfgOutputPath = "./sootOutput/pic/" + mainClass + ".cfg.png";
+//                this.dotGraph.plot(cfgPath);
                 try {
                     SootUtils.convertDotToPng(cfgPath, cfgOutputPath);
                 } catch (Exception e) {
@@ -65,8 +68,8 @@ public class DotGraphWrapper {
                 break;
 
             case "icfg":
-                String icfgPath = "./sootOutput/dot/"+mainClass+".icfg.dot";
-                String icfgOutputPath= "./sootOutput/pic/"+mainClass+".icfg.png";
+                String icfgPath = "./sootOutput/dot/" + mainClass + ".icfg.dot";
+                String icfgOutputPath = "./sootOutput/pic/" + mainClass + ".icfg.png";
                 this.dotGraph.plot(icfgPath);
                 try {
                     SootUtils.convertDotToPng(icfgPath, icfgOutputPath);
