@@ -1,6 +1,5 @@
 package TestCaseDroid.graph;
 
-
 import TestCaseDroid.config.SootConfig;
 import TestCaseDroid.utils.DotGraphWrapper;
 import TestCaseDroid.utils.SootDataProcessUtils;
