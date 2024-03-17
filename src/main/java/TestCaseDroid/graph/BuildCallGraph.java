@@ -21,7 +21,7 @@ public class BuildCallGraph  extends SceneTransformer {
         sootConfig.setCallGraphAlgorithm("Spark");
         sootConfig.setupSoot(mainClass, true);
 
-        //add an intra-procedural analysis phase to Soot
+        //add an inter-procedural analysis phase to Soot
         BuildCallGraph analysis = new BuildCallGraph();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraph", analysis));
 
@@ -33,6 +33,7 @@ public class BuildCallGraph  extends SceneTransformer {
         SootInfoUtils.reportSootApplicationClassInfo();
         //设置入口方法
         SootAnalysisUtils.setEntryPoints(mainClass,"main","testFunction");
+        //运行分析
         PackManager.v().runPacks();
 
     }
@@ -54,13 +55,12 @@ public class BuildCallGraph  extends SceneTransformer {
                         numOfEdges++;
                         System.out.println(m + " may call " + tgt);
                         dotGraph.drawEdge(m.toString(), tgt.toString());
-//                        dotGraph.drawEdge(m.toString(), tgt.toString());
                         hasNextFlag=true;
                     }
                 }
                 if(hasNextFlag){
                     System.out.print(SootVisualizeUtils.TextColor.RED.getCode());
-                    System.out.printf("%s has %d edges\n",m.getSignature(),numOfEdges);
+                    System.out.printf("    %s has %d edges\n",m.getSignature(),numOfEdges);
                     System.out.print(SootVisualizeUtils.TextColor.RESET.getCode());
                 }
 
