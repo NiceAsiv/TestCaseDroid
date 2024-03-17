@@ -37,34 +37,60 @@ public class BuildCallGraph  extends SceneTransformer {
         PackManager.v().runPacks();
 
     }
+    void visit(SootMethod m, CallGraph callGraph, DotGraphWrapper dotGraph, int depth, int maxDepth)
+    {
+        if (depth >= maxDepth) return;
+        Iterator<MethodOrMethodContext> targets = new Targets(callGraph.edgesOutOf(m));
+        while (targets.hasNext())
+        {
+            SootMethod tgt = (SootMethod)targets.next();
+            SootMethod src = m;
+            if ((src.getDeclaringClass().isApplicationClass() || tgt.getDeclaringClass().isApplicationClass()) && SootUtils.isNotExcludedMethod(tgt)) {
+                System.out.println(m + " may call " + tgt);
+                dotGraph.drawEdge(m.toString(), tgt.toString());
+                visit(tgt, callGraph, dotGraph, depth+1, maxDepth);
+            }
+        }
+    }
     @Override
     protected void internalTransform(String phaseName, Map options) {
         CallGraph callGraph = Scene.v().getCallGraph();
         DotGraphWrapper dotGraph = new DotGraphWrapper("callgraph");
 
+        int numOfEdges = 0;
+        int maxDepth = 3;
+
         for(SootClass sc : Scene.v().getApplicationClasses()){
             for(SootMethod m : sc.getMethods()){
-                int numOfEdges=0;
-                Boolean hasNextFlag=false;
-                Iterator<MethodOrMethodContext> targets = new Targets(callGraph.edgesOutOf(m)); //获取所有被m调用的方法
-                while (targets.hasNext())
-                {
-                    SootMethod tgt = (SootMethod) targets.next();
-                    if (SootUtils.isNotExcludedMethod(tgt)) {
-                        numOfEdges++;
-                        System.out.println(m + " may call " + tgt);
-                        dotGraph.drawEdge(m.toString(), tgt.toString());
-                        hasNextFlag=true;
-                    }
-                }
-                if(hasNextFlag){
-                    System.out.print(SootVisualizeUtils.TextColor.RED.getCode());
-                    System.out.printf("    %s has %d edges\n",m.getSignature(),numOfEdges);
-                    System.out.print(SootVisualizeUtils.TextColor.RESET.getCode());
-                }
-
+                visit(m, callGraph, dotGraph, 0, maxDepth);
             }
         }
+        System.out.println("Total number of edges: " + numOfEdges);
+        dotGraph.plot(mainClass,"cg");
+
+//        for(SootClass sc : Scene.v().getApplicationClasses()){
+//            for(SootMethod m : sc.getMethods()){
+//                int numOfEdges=0;
+//                Boolean hasNextFlag=false;
+//                Iterator<MethodOrMethodContext> targets = new Targets(callGraph.edgesOutOf(m)); //获取所有被m调用的方法
+//                while (targets.hasNext())
+//                {
+//                    SootMethod tgt = (SootMethod) targets.next();
+//                    if (SootUtils.isNotExcludedMethod(tgt)) {
+//                        numOfEdges++;
+//                        System.out.println(m + " may call " + tgt);
+//                        dotGraph.drawEdge(m.toString(), tgt.toString());
+//                        hasNextFlag=true;
+//                    }
+//                }
+//                if(hasNextFlag){
+//                    System.out.print(SootVisualizeUtils.TextColor.RED.getCode());
+//                    System.out.printf("    %s has %d edges\n",m.getSignature(),numOfEdges);
+//                    System.out.print(SootVisualizeUtils.TextColor.RESET.getCode());
+//                }
+//
+//            }
+//        }
 
         dotGraph.plot(mainClass,"cg");
 

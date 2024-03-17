@@ -1,7 +1,7 @@
 package TestCaseDroid.graph;
 
 import TestCaseDroid.config.SootConfig;
-import TestCaseDroid.experience.BuildCallGraph2;
+//import TestCaseDroid.experience.BuildCallGraph2;
 import TestCaseDroid.utils.*;
 import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
