@@ -43,7 +43,6 @@ public class BuildCallGraph  extends SceneTransformer {
         DotGraphWrapper dotGraph = new DotGraphWrapper("callgraph");
 
         for(SootClass sc : Scene.v().getApplicationClasses()){
-
             for(SootMethod m : sc.getMethods()){
                 int numOfEdges=0;
                 Boolean hasNextFlag=false;
