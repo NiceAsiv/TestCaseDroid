@@ -4,6 +4,7 @@ import soot.*;
 import soot.options.Options;
 
 import java.io.File;
+import java.util.Collections;
 
 import static TestCaseDroid.utils.SootUtils.excludeClassesList;
 
@@ -19,8 +20,9 @@ public class SootConfig {
      */
     private  static  final String  javaPath = System.getProperty("java.class.path");
     private  static  final String  jreDir = System.getProperty("java.home")+"/lib/rt.jar";
-    public  static  final String  sootClassPath = javaPath + File.pathSeparator +  jreDir;
+    public  static String  sootClassPath = javaPath + File.pathSeparator +  jreDir;
     private String callGraphAlgorithm = "Spark";
+
 
     public void setCallGraphAlgorithm(String callGraphAlgorithm) {
         this.callGraphAlgorithm = callGraphAlgorithm;
@@ -32,7 +34,26 @@ public class SootConfig {
 
 
     /**
-     * Soot configuration
+     * Soot configuration for jar file
+     * @param jarPath the path to the jar file
+     * @param constructCallGraph whether to construct call graph
+     */
+    public void setupSootForJar(String jarPath,Boolean constructCallGraph) {
+        //清除soot之前留下的所有缓存
+        G.reset();
+        jarPath = System.getProperty("user.dir") + File.separator + jarPath;
+        sootClassPath= sootClassPath + File.pathSeparator + jarPath;
+        //设置Soot类路径
+        Options.v().set_soot_classpath(sootClassPath);
+        Options.v().set_whole_program(true);
+        Options.v().set_allow_phantom_refs(true);
+        commonSetup(constructCallGraph);
+        Options.v().set_process_dir(Collections.singletonList(jarPath));
+        Scene.v().loadNecessaryClasses();
+    }
+
+    /**
+     * Soot configuration for class file
      * @param ClassName the main class name e.g. "TestCaseDroid.tests.CallGraph"
      * @param constructCallGraph whether to construct call graph
      */
@@ -42,12 +63,12 @@ public class SootConfig {
         G.reset();
         //设置Soot类路径
         Options.v().set_soot_classpath(sootClassPath);
-//        Scene.v().setSootClassPath(sootClassPath);
-        //全程序分析
+        //设置是否分析整个程序
         Options.v().set_whole_program(true);
         //设将类路径中的类均设为应用类，并仅分析应用类
 //        Options.v().set_app(true);
         //排除JDK和其他库
+        Options.v().set_allow_phantom_refs(true);
         excludeJDKLibrary();
         //加载必要类
         SootClass appClass = Scene.v().loadClassAndSupport(ClassName);
@@ -57,54 +78,41 @@ public class SootConfig {
         appClass.setApplicationClass();
         //加载 Soot 依赖的类和命令行指定的类
         Scene.v().loadNecessaryClasses();
+        commonSetup(constructCallGraph);
+    }
 
-        //set to keep line number
+
+    private void commonSetup(Boolean constructCallGraph) {
         Options.v().set_keep_line_number(true);
-        //设置输出格式
         Options.v().set_output_format(Options.output_format_jimple);
-        //设置展示详细信息
         Options.v().set_verbose(true);
-
-        //设置保持原变量名
         Options.v().setPhaseOption("jb","use-original-names:true");
-//        Options.v().setPhaseOption("jb.dae","only-stack-locals:true"); // 不去优化b = $stack5;的语句，保持原汁原味
-//        Options.v().setPhaseOption("jb.cp", "enabled:false");
-//        Options.v().setPhaseOption("jb.ls","enabled:false");
-//        Options.v().setPhaseOption("jb.dae","enabled:false");
-//        Options.v().setPhaseOption("jb.ulp","unsplit-original-locals:false");
-//        Options.v().setPhaseOption("jb.a","enabled:false");
-//        Options.v().setPhaseOption("jb.cp","enabled:false");
 
 
-
-//        PackManager.v().runPacks();//run soot
-
-        //构建控制流图选项，默认是SPARK
         if (constructCallGraph) {
-          switch (new SootConfig().callGraphAlgorithm) {
-            case "CHA":
-                Options.v().setPhaseOption("cg.cha", "on");
-                break;
-            case "Spark":
-                Options.v().setPhaseOption("cg.spark", "on");
-                Options.v().setPhaseOption("cg.spark","enabled:true");
-                Options.v().setPhaseOption("cg.spark","verbose:true");
-                Options.v().setPhaseOption("cg.spark","on-fly-cg:true");
-                break;
-            case "VTA":
-                Options.v().setPhaseOption("cg.spark", "on");
-                Options.v().setPhaseOption("cg.spark", "vta:true");
-                break;
-            case "RTA":
-                Options.v().setPhaseOption("cg.spark", "on");
-                Options.v().setPhaseOption("cg.spark", "rta:true");
-                Options.v().setPhaseOption("cg.spark", "on-fly-cg:false");
-                break;
-            default:
-                throw new RuntimeException("Unknown call graph algorithm: " + new SootConfig().callGraphAlgorithm);
-          }
+            switch (new SootConfig().getCallGraphAlgorithm()) {
+                case "CHA":
+                    Options.v().setPhaseOption("cg.cha", "on");
+                    break;
+                case "Spark":
+                    Options.v().setPhaseOption("cg.spark", "on");
+                    Options.v().setPhaseOption("cg.spark","enabled:true");
+                    Options.v().setPhaseOption("cg.spark","verbose:true");
+                    Options.v().setPhaseOption("cg.spark","on-fly-cg:true");
+                    break;
+                case "VTA":
+                    Options.v().setPhaseOption("cg.spark", "on");
+                    Options.v().setPhaseOption("cg.spark", "vta:true");
+                    break;
+                case "RTA":
+                    Options.v().setPhaseOption("cg.spark", "on");
+                    Options.v().setPhaseOption("cg.spark", "rta:true");
+                    Options.v().setPhaseOption("cg.spark", "on-fly-cg:false");
+                    break;
+                default:
+                    throw new RuntimeException("Unknown call graph algorithm: " + new SootConfig().getCallGraphAlgorithm());
+            }
         }
-
     }
 
     private static void excludeJDKLibrary()
@@ -113,8 +121,7 @@ public class SootConfig {
         Options.v().set_exclude(excludeClassesList);
         //this option must be disabled for a sound call graph
         Options.v().set_no_bodies_for_excluded(true);
-        Options.v().set_allow_phantom_refs(true);
+        Options.v().set_allow_phantom_refs(true);//关键!!!!
     }
-
 
 }

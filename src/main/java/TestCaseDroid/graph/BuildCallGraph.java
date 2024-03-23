@@ -5,9 +5,7 @@ import TestCaseDroid.utils.*;
 import com.google.gson.internal.LinkedHashTreeMap;
 import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
-import soot.jimple.toolkits.callgraph.Sources;
 import soot.jimple.toolkits.callgraph.Targets;
-import soot.util.dot.DotGraph;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -104,6 +102,11 @@ public class BuildCallGraph  extends SceneTransformer {
     @Override
     protected void internalTransform(String phaseName, Map options) {
         CallGraph callGraph = Scene.v().getCallGraph();
+        //输出图的大小
+        System.out.println("--------------------------------");
+        System.out.println("Call graph has " + callGraph.size() + " edges");
+        System.out.println("--------------------------------");
+
         DotGraphWrapper dotGraph = new DotGraphWrapper("callgraph");
         for(SootClass sc : Scene.v().getApplicationClasses()){
             for(SootMethod m : sc.getMethods()){
@@ -112,7 +115,6 @@ public class BuildCallGraph  extends SceneTransformer {
         }
         System.out.println("Total number of edges: " + numOfEdges);
         dotGraph.plot(mainClass,"cg");
-
 
 
 

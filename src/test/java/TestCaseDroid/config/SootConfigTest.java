@@ -1,5 +1,7 @@
 package TestCaseDroid.config;
 
+import org.junit.jupiter.api.Test;
+import soot.PackManager;
 import soot.Scene;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,11 +24,10 @@ class SootConfigTest {
         sootConfig.setCallGraphAlgorithm("Spark");
         assertEquals("Spark", sootConfig.getCallGraphAlgorithm());
     }
-
-
-    @org.junit.jupiter.api.Test
+    @Test
     void setupSoot() {
         sootConfig.setupSoot("TestCaseDroid.test.MainCFA", true);
+        PackManager.v().runPacks();
         assertNotNull(Scene.v().getSootClassPath());
         assertNotNull(Scene.v().getMainClass());
         assertNotNull(Scene.v().getActiveHierarchy());
