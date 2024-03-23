@@ -53,6 +53,25 @@ public class SootConfig {
     }
 
     /**
+     * Soot configuration for project source file
+     * @param srcPath the path to the src file like "src/main/java"
+     * @param constructCallGraph whether to construct call graph
+     */
+    public void setupSootForSrc(String srcPath,Boolean constructCallGraph) {
+        //清除soot之前留下的所有缓存
+        G.reset();
+        srcPath = System.getProperty("user.dir") + File.separator + srcPath;
+        sootClassPath= sootClassPath + File.pathSeparator + srcPath;
+        //设置Soot类路径
+        Options.v().set_soot_classpath(sootClassPath);
+        Options.v().set_whole_program(true);
+        Options.v().set_allow_phantom_refs(true);
+        commonSetup(constructCallGraph);
+        Options.v().set_process_dir(Collections.singletonList(srcPath));
+        Scene.v().loadNecessaryClasses();
+    }
+
+    /**
      * Soot configuration for class file
      * @param ClassName the main class name e.g. "TestCaseDroid.tests.CallGraph"
      * @param constructCallGraph whether to construct call graph
@@ -66,9 +85,10 @@ public class SootConfig {
         //设置是否分析整个程序
         Options.v().set_whole_program(true);
         //设将类路径中的类均设为应用类，并仅分析应用类
-//        Options.v().set_app(true);
-        //排除JDK和其他库
+//        Options.v().set_app(true)
+        //允许phantom引用
         Options.v().set_allow_phantom_refs(true);
+        //排除JDK和其他库
         excludeJDKLibrary();
         //加载必要类
         SootClass appClass = Scene.v().loadClassAndSupport(ClassName);
