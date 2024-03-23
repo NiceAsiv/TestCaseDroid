@@ -92,8 +92,8 @@ public class SootConfig {
         excludeJDKLibrary();
         //加载必要类
         SootClass appClass = Scene.v().loadClassAndSupport(ClassName);
-        //设置主类
-        Scene.v().setMainClass(appClass);
+//        //设置主类
+//        Scene.v().setMainClass(appClass);
         //将待分析类设为应用类
         appClass.setApplicationClass();
         //加载 Soot 依赖的类和命令行指定的类

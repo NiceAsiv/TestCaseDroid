@@ -8,6 +8,8 @@ import soot.util.dot.DotGraph;
 import java.io.File;
 import java.util.ArrayList;
 
+import static TestCaseDroid.utils.SootDataProcessUtils.folderExistenceTest;
+
 
 public class SootUtils {
     public  static  ArrayList<String> excludeClassesList = addExcludeClassesList();
@@ -31,16 +33,17 @@ public class SootUtils {
             }
 
             // Check if pic output folder exist
-            File folder = new File(outputFilePath.substring(0, outputFilePath.lastIndexOf("/")));
-            if (!folder.exists()) {
-                if (folder.mkdirs()) {
-                    System.out.println("Create pic output folder：" + folder.getAbsolutePath());
-                } else {
-                    System.err.println("Unable to create pic output folder：" + folder.getAbsolutePath());
-                }
-            } else {
-                System.out.println("Pic output folder exist in：" + folder.getAbsolutePath());
-            }
+            folderExistenceTest(outputFilePath);
+//            File folder = new File(outputFilePath.substring(0, outputFilePath.lastIndexOf("/")));
+//            if (!folder.exists()) {
+//                if (folder.mkdirs()) {
+//                    System.out.println("Create pic output folder：" + folder.getAbsolutePath());
+//                } else {
+//                    System.err.println("Unable to create pic output folder：" + folder.getAbsolutePath());
+//                }
+//            } else {
+//                System.out.println("Pic output folder exist in：" + folder.getAbsolutePath());
+//            }
 
             String[] cmd = new String[]{graphvizPath, "-Tpng", dotFilePath, "-o", outputFilePath};
             Runtime rt = Runtime.getRuntime();

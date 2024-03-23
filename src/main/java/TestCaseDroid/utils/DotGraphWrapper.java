@@ -7,6 +7,8 @@ import soot.util.dot.DotGraph;
 import java.util.ArrayList;
 import java.util.List;
 
+import static TestCaseDroid.utils.SootDataProcessUtils.folderExistenceTest;
+
 /**
  * Wrapper for the DotGraph class
  */
@@ -49,6 +51,7 @@ public class DotGraphWrapper {
             case "cg":
                 String callGraphPath = "./sootOutput/dot/" + mainClass + ".cg.dot";
                 String outputPath = "./sootOutput/pic/" + mainClass + ".cg.png";
+                folderExistenceTest(callGraphPath);
                 this.dotGraph.plot(callGraphPath);
                 try {
                     SootUtils.convertDotToPng(callGraphPath, outputPath);
@@ -59,6 +62,7 @@ public class DotGraphWrapper {
             case "cfg":
                 String cfgPath = "./sootOutput/dot/" + mainClass + ".cfg.dot";
                 String cfgOutputPath = "./sootOutput/pic/" + mainClass + ".cfg.png";
+                folderExistenceTest(cfgPath);
 //                this.dotGraph.plot(cfgPath);
                 try {
                     SootUtils.convertDotToPng(cfgPath, cfgOutputPath);
@@ -70,6 +74,7 @@ public class DotGraphWrapper {
             case "icfg":
                 String icfgPath = "./sootOutput/dot/" + mainClass + ".icfg.dot";
                 String icfgOutputPath = "./sootOutput/pic/" + mainClass + ".icfg.png";
+                folderExistenceTest(icfgPath);
                 this.dotGraph.plot(icfgPath);
                 try {
                     SootUtils.convertDotToPng(icfgPath, icfgOutputPath);
