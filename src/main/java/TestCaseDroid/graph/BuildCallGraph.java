@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class BuildCallGraph  extends SceneTransformer {
 
-    public static String mainClass = "TestCaseDroid.test.CallGraphs";
+    public static String mainClass = "TestCaseDroid.test.FastJsonTest";
     public static String targetPackageName = "TestCaseDroid";
     private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
     private static int numOfEdges = 0;
@@ -33,7 +33,7 @@ public class BuildCallGraph  extends SceneTransformer {
         //输出当前分析环境下的application类和每个类所加载的函数签名
         SootInfoUtils.reportSootApplicationClassInfo();
         //设置入口方法
-        SootAnalysisUtils.setEntryPoints(mainClass,"main");
+        SootAnalysisUtils.setEntryPoints(mainClass,"testFunction","main");
         //运行分析
         PackManager.v().runPacks();
 
@@ -110,6 +110,8 @@ public class BuildCallGraph  extends SceneTransformer {
         DotGraphWrapper dotGraph = new DotGraphWrapper("callgraph");
         for(SootClass sc : Scene.v().getApplicationClasses()){
             for(SootMethod m : sc.getMethods()){
+//                //如果需要同时分析两个入口函数并画在一张图中，应当在画每一个函数的时候清空visited，需要解除下面的注释
+//                visited.clear();
                 visit(callGraph, m, dotGraph);
             }
         }
