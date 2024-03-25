@@ -153,25 +153,30 @@ public class BuildCallGraph  extends SceneTransformer {
         System.out.println("--------------------------------");
 
         DotGraphWrapper dotGraph = new DotGraphWrapper("callgraph");
-//        for(SootClass sc : Scene.v().getApplicationClasses()){
-//            for(SootMethod m : sc.getMethods()){
-////                //如果需要同时分析两个入口函数并画在一张图中，应当在画每一个函数的时候清空visited，需要解除下面的注释
-////                visited.clear();
-//                visit(callGraph, m, dotGraph);
-//            }
-//        }
-        if (Scene.v().hasMainClass()) {
-            targetPackageName = Scene.v().getMainClass().getPackageName();
-            SootClass targetClass = Scene.v().getMainClass();
-            SootMethod entryPoint = targetClass.getMethodByName("main");
-            visit(callGraph, entryPoint, dotGraph);
+        if(mode.equals("jar")){
+            if (Scene.v().hasMainClass()) {
+                targetPackageName = Scene.v().getMainClass().getPackageName();
+                SootClass targetClass = Scene.v().getMainClass();
+                SootMethod entryPoint = targetClass.getMethodByName("main");
+                visit(callGraph, entryPoint, dotGraph);
+            } else {
+                System.out.println("No main class found!");
+                return;
+            }
+        }else{
+            for(SootClass sc : Scene.v().getApplicationClasses()){
+                for(SootMethod m : sc.getMethods()){
+//                //如果需要同时分析两个入口函数并画在一张图中，应当在画每一个函数的时候清空visited，需要解除下面的注释
+//                visited.clear();
+                    visit(callGraph, m, dotGraph);
+                }
+            }
         }
         System.out.println("Total number of edges: " + numOfEdges);
         dotGraph.plot(mainClass,"cg");
 
     }
     public static Boolean isNotFilteredMethod(SootMethod method, SootMethod tgt){
-        String methodName = method.getName();
         String className = method.getDeclaringClass().getName();
         if(mode.equals("jar") &&(method.getDeclaringClass().isApplicationClass()||tgt.getDeclaringClass().isApplicationClass()))
             return true;
