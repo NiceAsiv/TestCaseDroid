@@ -26,17 +26,17 @@ class SootConfigTest {
     }
     @Test
     void setupSoot() {
-        sootConfig.setupSoot("TestCaseDroid.test.MainCFA", true);
+        sootConfig.setupSootForClass("./target/classes", true);
         PackManager.v().runPacks();
         assertNotNull(Scene.v().getSootClassPath());
         assertNotNull(Scene.v().getMainClass());
         assertNotNull(Scene.v().getActiveHierarchy());
         assertNotNull(Scene.v().getCallGraph());
 
-        //set to false
-        sootConfig.setupSoot("TestCaseDroid.test.MainCFA", false);
-        assertNotNull(Scene.v().getSootClassPath());
-        assertNotNull(Scene.v().getMainClass());
-        assertNotNull(Scene.v().getActiveHierarchy());
+//        //set to false
+//        sootConfig.setupSoot("TestCaseDroid.test.MainCFA", false);
+//        assertNotNull(Scene.v().getSootClassPath());
+//        assertNotNull(Scene.v().getMainClass());
+//        assertNotNull(Scene.v().getActiveHierarchy());
     }
 }

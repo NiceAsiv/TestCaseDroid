@@ -1,67 +1,188 @@
 package TestCaseDroid.experience;
 
-//import TestCaseDroid.experience.BuildCallGraph2;
+
 import TestCaseDroid.config.SootConfig;
-import TestCaseDroid.utils.*;
 import soot.*;
-import soot.jimple.toolkits.callgraph.CallGraph;
-import soot.jimple.toolkits.callgraph.Edge;
-import soot.util.queue.QueueReader;
+        import soot.jimple.*;
+        import soot.toolkits.graph.BriefUnitGraph;
 
-import java.util.Map;
-public class BuildCallGraphTest extends SceneTransformer {
-    public static String mainClass = "TestCaseDroid.test.CallGraphs";
-    public static String targetPackageName = "TestCaseDroid";
-    public static void main(String[] args) {
 
+import java.util.*;
+
+/**
+ * @program: MySootScript
+ * @description:
+ * @author: 0range
+ * @create: 2021-04-27 20:21
+ **/
+
+
+public class BuildCallGraphTest {
+    public static final String className = "TestCaseDroid.test.CallGraph";
+
+    public static final String methodName = "main";
+
+    public static void main(String[] args) throws Exception {
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setCallGraphAlgorithm("Spark");
-        sootConfig.setupSoot(mainClass, true);
-
-        //add an inter-procedural analysis phase to Soot
-        BuildCallGraphTest analysis = new BuildCallGraphTest();
-        PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraph", analysis));
-
-        //判断mainClass是否为应用类
-        SootInfoUtils.isApplicationClass(mainClass);
-        //输出当前分析环境下的application类和每个类所加载的函数签名
-        SootInfoUtils.reportSootApplicationClassInfo();
-        //设置入口方法
-        SootAnalysisUtils.setEntryPoints(mainClass,"main");
-
-        //新增应用类A2
-        SootClass sc2 = Scene.v().loadClassAndSupport("TestCaseDroid.test.A2");
-        sc2.setApplicationClass();
-        System.out.println("-----------------------------------------");
-        System.out.println(Scene.v().getApplicationClasses());
-
-        //运行分析
-        PackManager.v().runPacks();
-
+        sootConfig.setupSoot(className, true);
+        buildCG();
     }
-    @Override
-    protected void internalTransform(String phaseName, Map options) {
-        CallGraph callGraph = Scene.v().getCallGraph();
-        DotGraphWrapper dotGraph = new DotGraphWrapper("callgraph");
-        QueueReader<Edge> listener = callGraph.listener();
-        while (listener.hasNext()){
-            Edge next = listener.next();
-            SootMethod src = next.src();
-            SootMethod tgt = next.tgt();
 
-            String srcString = src.toString();
-            String tgtString = tgt.toString();
-            //此处的实现方式还比较简单，仅过滤掉了以java.开头的包，并要求起点和终点方法必须有一个为应用类开头，之后可以尝试结合排除包函数以及利用startswith判断起点和终点是否属于同一个项目来对整个项目进行分析，原生成方式的问题是仅会输出应用类方法直接调用的函数，但当调用的函数属于被分析项目时，出现程序不进一步进行分析的问题，或许这个问题也可以用递归的方式解决？或者是soot其实提供了前向后向搜索方法只是我没有找到？暂时不知道，还需要进一步学习
-            if((src.getDeclaringClass().isApplicationClass() || tgt.getDeclaringClass().isApplicationClass())&&!src.getDeclaringClass().toString().startsWith("java.")&&!tgt.getDeclaringClass().toString().startsWith("java.")) {
-                dotGraph.drawNode(src.toString());
-                dotGraph.drawNode(tgt.toString());
-                dotGraph.drawEdge(src.toString(), tgt.toString());
-                System.out.println("src = " + srcString);
-                System.out.println("tgt = " + tgtString);
+    public static void buildCG() throws Exception {
+
+        SootClass sc = Scene.v().getSootClass(className);
+        SootMethod beginmethod = sc.getMethodByName(methodName);
+
+        List<SootMethod> WL = new ArrayList<>();
+        Map<CallInfo,SootMethod> CG = new LinkedHashMap<>();
+        List<SootMethod> RM = new ArrayList<>();
+
+        WL.add(beginmethod);
+
+        while(!WL.isEmpty()){
+            SootMethod m = WL.get(0);
+            WL.remove(0);
+            if(!RM.contains(m)){
+                RM.add(m);
+                List<Stmt> callSite = getCallSite(m);
+                for (Stmt stmt : callSite) {
+                    List<SootMethod> T = findtargetMethods(stmt);
+                    for (SootMethod method : T) {
+                        Map<SootMethod,Integer> info = new LinkedHashMap<>();
+                        info.put(m,stmt.getJavaSourceStartLineNumber());
+                        CallInfo ci = new CallInfo(info,stmt);
+                        CG.put(ci,method);
+                        WL.add(method);
+                    }
+                }
             }
         }
-        dotGraph.plot(mainClass,"cg");
-        System.out.println("finish!");
 
+
+        for(Map.Entry<CallInfo, SootMethod> entry : CG.entrySet()){
+            for(Map.Entry<SootMethod,Integer> en : entry.getKey().info.entrySet()){
+                System.out.println("{RESULT} : { (Location : " + en.getValue() + ") : " + en.getKey() + " -invoke-> " + entry.getValue() + " }");
+            }
+        }
+
+        //打印输出内容
+        PackManager.v().writeOutput();
+
+    }
+
+    public static List<Stmt> getCallSite(SootMethod m) throws Exception {
+        List<Stmt> invokeExprList = new ArrayList<Stmt>();
+        try{
+            if(m.isConcrete()){
+                JimpleBody body = (JimpleBody)m.retrieveActiveBody();
+                BriefUnitGraph bug = new BriefUnitGraph(body);
+                for(Unit u : bug){
+                    Stmt stmt = (Stmt) u;
+                    if(stmt.containsInvokeExpr()){
+                        invokeExprList.add(stmt);
+                    }
+                }
+            }
+        }catch (Exception e){
+            throw e;
+        }
+        return invokeExprList;
+
+    }
+
+    public static List<SootMethod> findtargetMethods(Stmt stmt){
+        final List<SootMethod> targetMethodsList = new ArrayList<SootMethod>();
+        final String signature = stmt.getInvokeExpr().getMethod().getSubSignature();
+        stmt.getInvokeExpr().apply(new AbstractExprSwitch() {
+            @Override
+            public void caseStaticInvokeExpr(StaticInvokeExpr v) {
+                targetMethodsList.add(v.getMethod());
+            }
+
+            @Override
+            public void caseSpecialInvokeExpr(SpecialInvokeExpr v) {
+                // CHA
+                SootClass declaringClass = v.getMethod().getDeclaringClass();
+                SootMethod dispatchMethod = Dispatch(declaringClass, signature);
+                targetMethodsList.add(dispatchMethod);
+            }
+
+            @Override
+            public void caseVirtualInvokeExpr(VirtualInvokeExpr v) {
+                // implement in CHA
+                SootClass baseClass = Scene.v().getSootClass(v.getBase().getType().toString());
+
+                Hierarchy h = Scene.v().getActiveHierarchy();
+                baseClass.checkLevel(SootClass.HIERARCHY);
+
+                List<SootClass> subClasses = new ArrayList<>(h.getSubclassesOf(baseClass));
+                subClasses.add(baseClass);
+
+                for (SootClass c : subClasses) {
+                    SootMethod dispatchMethod = Dispatch(c, signature);
+                    targetMethodsList.add(dispatchMethod);
+                }
+
+            }
+        });
+        return targetMethodsList;
+    }
+
+    public static SootMethod Dispatch(SootClass sc,String signature) {
+
+        List<SootMethod> methods = sc.getMethods();
+        List<String> signatureList = new ArrayList<>();
+        for (SootMethod method : methods) {
+            signatureList.add(method.getSubSignature());
+        }
+
+        for (SootMethod method : methods) {
+            //1. no abstract method or interface method
+            if(method.isConcrete()){
+                if(method.getSubSignature().equals(signature)){
+                    return method;
+                }
+            }
+        }
+
+        // still not found
+        if("java.lang.Object".equals(sc.getName())){
+            return null;
+        }
+
+        Dispatch(sc.getSuperclassUnsafe(),signature);
+
+        return null;
+    }
+
+
+}
+
+class CallInfo{
+    public Map<SootMethod,Integer> info;
+    public Stmt stmt;
+
+    public CallInfo(){
+
+    }
+
+    public CallInfo(Map<SootMethod,Integer> info,Stmt stmt){
+        this.info = info;
+        this.stmt = stmt;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        CallInfo callInfo = (CallInfo) o;
+        return Objects.equals(info, callInfo.info) &&
+                Objects.equals(stmt, callInfo.stmt);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(info, stmt);
     }
 }

@@ -2,9 +2,11 @@ package TestCaseDroid.config;
 
 import soot.*;
 import soot.options.Options;
+import soot.util.Chain;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Set;
 
 import static TestCaseDroid.utils.SootUtils.excludeClassesList;
 
@@ -47,32 +49,14 @@ public class SootConfig {
         Options.v().set_soot_classpath(sootClassPath);
         Options.v().set_whole_program(true);
         Options.v().set_allow_phantom_refs(true);
-        commonSetup(constructCallGraph);
         Options.v().set_process_dir(Collections.singletonList(jarPath));
         Scene.v().loadNecessaryClasses();
-    }
-
-    /**
-     * Soot configuration for project source file
-     * @param srcPath the path to the src file like "src/main/java"
-     * @param constructCallGraph whether to construct call graph
-     */
-    public void setupSootForSrc(String srcPath,Boolean constructCallGraph) {
-        //清除soot之前留下的所有缓存
-        G.reset();
-        srcPath = System.getProperty("user.dir") + File.separator + srcPath;
-        sootClassPath= sootClassPath + File.pathSeparator + srcPath;
-        //设置Soot类路径
-        Options.v().set_soot_classpath(sootClassPath);
-        Options.v().set_whole_program(true);
-        Options.v().set_allow_phantom_refs(true);
+        Scene.v().loadBasicClasses();
         commonSetup(constructCallGraph);
-        Options.v().set_process_dir(Collections.singletonList(srcPath));
-        Scene.v().loadNecessaryClasses();
     }
 
     /**
-     * Soot configuration for class file
+     * Soot configuration for single class file in our test directory
      * @param ClassName the main class name e.g. "TestCaseDroid.tests.CallGraph"
      * @param constructCallGraph whether to construct call graph
      */
@@ -98,10 +82,49 @@ public class SootConfig {
         appClass.setApplicationClass();
         //加载 Soot 依赖的类和命令行指定的类
         Scene.v().loadNecessaryClasses();
+
         commonSetup(constructCallGraph);
     }
 
+    /**
+     * Soot configuration for class project file
+     * @param projPath the path to the project e.g. "./target/classes"
+     * @param constructCallGraph whether to construct call graph
+     * <p>
+     *Attention: The bytecode front end is better supported than the source front end,
+     *so we use the class file as the input.
+     */
+    public void setupSootForClass(String projPath, Boolean constructCallGraph)
+    {
+        //清除soot之前留下的所有缓存
+        G.reset();
+        //设置Soot类路径
+//        Options.v().set_soot_classpath(sootClassPath);
+        //设将类路径中的类均设为应用类，并仅分析应用类
+//        Options.v().set_app(true)
 
+        //设置处理文件类型为java文件
+        Options.v().set_src_prec(Options.src_prec_class);
+        //允许phantom引用
+        Options.v().set_allow_phantom_refs(true);
+        projPath = System.getProperty("user.dir") + File.separator + projPath;
+        Options.v().set_process_dir(Collections.singletonList(projPath));
+        //设置是否分析整个程序
+        Options.v().set_whole_program(true);
+        //设置 -pp 选项，以便 Soot 能够找到所有的类
+        Options.v().set_prepend_classpath(true);
+
+        //排除JDK和其他库
+        excludeJDKLibrary();
+        //加载 Soot 依赖的类和命令行指定的类
+        Scene.v().loadNecessaryClasses();
+        commonSetup(constructCallGraph);
+    }
+
+    /**
+     * Common setup for Soot
+     * @param constructCallGraph whether to construct call graph
+     */
     private void commonSetup(Boolean constructCallGraph) {
         Options.v().set_keep_line_number(true);
         Options.v().set_output_format(Options.output_format_jimple);
@@ -133,6 +156,33 @@ public class SootConfig {
                     throw new RuntimeException("Unknown call graph algorithm: " + new SootConfig().getCallGraphAlgorithm());
             }
         }
+//        getBasicInfo();
+    }
+
+    public static void getBasicInfo() {
+        //获取含有main方法的类
+        SootClass mainClass = Scene.v().getMainClass();
+        System.out.println("mainClass: " + mainClass.getName());
+
+        //获取main方法
+        SootMethod mainMethod = Scene.v().getMainMethod();
+        System.out.println("mainMethod: " + mainMethod.getName());
+
+        //获取运行时类 应用类 基础类 所有类
+        Chain<SootClass> libraryClasses = Scene.v().getLibraryClasses();
+        Chain<SootClass> applicationClasses = Scene.v().getApplicationClasses();
+        Set<String> basicClasses = Scene.v().getBasicClasses();
+        Chain<SootClass> classes = Scene.v().getClasses();
+
+
+
+        //获取当前soot的分析路径：通常为classpath+app-path
+        String sootClassPath = Scene.v().getSootClassPath();
+        System.out.println("sootClassPath: " + sootClassPath);
+
+        //获取默认JVMclasspath的路径
+        String s = Scene.v().defaultClassPath();//rt.jar path
+        System.out.println("defaultClassPath: " + s);
     }
 
     private static void excludeJDKLibrary()

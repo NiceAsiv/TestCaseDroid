@@ -22,10 +22,10 @@ public class SootInfoUtils {
         for(SootClass sc : Scene.v().getApplicationClasses()){
             classIndex++;
             int methodIndex = 0;
-            System.out.println(String.format("[%d] The class %s is an application class, loaded with %d methods! Methods are as followed:",classIndex,sc.getName(),sc.getMethodCount()));
+            System.out.printf("[%d] The class %s is an application class, loaded with %d methods! Methods are as followed:%n",classIndex,sc.getName(),sc.getMethodCount());
             for(SootMethod m:sc.getMethods()){
                 methodIndex++;
-                System.out.println(String.format("    Method %d: %s",methodIndex,m.getSignature()));
+                System.out.printf("    Method %d: %s%n",methodIndex,m.getSignature());
             }
         }
         System.out.println("--------------------------------");

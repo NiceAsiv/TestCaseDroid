@@ -16,7 +16,7 @@ public class BuildICFG extends SceneTransformer {
 
     static DotGraph dotGraph ;
     public static String mainClass = "TestCaseDroid.test.FastJsonTest";
-    public static String targetJarPath = "./jarCollection/soot-1.0.jar";
+    public static String targetJarPath = "./jarCollection/NotepadV2.jar";
     public static String targetPackageName = "TestCaseDroid";
     private ArrayList<Unit> visited;
 
