@@ -56,7 +56,7 @@ public class SootConfig {
     }
 
     /**
-     * Soot configuration for single class file in our test directory
+     * Soot configuration for java file in our test directory
      * @param ClassName the main class name e.g. "TestCaseDroid.tests.CallGraph"
      * @param constructCallGraph whether to construct call graph
      */

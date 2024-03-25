@@ -1,40 +1,53 @@
 package TestCaseDroid.graph;
 
 import TestCaseDroid.config.SootConfig;
-import TestCaseDroid.utils.*;
+import TestCaseDroid.utils.DotGraphWrapper;
+import TestCaseDroid.utils.SootAnalysisUtils;
+import TestCaseDroid.utils.SootInfoUtils;
+import TestCaseDroid.utils.SootUtils;
 import com.google.gson.internal.LinkedHashTreeMap;
 import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
-public class BuildCallGraph  extends SceneTransformer {
+
+public class BuildCallGraphForJar extends SceneTransformer{
+
+    public static List<String> entryPoints = new ArrayList<>();
+    public static String targetJarPath = "./jarCollection/NotepadV2.jar";
     public static String targetPackageName = "TestCaseDroid";
-    public static String mainClass = "TestCaseDroid.test.CallGraph";
-    public static String entryMethod = "main";
     private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
     private static int numOfEdges = 0;
-    public static void main(String[] args) {
-        buildCallGraphForClass();
-    }
-    public static void buildCallGraphForClass() {
 
+
+    public static void main(String[] args) {
+        buildCallGraphForJar();
+    }
+
+    public static void buildCallGraphForJar() {
         SootConfig sootConfig = new SootConfig();
         sootConfig.setCallGraphAlgorithm("Spark");
-        sootConfig.setupSoot(mainClass, true);
+        sootConfig.setupSootForJar(targetJarPath, true);
 
         //add an inter-procedural analysis phase to Soot
-        BuildCallGraph analysis = new BuildCallGraph();
-        PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraph", analysis));
-
-        //判断mainClass是否为应用类
-        SootInfoUtils.isApplicationClass(mainClass);
-        //输出当前分析环境下的application类和每个类所加载的函数签名
-        SootInfoUtils.reportSootApplicationClassInfo();
-        //设置入口方法
-        SootAnalysisUtils.setEntryPoints(mainClass, entryMethod);
+        BuildCallGraphForJar analysis = new BuildCallGraphForJar();
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraphForJar", analysis));
+//        SootClass targetClass = Scene.v().getSootClass("NotepadV2");
+        if (Scene.v().hasMainClass()) {
+            SootClass targetClass = Scene.v().getMainClass();
+            //判断mainClass是否为应用类
+            SootInfoUtils.isApplicationClass(targetClass.getName());
+            //输出当前分析环境下的application类和每个类所加载的函数签名
+            SootInfoUtils.reportSootApplicationClassInfo();
+            //设置入口方法
+            SootMethod entryPoint = targetClass.getMethodByName("main");
+            SootAnalysisUtils.setEntryPoints(targetClass.getName(), entryPoint.getName());
+        }
         //运行分析
         PackManager.v().runPacks();
     }
@@ -61,7 +74,7 @@ public class BuildCallGraph  extends SceneTransformer {
         }
         while (targets.hasNext()) {
             SootMethod tgt = (SootMethod) targets.next();
-            if (SootUtils.isNotExcludedMethod(tgt)&&(method.getDeclaringClass().getName().startsWith(targetPackageName) || tgt.getDeclaringClass().getName().startsWith(targetPackageName))) {
+            if (SootUtils.isNotExcludedMethod(tgt)&&(method.getDeclaringClass().isApplicationClass()||tgt.getDeclaringClass().isApplicationClass())) {
                 String tgtIdentifier = tgt.getSignature();
                 if (!visited.containsKey(tgtIdentifier)) {
                     dotGraph.drawNode(tgtIdentifier);
@@ -90,7 +103,7 @@ public class BuildCallGraph  extends SceneTransformer {
         Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(method));//获取所有被m调用的方法
         while (targets.hasNext()) {
             SootMethod tgt = (SootMethod) targets.next();
-            if (SootUtils.isNotExcludedMethod(tgt)&& (method.getDeclaringClass().getName().startsWith(targetPackageName) || tgt.getDeclaringClass().getName().startsWith(targetPackageName))) {
+            if (SootUtils.isNotExcludedMethod(tgt)&&(method.getDeclaringClass().isApplicationClass()||tgt.getDeclaringClass().isApplicationClass())){
                 String tgtIdentifier = tgt.getSignature();
                 if (!visited.containsKey(tgtIdentifier)) {
                     dotGraph.drawNode(tgtIdentifier);
@@ -102,22 +115,22 @@ public class BuildCallGraph  extends SceneTransformer {
             }
         }
     }
-
     @Override
-    protected void internalTransform(String phaseName, Map options) {
+    protected void internalTransform(String phaseName, Map<String, String> options) {
         CallGraph callGraph = Scene.v().getCallGraph();
         DotGraphWrapper dotGraph = new DotGraphWrapper("callgraph");
-
-        for(SootClass sc : Scene.v().getApplicationClasses()){
-            for(SootMethod m : sc.getMethods()){
-//                //如果需要同时分析两个入口函数并画在一张图中，应当在画每一个函数的时候清空visited，需要解除下面的注释
-//                visited.clear();
-                visit(callGraph, m, dotGraph);
-            }
+        if (Scene.v().hasMainClass()) {
+            targetPackageName = Scene.v().getMainClass().getPackageName();
+            SootClass targetClass = Scene.v().getMainClass();
+            SootMethod entryPoint = targetClass.getMethodByName("main");
+            visit(callGraph, entryPoint, dotGraph);
+        } else {
+            System.out.println("No main class found!");
+            return;
         }
         System.out.println("Total number of edges: " + numOfEdges);
-        dotGraph.plot(mainClass,"cg");
-
+        String programName = targetPackageName.substring(targetPackageName.lastIndexOf(".")+1);
+        dotGraph.plot(programName,"cg");
     }
 
 }
