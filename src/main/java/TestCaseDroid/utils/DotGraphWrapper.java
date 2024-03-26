@@ -1,18 +1,13 @@
 package TestCaseDroid.utils;
 
-import soot.jimple.parser.node.TCase;
-import soot.util.Switch;
+import lombok.extern.slf4j.Slf4j;
 import soot.util.dot.DotGraph;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static TestCaseDroid.utils.SootDataProcessUtils.folderExistenceTest;
 
 /**
  * Wrapper for the DotGraph class
  */
-
+@Slf4j
 public class DotGraphWrapper {
     private DotGraph dotGraph;
 
@@ -56,7 +51,7 @@ public class DotGraphWrapper {
                 try {
                     SootUtils.convertDotToPng(callGraphPath, outputPath);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error("Error in converting dot to png", e);
                 }
                 break;
             case "cfg":
@@ -67,7 +62,7 @@ public class DotGraphWrapper {
                 try {
                     SootUtils.convertDotToPng(cfgPath, cfgOutputPath);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error("Error in converting dot to png",e);
                 }
                 break;
 
@@ -79,11 +74,11 @@ public class DotGraphWrapper {
                 try {
                     SootUtils.convertDotToPng(icfgPath, icfgOutputPath);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error("Error in converting dot to png",e);
                 }
                 break;
             default:
-                System.err.println("Invalid graph type");
+                log.error("Invalid graph type");
                 break;
         }
     }

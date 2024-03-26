@@ -23,6 +23,7 @@ public class BuildCallGraphForJar extends SceneTransformer{
     public static String targetPackageName = "TestCaseDroid";
     private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
     private static int numOfEdges = 0;
+    List<SootMethod> callChain = new ArrayList<>();
 
 
     public static void main(String[] args) {

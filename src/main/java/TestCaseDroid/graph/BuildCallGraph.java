@@ -5,17 +5,21 @@ import TestCaseDroid.utils.*;
 import com.google.gson.internal.LinkedHashTreeMap;
 import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Sources;
 import soot.jimple.toolkits.callgraph.Targets;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class BuildCallGraph  extends SceneTransformer {
     public static String targetPackageName = "TestCaseDroid";
-    public static String mainClass = "TestCaseDroid.test.CallGraph";
+    public static String mainClass = "TestCaseDroid.test.CallGraphs";
     public static String entryMethod = "main";
     private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
     private static int numOfEdges = 0;
+    private static List<SootMethod> callChain = new ArrayList<>();
     public static void main(String[] args) {
         buildCallGraphForClass();
     }
@@ -103,6 +107,27 @@ public class BuildCallGraph  extends SceneTransformer {
         }
     }
 
+    private static void reverseVisit(CallGraph cg,SootMethod method, DotGraphWrapper dotGraph)
+    {
+        String identifier = method.getSignature();
+        visited.put(method.getSignature(), true);
+        dotGraph.drawNode(identifier);
+
+        Iterator<MethodOrMethodContext> sources = new Sources(cg.edgesInto(method));//获取所有调用m的方法
+        while (sources.hasNext()) {
+            SootMethod src = (SootMethod) sources.next();
+            if (SootUtils.isNotExcludedMethod(src)&& (method.getDeclaringClass().getName().startsWith(targetPackageName) || src.getDeclaringClass().getName().startsWith(targetPackageName))) {
+                String srcIdentifier = src.getSignature();
+                if (!visited.containsKey(srcIdentifier)) {
+                    callChain.add(src);
+                    System.out.println(src + " may call " + method);
+                    numOfEdges++;
+                    reverseVisit(cg, src, dotGraph);
+                }
+            }
+        }
+    }
+
     @Override
     protected void internalTransform(String phaseName, Map options) {
         CallGraph callGraph = Scene.v().getCallGraph();
@@ -117,7 +142,8 @@ public class BuildCallGraph  extends SceneTransformer {
         }
         System.out.println("Total number of edges: " + numOfEdges);
         dotGraph.plot(mainClass,"cg");
-
+//        SootMethod entryMethod = Scene.v().getMainClass().getMethodByName("doStuff");
+//        reverseVisit(callGraph, entryMethod, dotGraph);
     }
 
 }
