@@ -5,6 +5,7 @@ target/
 sootOutput/dot
 sootOutput/pic
 srcproj/
+logs/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
