@@ -1215,6 +1215,22 @@ API参数总体上可以分为以下几类：
 
 使用Spark（Soot指针分析研究工具包）并打开on-fly-cg选项以使构建的调用图更精确
 
+####  Call Graph的结构
+
+![img](./README.assets/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9yYWludHVuZy5ibG9nLmNzZG4ubmV0,size_16,color_FFFFFF,t_70.png)
+
+
+
+Call graph对象里包含了所有的Edges的集合，同时也包含了了几个关键Map
+
+1. src Map
+2. targetMap
+3. unitMap
+
+这些Map的Key以SootMethod，unit 而value是Edge，为了更快的找到SootMethod或者Unit对应的Edge
+
+
+
 #### **生成dot文件**
 
 想要获取`dot`文件，可以像下面一样迭代调用图并以`dot`格式写出内容，如下所示。
@@ -1414,3 +1430,5 @@ sanitizer即无害化处理，表示污染源数据通过一些操作解除了�
 12.https://mp.weixin.qq.com/s/vc8ZDkrSxUV237C020E5Ag
 
 13.https://ranger-nju.gitbook.io/static-program-analysis-book/
+
+14.https://blog.csdn.net/raintungli/article/details/101446434

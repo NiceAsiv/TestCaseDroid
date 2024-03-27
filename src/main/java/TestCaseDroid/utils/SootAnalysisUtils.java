@@ -1,12 +1,13 @@
 package TestCaseDroid.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Slf4j
 public class SootAnalysisUtils {
     public static void setEntryPoints(String tgtClass, String... entryMethods){
         //设置入口方法，默认入口方法是psvm，如果没有main方法的话则会出现找不到入口报错
@@ -39,7 +40,7 @@ public class SootAnalysisUtils {
 
         } catch (RuntimeException e) {
             System.err.println("发生了运行时异常，是否是类名和方法名设置错误？\n" + e.getMessage());
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 

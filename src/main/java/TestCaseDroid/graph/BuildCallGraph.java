@@ -16,7 +16,7 @@ import java.util.Map;
 public class BuildCallGraph  extends SceneTransformer {
     public static String targetPackageName = "TestCaseDroid";
     public static String mainClass = "TestCaseDroid.test.CallGraphs";
-    public static String entryMethod = "main";
+    public static String entryMethod = "doStuff";
     private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
     private static int numOfEdges = 0;
     private static List<SootMethod> callChain = new ArrayList<>();
@@ -132,18 +132,17 @@ public class BuildCallGraph  extends SceneTransformer {
     protected void internalTransform(String phaseName, Map options) {
         CallGraph callGraph = Scene.v().getCallGraph();
         DotGraphWrapper dotGraph = new DotGraphWrapper("callgraph");
+        //获取所有入口函数
+        List<SootMethod> sootEntryMethods = Scene.v().getEntryPoints();
 
-        for(SootClass sc : Scene.v().getApplicationClasses()){
-            for(SootMethod m : sc.getMethods()){
-//                //如果需要同时分析两个入口函数并画在一张图中，应当在画每一个函数的时候清空visited，需要解除下面的注释
-//                visited.clear();
-                visit(callGraph, m, dotGraph);
-            }
+        for (SootMethod entryMethod : sootEntryMethods) {
+            System.out.println("Entry method: " + entryMethod);
+            visited.clear();
+            numOfEdges = 0;
+            visit(callGraph, entryMethod, dotGraph);
+            System.out.println("Total number of edges: " + numOfEdges);
+            dotGraph.plot(mainClass + "." + entryMethod.getName(), "cg");
         }
-        System.out.println("Total number of edges: " + numOfEdges);
-        dotGraph.plot(mainClass,"cg");
-//        SootMethod entryMethod = Scene.v().getMainClass().getMethodByName("doStuff");
-//        reverseVisit(callGraph, entryMethod, dotGraph);
     }
 
 }

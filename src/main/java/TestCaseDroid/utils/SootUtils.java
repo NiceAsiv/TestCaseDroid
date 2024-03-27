@@ -1,5 +1,6 @@
 package TestCaseDroid.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import soot.SootMethod;
 import soot.Unit;
 import soot.toolkits.graph.UnitGraph;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 
 import static TestCaseDroid.utils.SootDataProcessUtils.folderExistenceTest;
 
-
+@Slf4j
 public class SootUtils {
     public  static  ArrayList<String> excludeClassesList = addExcludeClassesList();
 
@@ -22,16 +23,7 @@ public class SootUtils {
     public static void convertDotToPng(String dotFilePath, String outputFilePath) {
         try {
             String graphvizFilePath = System.getenv("GRAPHVIZ");
-            String graphvizPath;
-            if (graphvizFilePath == null) {
-                throw new RuntimeException("\nPlease set the installation folder for graphviz as an environment variable and name it \"GRAPHVIZ\".\n" +
-                        "The graphviz folder is like this: \"D:\\APPdata\\Graphviz-10.0.1-win64\".\n" +
-                        "You can download graphviz at https://graphviz.org/download/.\n" +
-                        "When you finish that, please restart your IDE.\n");
-            } else {
-                graphvizPath = graphvizFilePath + File.separator + "bin" + File.separator + "dot.exe";
-            }
-
+            String graphvizPath = getString(graphvizFilePath);
             // Check if pic output folder exist
             folderExistenceTest(outputFilePath);
 //            File folder = new File(outputFilePath.substring(0, outputFilePath.lastIndexOf("/")));
@@ -45,12 +37,25 @@ public class SootUtils {
 //                System.out.println("Pic output folder exist in：" + folder.getAbsolutePath());
 //            }
 
-            String[] cmd = new String[]{graphvizPath, "-Tpng", dotFilePath, "-o", outputFilePath};
+            String[] cmd = new String[]{graphvizPath, "-Tpng",dotFilePath,"-Gdpi=300","-Gfontname=Arial","-o",outputFilePath };
             Runtime rt = Runtime.getRuntime();
             rt.exec(cmd);
         } catch (Exception ex) {
-            System.err.println("\nError: " + ex.getMessage());
+            log.error(ex.getMessage(), ex);
         }
+    }
+
+    private static String getString(String graphvizFilePath) {
+        String graphvizPath;
+        if (graphvizFilePath == null) {
+            throw new RuntimeException("\nPlease set the installation folder for graphviz as an environment variable and name it \"GRAPHVIZ\".\n" +
+                    "The graphviz folder is like this: \"D:\\APPdata\\Graphviz-10.0.1-win64\".\n" +
+                    "You can download graphviz at https://graphviz.org/download/.\n" +
+                    "When you finish that, please restart your IDE.\n");
+        } else {
+            graphvizPath = graphvizFilePath + File.separator + "bin" + File.separator + "dot.exe";
+        }
+        return graphvizPath;
     }
 
 

@@ -20,6 +20,8 @@ public class SootConfig {
      * jreDir is path to rt.jar
      * sootClassPath combines javaPath and jreDir to form the analysis environment.
      */
+
+    // javaPath 收集项目中所有依赖库包括项目自身target目录下的类
     private  static  final String  javaPath = System.getProperty("java.class.path");
     private  static  final String  jreDir = System.getProperty("java.home")+"/lib/rt.jar";
     public  static String  sootClassPath = javaPath + File.pathSeparator +  jreDir;
@@ -56,7 +58,7 @@ public class SootConfig {
     }
 
     /**
-     * Soot configuration for java file in our test directory
+     * Soot configuration for class document
      * @param ClassName the main class name e.g. "TestCaseDroid.tests.CallGraph"
      * @param constructCallGraph whether to construct call graph
      */
@@ -83,41 +85,6 @@ public class SootConfig {
         //加载 Soot 依赖的类和命令行指定的类
         Scene.v().loadNecessaryClasses();
 
-        commonSetup(constructCallGraph);
-    }
-
-    /**
-     * Soot configuration for class project file
-     * @param projPath the path to the project e.g. "./target/classes"
-     * @param constructCallGraph whether to construct call graph
-     * <p>
-     *Attention: The bytecode front end is better supported than the source front end,
-     *so we use the class file as the input.
-     */
-    public void setupSootForClass(String projPath, Boolean constructCallGraph)
-    {
-        //清除soot之前留下的所有缓存
-        G.reset();
-        //设置Soot类路径
-//        Options.v().set_soot_classpath(sootClassPath);
-        //设将类路径中的类均设为应用类，并仅分析应用类
-//        Options.v().set_app(true)
-
-        //设置处理文件类型为java文件
-        Options.v().set_src_prec(Options.src_prec_class);
-        //允许phantom引用
-        Options.v().set_allow_phantom_refs(true);
-        projPath = System.getProperty("user.dir") + File.separator + projPath;
-        Options.v().set_process_dir(Collections.singletonList(projPath));
-        //设置是否分析整个程序
-        Options.v().set_whole_program(true);
-        //设置 -pp 选项，以便 Soot 能够找到所有的类
-        Options.v().set_prepend_classpath(true);
-
-        //排除JDK和其他库
-        excludeJDKLibrary();
-        //加载 Soot 依赖的类和命令行指定的类
-        Scene.v().loadNecessaryClasses();
         commonSetup(constructCallGraph);
     }
 
