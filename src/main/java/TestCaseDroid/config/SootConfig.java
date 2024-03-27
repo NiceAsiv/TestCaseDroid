@@ -1,5 +1,7 @@
 package TestCaseDroid.config;
 
+import lombok.Getter;
+import lombok.Setter;
 import soot.*;
 import soot.options.Options;
 import soot.util.Chain;
@@ -14,6 +16,8 @@ import static TestCaseDroid.utils.SootUtils.excludeClassesList;
 /**
  * Soot configuration
  */
+@Setter
+@Getter
 public class SootConfig {
     /**
      * javaPath collects all dependency libraries in the project.
@@ -24,17 +28,8 @@ public class SootConfig {
     // javaPath 收集项目中所有依赖库包括项目自身target目录下的类
     private  static  final String  javaPath = System.getProperty("java.class.path");
     private  static  final String  jreDir = System.getProperty("java.home")+"/lib/rt.jar";
-    public  static String  sootClassPath = javaPath + File.pathSeparator +  jreDir;
+    private  static String  sootClassPath = javaPath + File.pathSeparator +  jreDir;
     private String callGraphAlgorithm = "Spark";
-
-
-    public void setCallGraphAlgorithm(String callGraphAlgorithm) {
-        this.callGraphAlgorithm = callGraphAlgorithm;
-    }
-
-    public String getCallGraphAlgorithm() {
-        return callGraphAlgorithm;
-    }
 
 
     /**
@@ -123,33 +118,6 @@ public class SootConfig {
                     throw new RuntimeException("Unknown call graph algorithm: " + new SootConfig().getCallGraphAlgorithm());
             }
         }
-//        getBasicInfo();
-    }
-
-    public static void getBasicInfo() {
-        //获取含有main方法的类
-        SootClass mainClass = Scene.v().getMainClass();
-        System.out.println("mainClass: " + mainClass.getName());
-
-        //获取main方法
-        SootMethod mainMethod = Scene.v().getMainMethod();
-        System.out.println("mainMethod: " + mainMethod.getName());
-
-        //获取运行时类 应用类 基础类 所有类
-        Chain<SootClass> libraryClasses = Scene.v().getLibraryClasses();
-        Chain<SootClass> applicationClasses = Scene.v().getApplicationClasses();
-        Set<String> basicClasses = Scene.v().getBasicClasses();
-        Chain<SootClass> classes = Scene.v().getClasses();
-
-
-
-        //获取当前soot的分析路径：通常为classpath+app-path
-        String sootClassPath = Scene.v().getSootClassPath();
-        System.out.println("sootClassPath: " + sootClassPath);
-
-        //获取默认JVMclasspath的路径
-        String s = Scene.v().defaultClassPath();//rt.jar path
-        System.out.println("defaultClassPath: " + s);
     }
 
     private static void excludeJDKLibrary()
