@@ -131,7 +131,7 @@ public class BuildCallGraphForJar extends SceneTransformer{
         }
         System.out.println("Total number of edges: " + numOfEdges);
         String programName = targetPackageName.substring(targetPackageName.lastIndexOf(".")+1);
-        dotGraph.plot(programName,"cg");
+        dotGraph.plot("cg",programName);
     }
 
 }

@@ -71,7 +71,7 @@ public class SootAnalysisUtils {
 
         } catch (RuntimeException e) {
             System.err.println("发生了运行时异常，是否是类名和方法名设置错误？\n" + e.getMessage());
-            e.printStackTrace();
+            log.error(e.getMessage(),e);
         }
     }
 }

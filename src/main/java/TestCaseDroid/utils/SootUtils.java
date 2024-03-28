@@ -15,49 +15,6 @@ import static TestCaseDroid.utils.SootDataProcessUtils.folderExistenceTest;
 public class SootUtils {
     public  static  ArrayList<String> excludeClassesList = addExcludeClassesList();
 
-    /**
-     * Convert a dot file to a png file
-     * @param dotFilePath the dot file path
-     * @param outputFilePath the output png file path
-     */
-    public static void convertDotToPng(String dotFilePath, String outputFilePath) {
-        try {
-            String graphvizFilePath = System.getenv("GRAPHVIZ");
-            String graphvizPath = getString(graphvizFilePath);
-            // Check if pic output folder exist
-            folderExistenceTest(outputFilePath);
-//            File folder = new File(outputFilePath.substring(0, outputFilePath.lastIndexOf("/")));
-//            if (!folder.exists()) {
-//                if (folder.mkdirs()) {
-//                    System.out.println("Create pic output folder：" + folder.getAbsolutePath());
-//                } else {
-//                    System.err.println("Unable to create pic output folder：" + folder.getAbsolutePath());
-//                }
-//            } else {
-//                System.out.println("Pic output folder exist in：" + folder.getAbsolutePath());
-//            }
-
-            String[] cmd = new String[]{graphvizPath, "-Tpng",dotFilePath,"-Gdpi=300","-Gfontname=Arial","-o",outputFilePath };
-            Runtime rt = Runtime.getRuntime();
-            rt.exec(cmd);
-        } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
-        }
-    }
-
-    private static String getString(String graphvizFilePath) {
-        String graphvizPath;
-        if (graphvizFilePath == null) {
-            throw new RuntimeException("\nPlease set the installation folder for graphviz as an environment variable and name it \"GRAPHVIZ\".\n" +
-                    "The graphviz folder is like this: \"D:\\APPdata\\Graphviz-10.0.1-win64\".\n" +
-                    "You can download graphviz at https://graphviz.org/download/.\n" +
-                    "When you finish that, please restart your IDE.\n");
-        } else {
-            graphvizPath = graphvizFilePath + File.separator + "bin" + File.separator + "dot.exe";
-        }
-        return graphvizPath;
-    }
-
 
     /**
      * Check if a method is excluded
@@ -91,49 +48,5 @@ public class SootUtils {
             excludeClassesList.add("jdk.");
         }
         return excludeClassesList;
-    }
-
-    public static void UnitGraphToDot(UnitGraph graph, String dotFilePath,String graphName) {
-        DotGraph dot = new DotGraph(graphName);
-
-        //create node for each unit
-        for (Unit u : graph) {
-            String unitStr = u.toString();
-            dot.drawNode(unitStr).setLabel(unitStr.substring(0, Math.min(unitStr.length(),60))); // set label and shorten the string if it is too long
-        }
-
-        //create edge for each edge
-        for (Unit u : graph) {
-            for (Unit s : graph.getSuccsOf(u)) {
-                dot.drawEdge(u.toString(), s.toString());
-            }
-        }
-        dot.plot(dotFilePath);
-
-
-//        StringBuilder dot = new StringBuilder("digraph G {\n");
-//        for (Unit u : graph.getHeads()) {
-//            dot.append("entry -> \"").append(u).append("\";\n");
-//        }
-//        for (Unit u : graph.getTails()) {
-//            dot.append("\"").append(u).append("\" -> exit;\n");
-//        }
-//        for (Unit u : graph) {
-//            for (Unit s : graph.getSuccsOf(u)) {
-//                dot.append("\"").append(u).append("\" -> \"").append(s).append("\";\n");
-//            }
-//        }
-//        dot.append("}");
-//        try {
-//            File file = new File(dotFilePath);
-//            if (!file.exists()) {
-//                file.createNewFile();
-//            }
-//            java.io.FileWriter fileWriter = new java.io.FileWriter(file);
-//            fileWriter.write(dot.toString());
-//            fileWriter.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
     }
 }

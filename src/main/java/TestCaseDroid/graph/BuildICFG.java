@@ -1,42 +1,41 @@
 package TestCaseDroid.graph;
 
 import TestCaseDroid.config.SootConfig;
-import TestCaseDroid.utils.SootUtils;
+import TestCaseDroid.utils.DotGraphWrapper;
 import heros.InterproceduralCFG;
+import lombok.Setter;
 import soot.*;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
-import soot.util.dot.DotGraph;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+
+@Setter
 public class BuildICFG extends SceneTransformer {
 
-    static DotGraph dotGraph ;
-    public static String mainClass = "TestCaseDroid.test.FastJsonTest";
-    public static String targetJarPath = "./jarCollection/NotepadV2.jar";
-    public static String targetPackageName = "TestCaseDroid";
+    private static String targetClassName = "TestCaseDroid.test.FastJsonTest";
+    private static String targetMethodName = "testFastJson";
+    private static String targetPackageName = "TestCaseDroid";
+    private static DotGraphWrapper dotGraph = new DotGraphWrapper("interproceduralCFG");
     private ArrayList<Unit> visited;
 
-
-    public BuildICFG(String inputFileType,String FilePath) {
-
+    public static void main(String[] args) {
+        BuildICFGForClass();
     }
 
-    public static void main(String[] args) {
+    public static void BuildICFGForClass() {
         SootConfig sootConfig = new SootConfig();
+        sootConfig.setupSoot(targetClassName, true);
         sootConfig.setCallGraphAlgorithm("Spark");
-//        sootConfig.setupSootForJar(targetJarPath, true);
-        sootConfig.setupSootForJar(targetJarPath, true);
+
         //add an intra-procedural analysis phase to Soot
-        BuildICFG analysis = new BuildICFG("jar",targetJarPath);
+        BuildICFG analysis = new BuildICFG();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.ifds", analysis));
-        dotGraph = new DotGraph("icfg");
         PackManager.v().runPacks();
     }
-
     @Override
     protected void internalTransform(String phaseName, Map<String, String> options) {
         if (Scene.v().hasMainClass()) {
@@ -52,16 +51,7 @@ public class BuildICFG extends SceneTransformer {
             System.out.println("No main method found!");
             return;
         }
-
-        String dotFilePath = "./sootOutput/dot/"+ mainClass + ".icfg.dot";
-        dotGraph.plot(dotFilePath);
-        String outputFilePath = "./sootOutput/pic/"+ mainClass + ".icfg.png";
-        try {
-            SootUtils.convertDotToPng(dotFilePath, outputFilePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        dotGraph.plot("icfg", targetClassName, targetMethodName);
     }
 
     public void graphTraverse(final Unit startPoint, final InterproceduralCFG<Unit, SootMethod> icfg) {

@@ -26,7 +26,7 @@ class SootConfigTest {
     }
     @Test
     void setupSoot() {
-        sootConfig.setupSootForClass("./target/classes", true);
+        sootConfig.setupSoot("TestCaseDroid.test.CallGraph", true);
         PackManager.v().runPacks();
         assertNotNull(Scene.v().getSootClassPath());
         assertNotNull(Scene.v().getMainClass());

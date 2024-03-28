@@ -4,11 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import soot.*;
 import soot.options.Options;
-import soot.util.Chain;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.Set;
 
 import static TestCaseDroid.utils.SootUtils.excludeClassesList;
 
@@ -32,25 +30,6 @@ public class SootConfig {
     private String callGraphAlgorithm = "Spark";
 
 
-    /**
-     * Soot configuration for jar file
-     * @param jarPath the path to the jar file
-     * @param constructCallGraph whether to construct call graph
-     */
-    public void setupSootForJar(String jarPath,Boolean constructCallGraph) {
-        //清除soot之前留下的所有缓存
-        G.reset();
-        jarPath = System.getProperty("user.dir") + File.separator + jarPath;
-        sootClassPath= sootClassPath + File.pathSeparator + jarPath;
-        //设置Soot类路径
-        Options.v().set_soot_classpath(sootClassPath);
-        Options.v().set_whole_program(true);
-        Options.v().set_allow_phantom_refs(true);
-        Options.v().set_process_dir(Collections.singletonList(jarPath));
-        Scene.v().loadNecessaryClasses();
-        Scene.v().loadBasicClasses();
-        commonSetup(constructCallGraph);
-    }
 
     /**
      * Soot configuration for class document
@@ -80,6 +59,27 @@ public class SootConfig {
         //加载 Soot 依赖的类和命令行指定的类
         Scene.v().loadNecessaryClasses();
 
+        commonSetup(constructCallGraph);
+    }
+
+
+    /**
+     * Soot configuration for jar file
+     * @param jarPath the path to the jar file
+     * @param constructCallGraph whether to construct call graph
+     */
+    public void setupSootForJar(String jarPath,Boolean constructCallGraph) {
+        //清除soot之前留下的所有缓存
+        G.reset();
+        jarPath = System.getProperty("user.dir") + File.separator + jarPath;
+        sootClassPath= sootClassPath + File.pathSeparator + jarPath;
+        //设置Soot类路径
+        Options.v().set_soot_classpath(sootClassPath);
+        Options.v().set_whole_program(true);
+        Options.v().set_allow_phantom_refs(true);
+        Options.v().set_process_dir(Collections.singletonList(jarPath));
+        Scene.v().loadNecessaryClasses();
+        Scene.v().loadBasicClasses();
         commonSetup(constructCallGraph);
     }
 
