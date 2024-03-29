@@ -8,7 +8,6 @@ import soot.*;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +16,7 @@ import java.util.Map;
 public class BuildICFG extends SceneTransformer {
 
     private static String targetClassName = "TestCaseDroid.test.FastJsonTest";
-    private static String targetMethodName = "testFastJson";
+    private static String targetMethodName = "main";
     private static String targetPackageName = "TestCaseDroid";
     private static DotGraphWrapper dotGraph = new DotGraphWrapper("interproceduralCFG");
     private ArrayList<Unit> visited;
@@ -38,18 +37,16 @@ public class BuildICFG extends SceneTransformer {
     }
     @Override
     protected void internalTransform(String phaseName, Map<String, String> options) {
-        if (Scene.v().hasMainClass()) {
-            SootMethod mainMethod = Scene.v().getMainMethod();
-            Scene.v().setEntryPoints(Collections.singletonList(mainMethod));
+        SootClass targetClass = Scene.v().getSootClass(targetClassName);
+        SootMethod targetMethod = targetClass.getMethodByName(targetMethodName);
+        if (targetMethod.hasActiveBody()) {
             JimpleBasedInterproceduralCFG icfg = new JimpleBasedInterproceduralCFG();
             visited = new ArrayList<>();
-            if (mainMethod.hasActiveBody()) {
-                Unit startPoint = mainMethod.getActiveBody().getUnits().getFirst();
-                graphTraverse(startPoint, icfg);
-            }
-        }else {
-            System.out.println("No main method found!");
-            return;
+            Unit startPoint = targetMethod.getActiveBody().getUnits().getFirst();
+            graphTraverse(startPoint, icfg);
+        }else
+        {
+            System.out.println("No active body for method " + targetMethodName);
         }
         dotGraph.plot("icfg", targetClassName, targetMethodName);
     }

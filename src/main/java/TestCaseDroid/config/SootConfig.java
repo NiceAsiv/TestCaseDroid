@@ -1,14 +1,15 @@
 package TestCaseDroid.config;
 
+import TestCaseDroid.utils.SootUtils;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import soot.*;
 import soot.options.Options;
 
 import java.io.File;
 import java.util.Collections;
 
-import static TestCaseDroid.utils.SootUtils.excludeClassesList;
 
 
 /**
@@ -16,6 +17,7 @@ import static TestCaseDroid.utils.SootUtils.excludeClassesList;
  */
 @Setter
 @Getter
+@Slf4j
 public class SootConfig {
     /**
      * javaPath collects all dependency libraries in the project.
@@ -24,7 +26,7 @@ public class SootConfig {
      */
 
     // javaPath 收集项目中所有依赖库包括项目自身target目录下的类
-    private  static  final String  javaPath = System.getProperty("java.class.path");
+    private  static  String  javaPath = System.getProperty("java.class.path");
     private  static  final String  jreDir = System.getProperty("java.home")+"/lib/rt.jar";
     private  static String  sootClassPath = javaPath + File.pathSeparator +  jreDir;
     private String callGraphAlgorithm = "Spark";
@@ -36,11 +38,15 @@ public class SootConfig {
      * @param ClassName the main class name e.g. "TestCaseDroid.tests.CallGraph"
      * @param constructCallGraph whether to construct call graph
      */
-    public void setupSoot(String ClassName, Boolean constructCallGraph)
+    public  void setupSoot(String ClassName, Boolean constructCallGraph,String ...classesPath)
     {
         //清除soot之前留下的所有缓存
         G.reset();
         //设置Soot类路径
+        if (classesPath.length>0){
+            sootClassPath = jreDir + File.pathSeparator + SootUtils.classPathParser(classesPath);
+            Options.v().set_process_dir(Collections.singletonList(SootUtils.classPathParser(classesPath)));
+        }
         Options.v().set_soot_classpath(sootClassPath);
         //设置是否分析整个程序
         Options.v().set_whole_program(true);
@@ -68,11 +74,10 @@ public class SootConfig {
      * @param jarPath the path to the jar file
      * @param constructCallGraph whether to construct call graph
      */
-    public void setupSootForJar(String jarPath,Boolean constructCallGraph) {
+    public  void setupSootForJar(String jarPath,Boolean constructCallGraph) {
         //清除soot之前留下的所有缓存
         G.reset();
-        jarPath = System.getProperty("user.dir") + File.separator + jarPath;
-        sootClassPath= sootClassPath + File.pathSeparator + jarPath;
+        sootClassPath= sootClassPath + File.pathSeparator + SootUtils.classPathParser(jarPath);
         //设置Soot类路径
         Options.v().set_soot_classpath(sootClassPath);
         Options.v().set_whole_program(true);
@@ -87,7 +92,7 @@ public class SootConfig {
      * Common setup for Soot
      * @param constructCallGraph whether to construct call graph
      */
-    private void commonSetup(Boolean constructCallGraph) {
+    private static void commonSetup(Boolean constructCallGraph) {
         Options.v().set_keep_line_number(true);
         Options.v().set_output_format(Options.output_format_jimple);
         Options.v().set_verbose(true);
@@ -123,10 +128,9 @@ public class SootConfig {
     private static void excludeJDKLibrary()
     {
         //exclude jdk classes
-        Options.v().set_exclude(excludeClassesList);
+        Options.v().set_exclude(SootUtils.excludeClassesList);
         //this option must be disabled for a sound call graph
         Options.v().set_no_bodies_for_excluded(true);
         Options.v().set_allow_phantom_refs(true);//关键!!!!
     }
-
 }

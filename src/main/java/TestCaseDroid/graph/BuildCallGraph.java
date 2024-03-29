@@ -24,7 +24,6 @@ public class BuildCallGraph  extends SceneTransformer {
         buildCallGraphForClass();
     }
     public static void buildCallGraphForClass() {
-
         SootConfig sootConfig = new SootConfig();
         sootConfig.setCallGraphAlgorithm("Spark");
         sootConfig.setupSoot(mainClass, true);

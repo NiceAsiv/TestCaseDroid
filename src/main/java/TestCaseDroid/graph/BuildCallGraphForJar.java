@@ -19,7 +19,7 @@ import java.util.Map;
 public class BuildCallGraphForJar extends SceneTransformer{
 
     public static List<String> entryPoints = new ArrayList<>();
-    public static String targetJarPath = "./jarCollection/NotepadV2.jar";
+    public static String targetJarPath = "E:\\Tutorial\\TestCaseDroid\\JarCollection\\NotepadV2.jar";
     public static String targetPackageName = "TestCaseDroid";
     private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
     private static int numOfEdges = 0;
