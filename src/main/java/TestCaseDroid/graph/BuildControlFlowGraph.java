@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Setter
 public class BuildControlFlowGraph extends BodyTransformer {
-    private static String ClassName = "TestCaseDroid.test.CFGTest";
+    private static String targetClassName = "TestCaseDroid.test.CFGTest";
     private static String entryMethod = "main";
     private static DotGraphWrapper dotGraph = new DotGraphWrapper("controlFlowGraph");
     private static CFGToDotGraph drawer = new CFGToDotGraph();
@@ -32,8 +32,20 @@ public class BuildControlFlowGraph extends BodyTransformer {
         //配置soot
         SootConfig sootConfig = new SootConfig();
         sootConfig.setCallGraphAlgorithm("Spark");
-        sootConfig.setupSoot(ClassName,true);
+        sootConfig.setupSoot(targetClassName,true);
 
+        PackManager.v().getPack("jtp").add(new Transform("jtp.BuildControlFlowGraph", new BuildControlFlowGraph()));
+        PackManager.v().runPacks();
+    }
+
+    public static void buildControlFlowGraphForClass(String classesPath,String targetClassName,String entryMethod)
+    {
+        BuildControlFlowGraph.entryMethod = entryMethod;
+        BuildControlFlowGraph.targetClassName = targetClassName;
+        //配置soot
+        SootConfig sootConfig = new SootConfig();
+        sootConfig.setCallGraphAlgorithm("Spark");
+        sootConfig.setupSoot(targetClassName,true,classesPath);
         PackManager.v().getPack("jtp").add(new Transform("jtp.BuildControlFlowGraph", new BuildControlFlowGraph()));
         PackManager.v().runPacks();
     }
@@ -43,7 +55,7 @@ public class BuildControlFlowGraph extends BodyTransformer {
 
 
         //获取指定的类
-        SootClass targetClass = Scene.v().getSootClass(ClassName);
+        SootClass targetClass = Scene.v().getSootClass(targetClassName);
 
         //获取指定的方法
         SootMethod targetMethod =  targetClass.getMethodByName(entryMethod);

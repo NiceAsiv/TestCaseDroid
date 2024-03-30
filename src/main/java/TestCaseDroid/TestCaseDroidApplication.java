@@ -37,9 +37,22 @@ public class TestCaseDroidApplication {
         String classNameForAnalysis = cmd.getOptionValue("class");
         String methodNameForAnalysis = cmd.getOptionValue("method");
 
+        if (graphType.equals("cg")) {
+            BuildCallGraphForJar.buildCallGraphForJar(inputFilePath,classNameForAnalysis,methodNameForAnalysis);
+        } else if (graphType.equals("cfg")) {
+            BuildControlFlowGraph.buildControlFlowGraphForClass(inputFilePath,classNameForAnalysis,methodNameForAnalysis);
+        } else if (graphType.equals("icfg")) {
+            BuildICFG.buildICFGForClass(inputFilePath,classNameForAnalysis,methodNameForAnalysis);
+        } else {
+            System.out.println("Invalid graph type");
+        }
         // Now you can use these values to perform the required operations
     }
 
+    /**
+     * Get the command line options
+     * @return Options
+     */
     private static Options getOptions() {
         Options options = new Options();
         Option help = new Option("h", "help", false, "display help");

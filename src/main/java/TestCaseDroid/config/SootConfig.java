@@ -35,18 +35,14 @@ public class SootConfig {
 
     /**
      * Soot configuration for class document
-     * @param ClassName the main class name e.g. "TestCaseDroid.tests.CallGraph"
+     * @param className the main class name e.g. "TestCaseDroid.tests.CallGraph"
      * @param constructCallGraph whether to construct call graph
      */
-    public  void setupSoot(String ClassName, Boolean constructCallGraph,String ...classesPath)
+    public  void setupSoot(String className, Boolean constructCallGraph)
     {
         //清除soot之前留下的所有缓存
         G.reset();
         //设置Soot类路径
-        if (classesPath.length>0){
-            sootClassPath = jreDir + File.pathSeparator + SootUtils.classPathParser(classesPath);
-            Options.v().set_process_dir(Collections.singletonList(SootUtils.classPathParser(classesPath)));
-        }
         Options.v().set_soot_classpath(sootClassPath);
         //设置是否分析整个程序
         Options.v().set_whole_program(true);
@@ -57,7 +53,7 @@ public class SootConfig {
         //排除JDK和其他库
         excludeJDKLibrary();
         //加载必要类
-        SootClass appClass = Scene.v().loadClassAndSupport(ClassName);
+        SootClass appClass = Scene.v().loadClassAndSupport(className);
 //        //设置主类
 //        Scene.v().setMainClass(appClass);
         //将待分析类设为应用类
@@ -71,18 +67,24 @@ public class SootConfig {
 
     /**
      * Soot configuration for jar file
-     * @param jarPath the path to the jar file
+     * @param className the main class name e.g. "TestCaseDroid.tests.CallGraph"
      * @param constructCallGraph whether to construct call graph
+     * @param classesPath the path to the classes or jar file
      */
-    public  void setupSootForJar(String jarPath,Boolean constructCallGraph) {
+    public  void setupSoot(String className,Boolean constructCallGraph,String classesPath) {
         //清除soot之前留下的所有缓存
         G.reset();
-        sootClassPath= sootClassPath + File.pathSeparator + SootUtils.classPathParser(jarPath);
+        sootClassPath= sootClassPath + File.pathSeparator + SootUtils.classPathParser(classesPath);
         //设置Soot类路径
         Options.v().set_soot_classpath(sootClassPath);
         Options.v().set_whole_program(true);
         Options.v().set_allow_phantom_refs(true);
-        Options.v().set_process_dir(Collections.singletonList(jarPath));
+        Options.v().set_process_dir(Collections.singletonList(classesPath));
+        //加载指定的类
+        SootClass appClass = Scene.v().loadClassAndSupport(className);
+        //将待分析类设为应用类
+        appClass.setApplicationClass();
+        //加载 Soot 依赖的类和命令行指定的类
         Scene.v().loadNecessaryClasses();
         Scene.v().loadBasicClasses();
         commonSetup(constructCallGraph);

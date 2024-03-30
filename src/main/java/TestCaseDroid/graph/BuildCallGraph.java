@@ -11,8 +11,8 @@ import soot.jimple.toolkits.callgraph.Targets;
 import java.util.*;
 
 public class BuildCallGraph  extends SceneTransformer {
-    public static String targetPackageName = "TestCaseDroid";
-    public static String mainClass = "TestCaseDroid.test.MultilevelCall.LibraryApplication";
+    private static String targetPackageName = "TestCaseDroid";
+    private static String targetClass = "TestCaseDroid.test.MultilevelCall.LibraryApplication";
     public static String entryMethod = "main";
     private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
     private static int numOfEdges = 0;
@@ -23,21 +23,22 @@ public class BuildCallGraph  extends SceneTransformer {
     public static void main(String[] args) {
         buildCallGraphForClass();
     }
+
     public static void buildCallGraphForClass() {
         SootConfig sootConfig = new SootConfig();
         sootConfig.setCallGraphAlgorithm("Spark");
-        sootConfig.setupSoot(mainClass, true);
+        sootConfig.setupSoot(targetClass, true);
 
         //add an inter-procedural analysis phase to Soot
         BuildCallGraph analysis = new BuildCallGraph();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraph", analysis));
 
         //判断mainClass是否为应用类
-        SootInfoUtils.isApplicationClass(mainClass);
+        SootInfoUtils.isApplicationClass(targetClass);
         //输出当前分析环境下的application类和每个类所加载的函数签名
         SootInfoUtils.reportSootApplicationClassInfo();
         //设置入口方法
-        SootAnalysisUtils.setEntryPoints(mainClass, entryMethod);
+        SootAnalysisUtils.setEntryPoints(targetClass, entryMethod);
         //运行分析
         PackManager.v().runPacks();
     }
@@ -76,7 +77,7 @@ public class BuildCallGraph  extends SceneTransformer {
             numOfEdges = 0;
             visit(callGraph, entryMethod, dotGraph);
             System.out.println("Total number of edges: " + numOfEdges);
-            dotGraph.plot("cg",mainClass + "." + entryMethod.getName());
+            dotGraph.plot("cg", targetClass + "." + entryMethod.getName());
         }
     }
 

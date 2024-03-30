@@ -35,6 +35,21 @@ public class BuildICFG extends SceneTransformer {
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.ifds", analysis));
         PackManager.v().runPacks();
     }
+
+    public static void buildICFGForClass(String inputFilePath, String classNameForAnalysis, String methodNameForAnalysis) {
+
+        targetClassName = classNameForAnalysis;
+        targetMethodName = methodNameForAnalysis;
+        SootConfig sootConfig = new SootConfig();
+        sootConfig.setupSoot(targetClassName, true, inputFilePath);
+        sootConfig.setCallGraphAlgorithm("Spark");
+
+        //add an intra-procedural analysis phase to Soot
+        BuildICFG analysis = new BuildICFG();
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.ifds", analysis));
+        PackManager.v().runPacks();
+    }
+
     @Override
     protected void internalTransform(String phaseName, Map<String, String> options) {
         SootClass targetClass = Scene.v().getSootClass(targetClassName);
