@@ -1,22 +1,50 @@
 package TestCaseDroid.script;
 
-import TestCaseDroid.config.SootConfigTest;
-import TestCaseDroid.graph.BuildCallGraphTest;
-import org.junit.jupiter.api.Test;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
-import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
 
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 public class TestRunner {
-    public static void main(String[] args) {
-        runTest(BuildCallGraphTest.class);
-        runTest(SootConfigTest.class);
+    public static void main(String[] args) throws Exception {
+        List<Class<?>> testClasses = getTestClassesFromPath("/path/to/your/test/classes");
+        for (Class<?> testClass : testClasses) {
+            runTest(testClass);
+        }
+    }
+    public static void runAllTests(String testClassOnePath ,String testClassTwoPath) throws Exception {
+        List<Class<?>> testClassOne = getTestClassesFromPath(testClassOnePath);
+        List<Class<?>> testClassTwo = getTestClassesFromPath(testClassTwoPath);
+        for (Class<?> testClass : testClassOne) {
+            runTest(testClass);
+        }
+        for (Class<?> testClass : testClassTwo) {
+            runTest(testClass);
+        }
+    }
+
+    private static List<Class<?>> getTestClassesFromPath(String path) throws Exception {
+        List<Class<?>> classes = new ArrayList<>();
+        URL url = TestRunner.class.getResource(path);
+        assert url != null;
+        File dir = new File(url.toURI());
+        for (File file : Objects.requireNonNull(dir.listFiles())) {
+            if (file.getName().endsWith(".class")) {
+                String className = file.getName().replace(".class", "");
+                classes.add(Class.forName(className));
+            }
+        }
+        return classes;
     }
 
     private static void runTest(Class<?> testClass) {
