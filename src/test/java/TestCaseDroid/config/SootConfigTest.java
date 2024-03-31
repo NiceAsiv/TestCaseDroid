@@ -6,7 +6,7 @@ import soot.Scene;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SootConfigTest {
+class SootConfigTest {
 
     private SootConfig sootConfig;
 

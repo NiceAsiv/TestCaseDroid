@@ -9,45 +9,58 @@ import org.junit.platform.launcher.listeners.TestExecutionSummary;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.net.URLClassLoader;
+
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
+/**
+ * 利用反射机制和JUnit5的API来运行单个测试类
+ */
 public class TestRunner {
     public static void main(String[] args) throws Exception {
-        List<Class<?>> testClasses = getTestClassesFromPath("/path/to/your/test/classes");
-        for (Class<?> testClass : testClasses) {
-            runTest(testClass);
-        }
+       TestExecutionSummary summary1= runSingleTest("E:\\Tutorial\\TestCaseDroid\\target\\test-classes","TestCaseDroid.graph.BuildCallGraphTest");
+       TestExecutionSummary summary2= runSingleTest("E:\\Tutorial\\TestCaseDroid\\target\\test-classes","TestCaseDroid.graph.BuildCallGraphTest");
+
     }
-    public static void runAllTests(String testClassOnePath ,String testClassTwoPath) throws Exception {
-        List<Class<?>> testClassOne = getTestClassesFromPath(testClassOnePath);
-        List<Class<?>> testClassTwo = getTestClassesFromPath(testClassTwoPath);
-        for (Class<?> testClass : testClassOne) {
-            runTest(testClass);
+
+    /**
+     * 运行单个测试
+     * @param classPath 类路径
+     * @param className 类名
+     * @throws Exception 异常
+     */
+    public static TestExecutionSummary runSingleTest(String classPath,String className) throws Exception {
+        Class<?> testClass = getTestClassFromPath(classPath, className);
+        assert testClass != null;
+        return runTest(testClass);
+    }
+
+    /**
+     * 通过类路径和类名获取测试类
+     * @param classPath 类路径
+     * @param className 类名 eg: com.example.Test
+     * @return 测试类
+     * @throws Exception 异常
+     */
+    private static Class<?> getTestClassFromPath(String classPath,String className) throws Exception {
+        //查看路径是否存在
+        File file = new File(classPath);
+        if (!file.exists()) {
+            System.out.println("路径不存在");
+            return null;
         }
-        for (Class<?> testClass : testClassTwo) {
-            runTest(testClass);
+        URL url = file.toURI().toURL();
+        try (URLClassLoader classLoader = new URLClassLoader(new URL[]{url})) {
+            return classLoader.loadClass(className);
         }
     }
 
-    private static List<Class<?>> getTestClassesFromPath(String path) throws Exception {
-        List<Class<?>> classes = new ArrayList<>();
-        URL url = TestRunner.class.getResource(path);
-        assert url != null;
-        File dir = new File(url.toURI());
-        for (File file : Objects.requireNonNull(dir.listFiles())) {
-            if (file.getName().endsWith(".class")) {
-                String className = file.getName().replace(".class", "");
-                classes.add(Class.forName(className));
-            }
-        }
-        return classes;
-    }
-
-    private static void runTest(Class<?> testClass) {
+    /**
+     * 运行测试
+     * @param testClass 测试类
+     */
+    private static TestExecutionSummary runTest(Class<?> testClass) {
         System.out.println("Running tests for class " + testClass.getName());
         Launcher launcher = LauncherFactory.create(); // Create a Launcher
         // Create a SummaryGeneratingListener
@@ -69,6 +82,6 @@ public class TestRunner {
         System.out.println("失败的测试数量: " + summary.getTestsFailedCount());
         System.out.println("忽略的测试数量: " + summary.getTestsSkippedCount());
         System.out.println("执行时间: " + summary.getTimeStarted());
-        summary.getFailures().forEach(failure -> System.out.println(failure.getException()));
+        return summary;
     }
 }
