@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import soot.*;
+import soot.jimple.toolkits.callgraph.CHATransformer;
 import soot.options.Options;
 
 import java.io.File;
@@ -94,7 +95,7 @@ public class SootConfig {
      * Common setup for Soot
      * @param constructCallGraph whether to construct call graph
      */
-    private static void commonSetup(Boolean constructCallGraph) {
+    private  void commonSetup(Boolean constructCallGraph) {
         Options.v().set_keep_line_number(true);
         Options.v().set_output_format(Options.output_format_jimple);
         Options.v().set_verbose(true);
@@ -102,12 +103,12 @@ public class SootConfig {
 
 
         if (constructCallGraph) {
-            switch (new SootConfig().getCallGraphAlgorithm()) {
+            switch (this.callGraphAlgorithm) {
                 case "CHA":
                     Options.v().setPhaseOption("cg.cha", "on");
+                    CHATransformer.v().transform();
                     break;
                 case "Spark":
-                    Options.v().setPhaseOption("cg.spark", "on");
                     Options.v().setPhaseOption("cg.spark","enabled:true");
                     Options.v().setPhaseOption("cg.spark","verbose:true");
                     Options.v().setPhaseOption("cg.spark","on-fly-cg:true");
@@ -122,7 +123,7 @@ public class SootConfig {
                     Options.v().setPhaseOption("cg.spark", "on-fly-cg:false");
                     break;
                 default:
-                    throw new RuntimeException("Unknown call graph algorithm: " + new SootConfig().getCallGraphAlgorithm());
+                    throw new RuntimeException("Unknown call graph algorithm: " + this.callGraphAlgorithm);
             }
         }
     }

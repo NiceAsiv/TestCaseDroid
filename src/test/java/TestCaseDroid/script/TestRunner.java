@@ -21,7 +21,20 @@ public class TestRunner {
     public static void main(String[] args) throws Exception {
        TestExecutionSummary summary1= runSingleTest("E:\\Tutorial\\TestCaseDroid\\target\\test-classes","TestCaseDroid.graph.BuildCallGraphTest");
        TestExecutionSummary summary2= runSingleTest("E:\\Tutorial\\TestCaseDroid\\target\\test-classes","TestCaseDroid.graph.BuildCallGraphTest");
+       CompareTestResult(summary1,summary2);
+    }
 
+    public  static void CompareTestResult(TestExecutionSummary summary1,TestExecutionSummary summary2){
+        System.out.println("\n-----------------Compare Test Result-----------------");
+        if(summary1.getTestsSucceededCount()==summary2.getTestsSucceededCount()){
+            System.out.println("Test1 and Test2 are the same");
+            System.out.println("Passed: "+summary1.getTestsSucceededCount()+" Failed: "+summary1.getTestsFailedCount());
+        }else{
+            System.out.println("Test1 and Test2 are different");
+            System.out.println("Test1: "+"Passed: "+summary1.getTestsSucceededCount()+" Failed: "+summary1.getTestsFailedCount());
+            System.out.println("Test2: "+"Passed: "+summary2.getTestsSucceededCount()+" Failed: "+summary2.getTestsFailedCount());
+        }
+        System.out.println("-----------------------------------------------------\n");
     }
 
     /**
@@ -30,7 +43,7 @@ public class TestRunner {
      * @param className 类名
      * @throws Exception 异常
      */
-    public static TestExecutionSummary runSingleTest(String classPath,String className) throws Exception {
+    private static TestExecutionSummary runSingleTest(String classPath,String className) throws Exception {
         Class<?> testClass = getTestClassFromPath(classPath, className);
         assert testClass != null;
         return runTest(testClass);
@@ -76,12 +89,6 @@ public class TestRunner {
         launcher.execute(request); // Execute the tests
 
         // Get the execute summary
-        TestExecutionSummary summary = listener.getSummary();
-        System.out.println("运行的测试数量: " + summary.getTestsFoundCount());
-        System.out.println("成功的测试数量: " + summary.getTestsSucceededCount());
-        System.out.println("失败的测试数量: " + summary.getTestsFailedCount());
-        System.out.println("忽略的测试数量: " + summary.getTestsSkippedCount());
-        System.out.println("执行时间: " + summary.getTimeStarted());
-        return summary;
+        return listener.getSummary();
     }
 }

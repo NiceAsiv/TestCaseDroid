@@ -1,7 +1,5 @@
 package TestCaseDroid;
 
-import TestCaseDroid.config.SootConfig;
-import TestCaseDroid.graph.BuildCallGraph;
 import TestCaseDroid.graph.BuildCallGraphForJar;
 import TestCaseDroid.graph.BuildControlFlowGraph;
 import TestCaseDroid.graph.BuildICFG;
