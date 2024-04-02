@@ -12,7 +12,7 @@ import java.util.*;
 
 public class BuildCallGraph  extends SceneTransformer {
     private static String targetPackageName = "TestCaseDroid";
-    private static String targetClass = "TestCaseDroid.test.MultilevelCall.LibraryApplication";
+    private static String targetClass = "TestCaseDroid.test.A2";
     public static String entryMethod = "main";
     private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
     private static int numOfEdges = 0;
@@ -24,6 +24,12 @@ public class BuildCallGraph  extends SceneTransformer {
         buildCallGraphForClass();
     }
 
+    BuildCallGraph() {
+    }
+    public BuildCallGraph(String targetClass, String entryMethod) {
+        BuildCallGraph.targetClass = targetClass;
+        BuildCallGraph.entryMethod = entryMethod;
+    }
     public static void buildCallGraphForClass() {
         SootConfig sootConfig = new SootConfig();
         sootConfig.setCallGraphAlgorithm("Spark");
@@ -80,8 +86,9 @@ public class BuildCallGraph  extends SceneTransformer {
             dotGraph.plot("cg", targetClass + "." + entryMethod.getName());
         }
     }
-
-
+    public static CallGraph getCallGraph() {
+        return Scene.v().getCallGraph();
+    }
     /**
      * 递归遍历call graph
      * 为了避免重复遍历，使用visited map记录已经遍历过的方法
@@ -145,5 +152,4 @@ public class BuildCallGraph  extends SceneTransformer {
             }
         }
     }
-
 }
