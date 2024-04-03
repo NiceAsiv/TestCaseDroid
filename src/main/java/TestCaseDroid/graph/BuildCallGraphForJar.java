@@ -30,7 +30,7 @@ public class BuildCallGraphForJar extends SceneTransformer{
 
     public static void buildCallGraphForJar(String targetJarPath,String className,String entryMethod) {
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setCallGraphAlgorithm("Spark");
+        sootConfig.setCallGraphAlgorithm("CHA");
         sootConfig.setupSoot(className, true, targetJarPath);
 
         //add an inter-procedural analysis phase to Soot

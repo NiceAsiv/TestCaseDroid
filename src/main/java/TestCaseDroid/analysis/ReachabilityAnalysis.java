@@ -7,12 +7,11 @@ import lombok.Getter;
 import lombok.Setter;
 import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
-import soot.jimple.toolkits.callgraph.Edge;
-import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.jimple.toolkits.callgraph.Targets;
-import soot.util.queue.QueueReader;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -24,22 +23,28 @@ import java.util.*;
 @Getter
 @Setter
 public class ReachabilityAnalysis {
-    private  String entryMethod;
-    private  String targetMethod;
+    private  MethodSig entryMethod;
+    private  MethodSig targetMethod;
 
+    /**
+     * 构造函数
+     *
+     * @param targetMethod 目标函数 like "<TestCaseDroid.test.A2: void bar()>"
+     * @param entryMethod  入口函数 like "<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>"
+     */
     public ReachabilityAnalysis(String targetMethod, String entryMethod) {
-        this.entryMethod = entryMethod;
-        this.targetMethod = targetMethod;
+        this.entryMethod = new MethodSig(entryMethod);
+        this.targetMethod = new MethodSig(targetMethod);
     }
     /**
-     * 分析函数调用图，并返回从目标函数逆向到入口函数的调用链。
+     * 分析函数调用图，并返回从入口函数到目标函数
      *
-     * <p>这个方法接收一个CallGraph对象作为参数，然后使用worklist算法来分析函数调用关系。函数返回一个包含从目标函数逆向到入口函数的调用链的列表。</p>
+     * <p>这个方法接收一个CallGraph对象作为参数，然后使用worklist算法来分析函数调用关系。函数返回一个包含从入口函数到目标函数的调用链的列表。</p>
      *
      * @param callGraph 函数调用图
-     * @return 从目标函数逆向到入口函数的调用链
+     * @return 从入口函数到目标函数的调用链
      */
-    public List<String> analyzeCallGraph(CallGraph callGraph) {
+    private List<String> analyzeCallGraph(CallGraph callGraph) {
         List<String> callChain = new ArrayList<>(); //从入口函数到目标函数的调用链
         Set<String> visited = new HashSet<>();
         Map<SootMethod, SootMethod> predecessors = new HashMap<>(); // 记录前驱节点
@@ -54,20 +59,20 @@ public class ReachabilityAnalysis {
             SootMethod current = worklist.poll();//从worklist中取出一个方法
             visited.add(current.getSignature());
 
-            if (current.getSignature().equals(this.targetMethod)) {
+            if (current.getSignature().equals(this.targetMethod.signature)) {
                 //找到目标函数，逆向回溯到入口函数
                 SootMethod pred = current;
-                while (!pred.getSignature().equals(this.entryMethod)) {
+                while (!pred.getSignature().equals(this.entryMethod.signature)) {
                     callChain.add(pred.getSignature());
                     pred = predecessors.get(pred);
                 }
-                callChain.add(this.entryMethod);
+                callChain.add(this.entryMethod.signature);
                 break;
             }
             Iterator<MethodOrMethodContext> targets = new Targets(callGraph.edgesOutOf(current));//获取所有被m调用的方法
             while (targets.hasNext()) {
                 SootMethod target = (SootMethod) targets.next();
-                if (!visited.contains(target.getSignature())) {
+                if (!visited.contains(target.getSignature())&&!target.isJavaLibraryMethod()) {
                     worklist.offer(target);
                     visited.add(target.getSignature());
                     predecessors.put(target, current);
@@ -78,29 +83,62 @@ public class ReachabilityAnalysis {
         String prettyCallChain = String.join(" -> ", callChain); // 使用箭头连接每个函数
         return Collections.singletonList(prettyCallChain); // 返回美化后的调用链
     }
-    private static void getReachabilityAnalysis(CallGraph callGraph) {
-        // Create a ReachableMethods object
-        ReachableMethods reachableMethods = new ReachableMethods(callGraph, Scene.v().getEntryPoints().iterator());
-
-        // Update the ReachableMethods object to get all reachable methods
-        reachableMethods.update();
-
-        // Create a QueueReader object to read all reachable methods
-        QueueReader<MethodOrMethodContext> reader = reachableMethods.listener();
-
-        // Iterate and print all reachable methods
-        while (reader.hasNext()) {
-            MethodOrMethodContext edge = reader.next();
-            System.out.println("Reachable method: " + edge.method().getSignature());
-        }
+    public List<String> runAnalysis(String targetJarPath) {
+        BuildCallGraphForJar.buildCallGraphForJar(targetJarPath, entryMethod.className, entryMethod.methodName);
+        CallGraph callGraph = Scene.v().getCallGraph();
+        return analyzeCallGraph(callGraph);
+    }
+    public List<String> runAnalysis() {
+        BuildCallGraph buildCallGraph = new BuildCallGraph(entryMethod.className, entryMethod.methodName);
+        BuildCallGraph.buildCallGraphForClass();
+        CallGraph callGraph = Scene.v().getCallGraph();
+        return analyzeCallGraph(callGraph);
     }
 
     public static void main(String[] args) {
         ReachabilityAnalysis analysis = new ReachabilityAnalysis("<TestCaseDroid.test.A2: void bar()>", "<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
-        BuildCallGraphForJar.buildCallGraphForJar("E:\\Tutorial\\TestCaseDroid\\target\\classes", "TestCaseDroid.test.CallGraphs", "main");
-        CallGraph callGraph = Scene.v().getCallGraph();
-        getReachabilityAnalysis(callGraph);
-        List<String> callChain = analysis.analyzeCallGraph(callGraph);
+        List<String> callChain = analysis.runAnalysis("E:\\Tutorial\\TestCaseDroid\\target\\classes");
         System.out.println(callChain);
     }
+}
+class MethodSig{
+    String signature;
+    String className;
+    String methodName;
+    String returnType;
+    List<String> paramTypes;
+
+     /**
+     * 构造函数 从函数签名中提取类名、函数名、返回类型和参数类型
+     * @param signature 函数签名 like  <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>
+     */
+     public MethodSig(String signature) {
+        this.signature = signature;
+        String pattern = "<(.*): (.*?) (.*?)\\((.*?)\\)>"; //正则表达式
+        if (!signature.matches(pattern)) {
+            throw new IllegalArgumentException("Invalid method signature: " + signature);
+        }
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(signature);
+        if (m.find()) {
+            this.className = m.group(1);
+            this.returnType = m.group(2);
+            this.methodName = m.group(3);
+            this.paramTypes = new ArrayList<>();
+            if (!m.group(4).isEmpty()) {
+                String[] paramArray = m.group(4).split(",");
+                this.paramTypes.addAll(Arrays.asList(paramArray));
+            }
+        }else {
+            throw new IllegalArgumentException("Invalid method signature: " + signature);
+        }
+     }
+
+     public static void main(String[] args) {
+        MethodSig methodSig = new MethodSig("<TestCaseDroid.test.CallGraphs: void main(java.lang.String[],int)>");
+        System.out.println(methodSig.className);
+        System.out.println(methodSig.methodName);
+        System.out.println(methodSig.returnType);
+        System.out.println(methodSig.paramTypes);
+     }
 }

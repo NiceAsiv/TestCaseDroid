@@ -27,12 +27,11 @@ public class SootConfig {
      */
 
     // javaPath 收集项目中所有依赖库包括项目自身target目录下的类
-    private  static  String  javaPath = System.getProperty("java.class.path");
+    private  static  String  userDir = System.getProperty("user.dir");
+    private  static  final String  javaPath = userDir + File.separator + "target" + File.separator + "classes";
     private  static  final String  jreDir = System.getProperty("java.home")+"/lib/rt.jar";
-    private  static String  sootClassPath = javaPath + File.pathSeparator +  jreDir;
+    private  static String  sootClassPath = javaPath + File.pathSeparator + jreDir;
     private String callGraphAlgorithm = "Spark";
-
-
 
     /**
      * Soot configuration for class document
@@ -101,7 +100,6 @@ public class SootConfig {
         Options.v().set_verbose(true);
         Options.v().setPhaseOption("jb","use-original-names:true");
 
-
         if (constructCallGraph) {
             switch (this.callGraphAlgorithm) {
                 case "CHA":
@@ -132,6 +130,8 @@ public class SootConfig {
     {
         //exclude jdk classes
         Options.v().set_exclude(SootUtils.excludeClassesList);
+        Options.v().set_exclude(Collections.singletonList("java.*"));
+        Options.v().set_exclude(Collections.singletonList("sun.*"));
         //this option must be disabled for a sound call graph
         Options.v().set_no_bodies_for_excluded(true);
         Options.v().set_allow_phantom_refs(true);//关键!!!!

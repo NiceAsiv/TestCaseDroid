@@ -107,7 +107,7 @@ public class BuildCallGraph  extends SceneTransformer {
             SootMethod tgt = (SootMethod) targets.next();
             if (SootUtils.isNotExcludedMethod(tgt)&& (method.getDeclaringClass().getName().startsWith(targetPackageName) || tgt.getDeclaringClass().getName().startsWith(targetPackageName))) {
                 String tgtIdentifier = tgt.getSignature();
-                if (!visited.containsKey(tgtIdentifier)) {
+                if (!visited.containsKey(tgtIdentifier)&&!tgt.isJavaLibraryMethod()) {
                     dotGraph.drawNode(tgtIdentifier);
                     dotGraph.drawEdge(identifier, tgtIdentifier);
                     System.out.println(method + " may call " + tgt);
