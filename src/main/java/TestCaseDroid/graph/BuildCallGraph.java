@@ -12,7 +12,7 @@ import java.util.*;
 
 public class BuildCallGraph  extends SceneTransformer {
     private static String targetPackageName = "TestCaseDroid";
-    private static String targetClass = "TestCaseDroid.test.A2";
+    private static String targetClass = "TestCaseDroid.test.MultilevelCall.LibraryApplication";
     public static String entryMethod = "main";
     private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
     private static int numOfEdges = 0;

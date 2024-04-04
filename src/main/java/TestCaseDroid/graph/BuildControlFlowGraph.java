@@ -16,7 +16,7 @@ import java.util.Map;
 
 
 @Setter
-public class BuildControlFlowGraph extends BodyTransformer {
+public class BuildControlFlowGraph {
     private static String targetClassName = "TestCaseDroid.test.CFGTest";
     private static String entryMethod = "main";
     private static DotGraphWrapper dotGraph = new DotGraphWrapper("controlFlowGraph");
@@ -27,34 +27,20 @@ public class BuildControlFlowGraph extends BodyTransformer {
     public static void main(String[] args) {
            buildControlFlowGraphForClass();
     }
-    public static void buildControlFlowGraphForClass()
-    {
+    public static void buildControlFlowGraphForClass() {
+        buildControlFlowGraphForClass(null, targetClassName, entryMethod);
+    }
+
+    public static void buildControlFlowGraphForClass(String classesPath, String targetClassName, String entryMethod) {
         //配置soot
         SootConfig sootConfig = new SootConfig();
         sootConfig.setCallGraphAlgorithm("Spark");
-        sootConfig.setupSoot(targetClassName,true);
+        if (classesPath != null) {
+            sootConfig.setupSoot(BuildControlFlowGraph.targetClassName, true, classesPath);
+        } else {
+            sootConfig.setupSoot(BuildControlFlowGraph.targetClassName, true);
+        }
 
-        PackManager.v().getPack("jtp").add(new Transform("jtp.BuildControlFlowGraph", new BuildControlFlowGraph()));
-        PackManager.v().runPacks();
-    }
-
-    public static void buildControlFlowGraphForClass(String classesPath,String targetClassName,String entryMethod)
-    {
-        BuildControlFlowGraph.entryMethod = entryMethod;
-        BuildControlFlowGraph.targetClassName = targetClassName;
-        //配置soot
-        SootConfig sootConfig = new SootConfig();
-        sootConfig.setCallGraphAlgorithm("Spark");
-        sootConfig.setupSoot(targetClassName,true,classesPath);
-        PackManager.v().getPack("jtp").add(new Transform("jtp.BuildControlFlowGraph", new BuildControlFlowGraph()));
-        PackManager.v().runPacks();
-    }
-
-    @Override
-    protected void internalTransform(Body b, String phaseName, Map<String, String> options) {
-
-
-        //获取指定的类
         SootClass targetClass = Scene.v().getSootClass(targetClassName);
 
         //获取指定的方法
@@ -63,20 +49,16 @@ public class BuildControlFlowGraph extends BodyTransformer {
         //获取方法的Jimple body
         JimpleBody jimpleBody = (JimpleBody) targetMethod.retrieveActiveBody();
 
-        //去除非法字符
-        String processedClassName = SootDataProcessUtils.removeIllegalCharacters(targetClass.getName());
-        String processedMethodName = SootDataProcessUtils.removeIllegalCharacters(targetMethod.getName());
-
         //生成控制流图
         ClassicCompleteUnitGraph cfg = new ClassicCompleteUnitGraph(jimpleBody);
 
         //遍历控制流图
         graphTraverse(cfg);
-        dotGraph.plot("cfg",processedClassName,processedMethodName);
+        dotGraph.plot("cfg",targetClassName,entryMethod);
+
     }
 
-
-    private void graphTraverse(ClassicCompleteUnitGraph cfg)
+    private static void graphTraverse(ClassicCompleteUnitGraph cfg)
     {
         //遍历控制流图
         for(Unit unit : cfg)

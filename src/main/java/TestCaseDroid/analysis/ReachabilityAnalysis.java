@@ -36,6 +36,7 @@ public class ReachabilityAnalysis {
         this.entryMethod = new MethodSig(entryMethod);
         this.targetMethod = new MethodSig(targetMethod);
     }
+
     /**
      * 分析函数调用图，并返回从入口函数到目标函数
      *
@@ -83,6 +84,19 @@ public class ReachabilityAnalysis {
         String prettyCallChain = String.join(" -> ", callChain); // 使用箭头连接每个函数
         return Collections.singletonList(prettyCallChain); // 返回美化后的调用链
     }
+
+    /**
+     * 已知目标函数，分析反向调用图 利用BackwardsInterproceduralCFG
+     * @param targetMethod 目标函数
+     * @return  从入口函数到目标函数的调用链
+     */
+    private List<String> analyzeBackICFG(String targetMethod)
+    {
+        //TODO
+
+
+        return null;
+    }
     public List<String> runAnalysis(String targetJarPath) {
         BuildCallGraphForJar.buildCallGraphForJar(targetJarPath, entryMethod.className, entryMethod.methodName);
         CallGraph callGraph = Scene.v().getCallGraph();
@@ -101,6 +115,10 @@ public class ReachabilityAnalysis {
         System.out.println(callChain);
     }
 }
+
+
+
+
 class MethodSig{
     String signature;
     String className;

@@ -15,7 +15,7 @@ import java.util.Map;
 @Setter
 public class BuildICFG extends SceneTransformer {
 
-    private static String targetClassName = "TestCaseDroid.test.FastJsonTest";
+    private static String targetClassName = "TestCaseDroid.test.CallGraphs";
     private static String targetMethodName = "main";
     private static String targetPackageName = "TestCaseDroid";
     private static DotGraphWrapper dotGraph = new DotGraphWrapper("interproceduralCFG");

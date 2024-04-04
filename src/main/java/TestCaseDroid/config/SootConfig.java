@@ -44,6 +44,7 @@ public class SootConfig {
         G.reset();
         //设置Soot类路径
         Options.v().set_soot_classpath(sootClassPath);
+        Options.v().set_process_dir(Collections.singletonList(javaPath));
         //设置是否分析整个程序
         Options.v().set_whole_program(true);
         //设将类路径中的类均设为应用类，并仅分析应用类
