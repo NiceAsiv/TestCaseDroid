@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Setter
 public class BuildControlFlowGraph {
-    private static String targetClassName = "TestCaseDroid.test.CFGTest";
+    private static String targetClassName = "TestCaseDroid.test.FastJsonTest";
     private static String entryMethod = "main";
     private static DotGraphWrapper dotGraph = new DotGraphWrapper("controlFlowGraph");
     private static CFGToDotGraph drawer = new CFGToDotGraph();
@@ -53,9 +53,9 @@ public class BuildControlFlowGraph {
         ClassicCompleteUnitGraph cfg = new ClassicCompleteUnitGraph(jimpleBody);
 
         //遍历控制流图
-        graphTraverse(cfg);
-        dotGraph.plot("cfg",targetClassName,entryMethod);
-
+//        graphTraverse(cfg);
+//        dotGraph.plot("cfg",targetClassName,entryMethod);
+        getPrettyCFG(jimpleBody, jimpleBody, targetClassName, entryMethod);
     }
 
     private static void graphTraverse(ClassicCompleteUnitGraph cfg)
@@ -85,7 +85,7 @@ public class BuildControlFlowGraph {
      * @param entryMethod the name of the method
      * In this method,wo only wanna beautiful control flow graph,but not disturb the attention of the LLM
      */
-    private void getPrettyCFG(Body b, JimpleBody jimpleBody,String ClassName,String entryMethod) {
+    private static void getPrettyCFG(Body b, JimpleBody jimpleBody, String ClassName, String entryMethod) {
         drawer = new CFGToDotGraph();
         drawer.setBriefLabels(false);//标签简洁模式
         drawer.setOnePage(false);//允许多页

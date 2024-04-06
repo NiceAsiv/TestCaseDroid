@@ -15,11 +15,9 @@ import org.apache.commons.cli.*;
 public class TestCaseDroidApplication {
     public static void main(String[] args) {
         Options options = getOptions();
-
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd;
-
         try {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
