@@ -115,5 +115,10 @@
             <artifactId>commons-cli</artifactId>
             <version>1.5.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-api</artifactId>
+            <version>2.22.2</version>
+        </dependency>
     </dependencies>
 </project>
