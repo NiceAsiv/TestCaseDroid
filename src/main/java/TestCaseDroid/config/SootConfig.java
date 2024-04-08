@@ -13,10 +13,6 @@ import java.io.File;
 import java.util.Collections;
 
 
-
-/**
- * Soot configuration
- */
 @Setter
 @Getter
 @Slf4j

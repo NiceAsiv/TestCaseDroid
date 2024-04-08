@@ -15,14 +15,14 @@ import java.net.URLClassLoader;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 /**
- * 利用反射机制和JUnit5的API来运行单个测试类
+ * Utilize reflection mechanism and JUnit5 API to execute single test class.
  */
-//输入的参数
-//依赖引入问题
+// Input parameters
+// Dependency import issues
 public class TestRunner {
     public static void main(String[] args) throws Exception {
-        TestExecutionSummary summary1= runSingleTest("E:\\Tutorial\\taitest\\target\\test-classes","test.CFGTestTest");
-        TestExecutionSummary summary2= runSingleTest("E:\\Tutorial\\TestCaseDroid\\target\\test-classes","TestCaseDroid.config.SootConfigTest");
+        TestExecutionSummary summary1= runSingleTest("E:\\Tutorial\\taitest\\","test.CFGTest");
+        TestExecutionSummary summary2= runSingleTest("E:\\Tutorial\\taitest\\","test.CFGTest");
         CompareTestResult(summary1,summary2);
     }
 
@@ -40,46 +40,53 @@ public class TestRunner {
     }
 
     /**
-     * 运行单个测试
-     * @param classPath 类路径
-     * @param className 类名
-     * @throws Exception 异常
+     * Execute a single test.
+     * @param ProjPath The project path
+     * @param className The class name
+     * @throws Exception Exceptions
      */
-    private static TestExecutionSummary runSingleTest(String classPath,String className) throws Exception {
-        Class<?> testClass = getTestClassFromPath(classPath, className);
+    private static TestExecutionSummary runSingleTest(String ProjPath,String className) throws Exception {
+        Class<?> testClass = getTestClassFromPath(ProjPath, className);
         assert testClass != null;
         return runTest(testClass);
     }
 
     /**
-     * 通过类路径和类名获取测试类
-     * @param classPath 类路径
-     * @param className 类名 eg: com.example.Test
-     * @return 测试类
-     * @throws Exception 异常
+     * Get the test class from the classpath and class name.
+     * @param ProjPath The project path
+     * @param className The class name eg: com.example.Test
+     * @return The test class
+     * @throws Exception Exceptions
      */
-    private static Class<?> getTestClassFromPath(String classPath,String className) throws Exception {
-        //查看路径是否存在
-        File file = new File(classPath);
-        if (!file.exists()) {
-            System.out.println("路径不存在");
+    private static Class<?> getTestClassFromPath(String ProjPath,String className) throws Exception {
+        String testClassPath = ProjPath + File.separator + "target"+File.separator+"test-classes";
+        String classPath = ProjPath + File.separator + "target"+File.separator+"classes";
+        // Check if the path exists
+        File testFile = new File(testClassPath);
+        File classFile = new File(classPath);
+        if (!testFile.exists() && !classFile.exists()) {
+            System.out.println("Class file not found");
             return null;
         }
-        URL url = file.toURI().toURL();
-        try (URLClassLoader classLoader = new URLClassLoader(new URL[]{url})) {
-            return classLoader.loadClass(className);
-        }catch (ClassNotFoundException e){
-            System.out.println("类加载失败"+e.getMessage());
-            throw e;
+        //先引入项目的target/test-classes
+
+        //再引入项目的target/classes
+
+        // Load the class
+        URL testUrl = testFile.toURI().toURL();
+        URL classUrl = classFile.toURI().toURL();
+
+        try (URLClassLoader classLoader = new URLClassLoader(new URL[]{testUrl,classUrl})) {
+            return classLoader.loadClass(className+"Test");
         }catch (Exception e){
-            System.out.println("异常"+e.getMessage());
-            throw e;
+            System.out.println("Class not found");
+            return null;
         }
     }
 
     /**
-     * 运行测试
-     * @param testClass 测试类
+     * Run the test.
+     * @param testClass The test class
      */
     private static TestExecutionSummary runTest(Class<?> testClass) {
         System.out.println("Running tests for class " + testClass.getName());
