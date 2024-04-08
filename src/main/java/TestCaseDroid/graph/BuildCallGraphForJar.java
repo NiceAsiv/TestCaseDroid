@@ -2,8 +2,6 @@ package TestCaseDroid.graph;
 
 import TestCaseDroid.config.SootConfig;
 import TestCaseDroid.utils.DotGraphWrapper;
-import TestCaseDroid.utils.SootAnalysisUtils;
-import TestCaseDroid.utils.SootInfoUtils;
 import TestCaseDroid.utils.SootUtils;
 import com.google.gson.internal.LinkedHashTreeMap;
 import soot.*;
@@ -41,9 +39,9 @@ public class BuildCallGraphForJar extends SceneTransformer{
         SootClass targetClass = Scene.v().getSootClass(className);
         SootMethod entryPoint = targetClass.getMethodByName(entryMethod);
         //判断mainClass是否为应用类
-        SootInfoUtils.isApplicationClass(targetClass.getName());
+        SootUtils.isApplicationClass(targetClass.getName());
         //输出当前分析环境下的application类和每个类所加载的函数签名
-        SootAnalysisUtils.setEntryPoints(targetClass.getName(), entryPoint.getName());
+        SootUtils.setEntryPoints(targetClass.getName(), entryPoint.getName());
         //运行分析
         PackManager.v().runPacks();
     }

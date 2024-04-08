@@ -1,6 +1,9 @@
 package TestCaseDroid.utils;
 
-public class SootVisualizeUtils {
+import lombok.Getter;
+
+public class VisualizeUtils {
+    @Getter
     public enum TextColor {
         // 定义枚举常量及其对应的 ANSI 转义序列
         RESET("\u001B[0m"),
@@ -13,17 +16,13 @@ public class SootVisualizeUtils {
         CYAN("\u001B[36m"),
         WHITE("\u001B[37m");
 
+        // 获取 ANSI 转义序列
         // ANSI 转义序列
         private final String code;
 
-        // 构造方法
         TextColor(String code) {
             this.code = code;
         }
 
-        // 获取 ANSI 转义序列
-        public String getCode() {
-            return code;
-        }
     }
 }

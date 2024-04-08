@@ -1,5 +1,6 @@
 package TestCaseDroid.config;
 
+import TestCaseDroid.utils.FileUtils;
 import TestCaseDroid.utils.SootUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -75,7 +76,7 @@ public class SootConfig {
     public  void setupSoot(String className,Boolean constructCallGraph,String classesPath) {
         //清除soot之前留下的所有缓存
         G.reset();
-        sootClassPath= sootClassPath + File.pathSeparator + SootUtils.classPathParser(classesPath);
+        sootClassPath= sootClassPath + File.pathSeparator + FileUtils.classPathParser(classesPath);
         //设置Soot类路径
         Options.v().set_soot_classpath(sootClassPath);
         Options.v().set_whole_program(true);

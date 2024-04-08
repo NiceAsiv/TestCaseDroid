@@ -1,17 +1,21 @@
 package TestCaseDroid.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SootDataProcessUtils {
+@Slf4j
+public class FileUtils {
     public static String removeIllegalCharacters(String input) {
         // 定义 Windows 不允许的字符的正则表达式
         String illegalCharsRegex = "[<>:\"/\\|?*]";
 
         // 使用正则表达式替换方法移除不允许的字符
-        String result = input.replaceAll(illegalCharsRegex, "");
-        return result;
+        return input.replaceAll(illegalCharsRegex, "");
     }
 
     public static void folderExistenceTest(String folderPath){
@@ -34,5 +38,30 @@ public class SootDataProcessUtils {
         } else {
             System.out.println(String.format("%s output folder exist in：",folderName) + folder.getAbsolutePath());
         }
+    }
+
+    public static String classPathParser(String ...classPath){
+        if (classPath.length>1){
+            log.error("Only one class path is allowed");
+            throw new RuntimeException("Only one class path is allowed");
+        }else if (classPath.length==1){
+            String path = classPath[0];
+            if (isAbsolutePath(path)){
+                return path;
+            }else {
+                return getAbsolutePath(path);
+            }
+        }
+        return null;
+    }
+
+    //相对路径转绝对路径
+    public static String getAbsolutePath(String relativePath){
+        return System.getProperty("user.dir") + File.separator + relativePath;
+    }
+
+    public static boolean isAbsolutePath(String pathStr) {
+        Path path = Paths.get(pathStr);
+        return path.isAbsolute();
     }
 }

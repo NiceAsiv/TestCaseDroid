@@ -1,4 +1,4 @@
-package TestCaseDroid.analysis;
+package TestCaseDroid.analysis.reachability;
 
 import java.util.ArrayList;
 import java.util.Arrays;

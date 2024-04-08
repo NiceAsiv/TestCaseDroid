@@ -23,7 +23,6 @@ public class TestCaseDroidApplication {
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             formatter.printHelp("TestCaseDroid", options);
-
             System.exit(1);
             return;
         }
@@ -40,7 +39,8 @@ public class TestCaseDroidApplication {
         } else if (graphType.equals("icfg")) {
             BuildICFG.buildICFGForClass(inputFilePath,classNameForAnalysis,methodNameForAnalysis);
         } else {
-            System.out.println("Invalid graph type");
+            System.out.println("Error: Invalid graph type. Use 'cg', 'cfg', or 'icfg'.");
+            formatter.printHelp("usage: TestCaseDroid", options, true);
         }
         // Now you can use these values to perform the required operations
     }

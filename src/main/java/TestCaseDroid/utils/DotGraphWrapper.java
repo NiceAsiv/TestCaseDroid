@@ -5,7 +5,7 @@ import soot.util.dot.DotGraph;
 
 import java.io.File;
 
-import static TestCaseDroid.utils.SootDataProcessUtils.folderExistenceTest;
+import static TestCaseDroid.utils.FileUtils.folderExistenceTest;
 
 /**
  * Wrapper for the DotGraph class
@@ -25,7 +25,6 @@ public class DotGraphWrapper {
         this.dotGraph.setNodeShape("box");
 //        this.dotGraph.setGraphAttribute("fontname", "Helvetica");
 //        this.dotGraph.setGraphAttribute("fontsize", "12");
-
     }
 
     public void drawEdge(String src, String tgt) {

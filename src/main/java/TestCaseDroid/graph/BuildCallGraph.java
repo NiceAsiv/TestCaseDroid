@@ -40,11 +40,11 @@ public class BuildCallGraph  extends SceneTransformer {
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraph", analysis));
 
         //判断mainClass是否为应用类
-        SootInfoUtils.isApplicationClass(targetClass);
+        SootUtils.isApplicationClass(targetClass);
         //输出当前分析环境下的application类和每个类所加载的函数签名
-        SootInfoUtils.reportSootApplicationClassInfo();
+        SootUtils.reportSootApplicationClassInfo();
         //设置入口方法
-        SootAnalysisUtils.setEntryPoints(targetClass, entryMethod);
+        SootUtils.setEntryPoints(targetClass, entryMethod);
         //运行分析
         PackManager.v().runPacks();
     }

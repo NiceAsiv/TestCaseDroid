@@ -1,4 +1,4 @@
-package TestCaseDroid.analysis;
+package TestCaseDroid.analysis.reachability;
 
 import TestCaseDroid.config.SootConfig;
 import soot.Scene;

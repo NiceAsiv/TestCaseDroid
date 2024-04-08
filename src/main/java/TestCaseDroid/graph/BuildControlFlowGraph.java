@@ -2,7 +2,6 @@ package TestCaseDroid.graph;
 
 import TestCaseDroid.config.SootConfig;
 import TestCaseDroid.utils.DotGraphWrapper;
-import TestCaseDroid.utils.SootDataProcessUtils;
 import lombok.Setter;
 import soot.*;
 import soot.jimple.JimpleBody;
@@ -12,7 +11,6 @@ import soot.util.cfgcmd.CFGGraphType;
 import soot.util.cfgcmd.CFGToDotGraph;
 import soot.util.dot.DotGraph;
 
-import java.util.Map;
 
 
 @Setter
