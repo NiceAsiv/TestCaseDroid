@@ -17,8 +17,8 @@ import java.util.Map;
 
 @Setter
 public class BuildControlFlowGraph {
-    private static String targetClassName = "TestCaseDroid.test.FastJsonTest";
-    private static String entryMethod = "main";
+    private static String targetClassName = "TestCaseDroid.test.A2";
+    private static String entryMethod = "bar";
     private static DotGraphWrapper dotGraph = new DotGraphWrapper("controlFlowGraph");
     private static CFGToDotGraph drawer = new CFGToDotGraph();
 

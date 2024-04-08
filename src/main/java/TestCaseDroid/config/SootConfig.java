@@ -125,6 +125,7 @@ public class SootConfig {
                     throw new RuntimeException("Unknown call graph algorithm: " + this.callGraphAlgorithm);
             }
         }
+        PackManager.v().runPacks();
     }
 
     private static void excludeJDKLibrary()

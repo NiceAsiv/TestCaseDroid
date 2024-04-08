@@ -5,13 +5,13 @@ import TestCaseDroid.graph.BuildCallGraph;
 import TestCaseDroid.graph.BuildCallGraphForJar;
 import lombok.Getter;
 import lombok.Setter;
-import soot.*;
+import soot.MethodOrMethodContext;
+import soot.Scene;
+import soot.SootMethod;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 /**
@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
  */
 @Getter
 @Setter
-public class ReachabilityAnalysis {
+public class ReachabilityForFunction {
     private  MethodSig entryMethod;
     private  MethodSig targetMethod;
 
@@ -32,7 +32,7 @@ public class ReachabilityAnalysis {
      * @param targetMethod 目标函数 like "<TestCaseDroid.test.A2: void bar()>"
      * @param entryMethod  入口函数 like "<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>"
      */
-    public ReachabilityAnalysis(String targetMethod, String entryMethod) {
+    public ReachabilityForFunction(String targetMethod, String entryMethod) {
         this.entryMethod = new MethodSig(entryMethod);
         this.targetMethod = new MethodSig(targetMethod);
     }
@@ -90,13 +90,30 @@ public class ReachabilityAnalysis {
      * @param targetMethod 目标函数
      * @return  从入口函数到目标函数的调用链
      */
-    private List<String> analyzeBackICFG(String targetMethod)
-    {
-        //TODO
+    private List<String> analyzeBackICFG(String targetMethod) {
+        List<String> callChain = new ArrayList<>(); //从目标函数到所有可能的入口函数的调用链
+        Set<String> visited = new HashSet<>();
+        Queue<SootMethod> worklist = new LinkedList<>();
 
+        //添加目标函数到worklist
+        SootMethod target = Scene.v().getMethod(targetMethod);
+        worklist.offer(target);
+        visited.add(target.getSignature());
 
-        return null;
+        //创建一个BackwardsInterproceduralCFG的实例
+//        BackwardsInterproceduralCFG bicfg = new BackwardsInterproceduralCFG();
+
+        while (!worklist.isEmpty()) {
+            SootMethod current = worklist.poll();//从worklist中取出一个方法
+            visited.add(current.getSignature());
+
+            callChain.add(current.getSignature());
+
+        }
+
+        return callChain;
     }
+
     public List<String> runAnalysis(String targetJarPath) {
         BuildCallGraphForJar.buildCallGraphForJar(targetJarPath, entryMethod.className, entryMethod.methodName);
         CallGraph callGraph = Scene.v().getCallGraph();
@@ -110,7 +127,7 @@ public class ReachabilityAnalysis {
     }
 
     public static void main(String[] args) {
-        ReachabilityAnalysis analysis = new ReachabilityAnalysis("<TestCaseDroid.test.A2: void bar()>", "<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
+        ReachabilityForFunction analysis = new ReachabilityForFunction("<TestCaseDroid.test.A2: void bar()>", "<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
         List<String> callChain = analysis.runAnalysis("E:\\Tutorial\\TestCaseDroid\\target\\classes");
         System.out.println(callChain);
     }
@@ -119,44 +136,3 @@ public class ReachabilityAnalysis {
 
 
 
-class MethodSig{
-    String signature;
-    String className;
-    String methodName;
-    String returnType;
-    List<String> paramTypes;
-
-     /**
-     * 构造函数 从函数签名中提取类名、函数名、返回类型和参数类型
-     * @param signature 函数签名 like  <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>
-     */
-     public MethodSig(String signature) {
-        this.signature = signature;
-        String pattern = "<(.*): (.*?) (.*?)\\((.*?)\\)>"; //正则表达式
-        if (!signature.matches(pattern)) {
-            throw new IllegalArgumentException("Invalid method signature: " + signature);
-        }
-        Pattern r = Pattern.compile(pattern);
-        Matcher m = r.matcher(signature);
-        if (m.find()) {
-            this.className = m.group(1);
-            this.returnType = m.group(2);
-            this.methodName = m.group(3);
-            this.paramTypes = new ArrayList<>();
-            if (!m.group(4).isEmpty()) {
-                String[] paramArray = m.group(4).split(",");
-                this.paramTypes.addAll(Arrays.asList(paramArray));
-            }
-        }else {
-            throw new IllegalArgumentException("Invalid method signature: " + signature);
-        }
-     }
-
-     public static void main(String[] args) {
-        MethodSig methodSig = new MethodSig("<TestCaseDroid.test.CallGraphs: void main(java.lang.String[],int)>");
-        System.out.println(methodSig.className);
-        System.out.println(methodSig.methodName);
-        System.out.println(methodSig.returnType);
-        System.out.println(methodSig.paramTypes);
-     }
-}

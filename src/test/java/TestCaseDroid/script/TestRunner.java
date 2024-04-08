@@ -17,11 +17,13 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 /**
  * 利用反射机制和JUnit5的API来运行单个测试类
  */
+//输入的参数
+//依赖引入问题
 public class TestRunner {
     public static void main(String[] args) throws Exception {
-       TestExecutionSummary summary1= runSingleTest("E:\\Tutorial\\TestCaseDroid\\target\\test-classes","TestCaseDroid.graph.BuildCallGraphTest");
-       TestExecutionSummary summary2= runSingleTest("E:\\Tutorial\\TestCaseDroid\\target\\test-classes","TestCaseDroid.graph.BuildCallGraphTest");
-       CompareTestResult(summary1,summary2);
+        TestExecutionSummary summary1= runSingleTest("E:\\Tutorial\\taitest\\target\\test-classes","test.CFGTestTest");
+        TestExecutionSummary summary2= runSingleTest("E:\\Tutorial\\TestCaseDroid\\target\\test-classes","TestCaseDroid.config.SootConfigTest");
+        CompareTestResult(summary1,summary2);
     }
 
     public  static void CompareTestResult(TestExecutionSummary summary1,TestExecutionSummary summary2){
@@ -66,6 +68,12 @@ public class TestRunner {
         URL url = file.toURI().toURL();
         try (URLClassLoader classLoader = new URLClassLoader(new URL[]{url})) {
             return classLoader.loadClass(className);
+        }catch (ClassNotFoundException e){
+            System.out.println("类加载失败"+e.getMessage());
+            throw e;
+        }catch (Exception e){
+            System.out.println("异常"+e.getMessage());
+            throw e;
         }
     }
 
