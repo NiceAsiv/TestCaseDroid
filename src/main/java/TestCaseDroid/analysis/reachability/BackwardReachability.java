@@ -26,11 +26,10 @@ public class BackwardReachability {
     }
 
     public Context inDynamicExtent(SootMethod source, SootMethod target) {
-        for(Unit start : icfg.getStartPointsOf(target)) {
+        for (Unit start : icfg.getStartPointsOf(target)) {
             Context startingContext = new Context(start);
             Context reached = reachable(startingContext, source);
-            if(reached != null)
-            {
+            if (reached != null) {
                 return reached;
             }
         }
@@ -44,46 +43,40 @@ public class BackwardReachability {
         worklist.add(source);
         visited.add(source);
 
-        while(!worklist.isEmpty()) {
+        while (!worklist.isEmpty()) {
             Context current = worklist.poll();
             Unit reachedNode = current.getReachedNode();
             SootMethod reachedMethod = icfg.getMethodOf(reachedNode);
             System.out.println("now reachedNode is: " + reachedNode + " in method: " + reachedMethod);
-            if(reachedMethod.equals(target))
-            {
+            if (reachedMethod.equals(target)) {
                 for (Unit u : current.getCallStack()) {
                     System.out.println(u);
                 }
                 return current;
             }
             List<Unit> preds = icfg.getPredsOf(reachedNode);
-            for(Unit pred : preds) {
+            for (Unit pred : preds) {
                 Context up = current.copy();
                 up.setReachedNode(pred);
                 up.getCallStack().addFirst(reachedNode);
-                if(visited.add(up))
-                {
+                if (visited.add(up)) {
                     worklist.add(up);
                 }
             }
-           if (worklist.isEmpty())
-           {
-               Collection<Unit> callers = icfg.getCallersOf(reachedMethod);
-               for (Unit caller :callers)
-               {
-                   if (visited.stream().noneMatch(context -> context.getReachedNode().equals(caller)))
-                   {
-                       Context up = current.copy();
-                       up.setReachedNode(caller);
-                       up.getCallStack().addFirst(reachedNode);
-                       if (visited.add(up))
-                       {
-                           worklist.add(up);
-                       }
-                   }
+            if (worklist.isEmpty()) {
+                Collection<Unit> callers = icfg.getCallersOf(reachedMethod);
+                for (Unit caller : callers) {
+                    if (visited.stream().noneMatch(context -> context.getReachedNode().equals(caller))) {
+                        Context up = current.copy();
+                        up.setReachedNode(caller);
+                        up.getCallStack().addFirst(reachedNode);
+                        if (visited.add(up)) {
+                            worklist.add(up);
+                        }
+                    }
 
-               }
-           }
+                }
+            }
         }
         return null;
     }
@@ -93,7 +86,7 @@ public class BackwardReachability {
         SootMethod source = Scene.v().getMainMethod();
         SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.A2").getMethod("void bar()");
         Context reachedContext = reachability.inDynamicExtent(source, target);
-        if(reachedContext != null) {
+        if (reachedContext != null) {
             System.out.println("The source method can be reached from the target method.");
         } else {
             System.out.println("The source method cannot be reached from the target method.");
