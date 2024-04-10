@@ -10,7 +10,6 @@ PROJECT_PATH=$1
 TEST_CLASS_NAME=$2
 
 # Optional test case arguments
-#输入有问题比如我输入以下内容 bash TestRunner.sh /home/asiv/TestCaseDroid TestCaseDroid.config.SootConfigTest -sdj dasda 它的可选参数输出只有-sdj，而我需要-sdj dasda
 TEST_CASE_ARGS=${*:3}
 
 printf "Project path: %s\n" "$PROJECT_PATH"
@@ -22,6 +21,11 @@ if [ ! -d "$PROJECT_PATH" ]; then
     exit 1
 fi
 
+#check if maven is installed
+if ! command -v mvn &> /dev/null; then
+    echo "Maven is not installed"
+    exit 1
+fi
 
 # Run the test case using Maven
 if [ -n "$TEST_CASE_ARGS" ]; then
