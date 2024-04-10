@@ -19,6 +19,9 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
  */
 // Input parameters
 // Dependency import issues
+
+@Deprecated
+@SuppressWarnings("deprecation")
 public class TestRunner {
     public static void main(String[] args) throws Exception {
         TestExecutionSummary summary1= runSingleTest("E:\\Tutorial\\taitest\\","test.CFGTest");
