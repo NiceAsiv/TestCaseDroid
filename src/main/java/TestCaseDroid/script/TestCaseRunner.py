@@ -11,6 +11,9 @@ if len(sys.argv) < 3:
 project_path = sys.argv[1]
 test_class_name = sys.argv[2]
 
+# Optional test case arguments
+test_case_args = sys.argv[3:]
+
 print(f"Project path: {project_path}")
 print(f"Test class name: {test_class_name}")
 
@@ -19,8 +22,13 @@ if not os.path.isdir(project_path):
     print("Invalid project path")
     sys.exit(1)
 
+command =[]
 # Run the test case using Maven
-output = subprocess.check_output(["mvn", "-f", project_path, "test", "-Dtest=" + test_class_name], text=True)
+if len(test_case_args) < 1:
+    command = ["mvn", "-f", project_path, "test", "-Dtest=" + test_class_name]
+else:
+    command = ["mvn", "-f", project_path, "test", "-Dtest=" + test_class_name, "-Dexec.args=" + " ".join(test_case_args)]
+output = subprocess.check_output(command, text=True)
 
 # Check if the output is empty
 if not output:

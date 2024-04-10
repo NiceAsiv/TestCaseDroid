@@ -94,9 +94,9 @@ public class TestCaseRunner {
         command.add("test");
         command.add("-Dtest=" + testCase.getTestClassName());
         if (testCase.getParameters() != null && !testCase.getParameters().isEmpty()) {
+            command.add("-Dexec.args=");
             command.addAll(testCase.getParameters());
         }
-        command.add("-DfailIfNoTests=false");
         return command;
     }
 

@@ -9,6 +9,10 @@ fi
 PROJECT_PATH=$1
 TEST_CLASS_NAME=$2
 
+# Optional test case arguments
+#输入有问题比如我输入以下内容 bash TestRunner.sh /home/asiv/TestCaseDroid TestCaseDroid.config.SootConfigTest -sdj dasda 它的可选参数输出只有-sdj，而我需要-sdj dasda
+TEST_CASE_ARGS=${*:3}
+
 printf "Project path: %s\n" "$PROJECT_PATH"
 printf "Test class name: %s\n" "$TEST_CLASS_NAME"
 
@@ -20,7 +24,12 @@ fi
 
 
 # Run the test case using Maven
-OUTPUT=$(mvn -f "$PROJECT_PATH" test -Dtest="$TEST_CLASS_NAME")
+if [ -n "$TEST_CASE_ARGS" ]; then
+    printf "Test case arguments: %s\n" "$TEST_CASE_ARGS"
+    OUTPUT=$(mvn -f "$PROJECT_PATH" test -Dtest="$TEST_CLASS_NAME" -Dexec.args="$TEST_CASE_ARGS")
+else
+    OUTPUT=$(mvn -f "$PROJECT_PATH" test -Dtest="$TEST_CLASS_NAME")
+fi
 
 #check if the output is empty
 if [ -z "$OUTPUT" ]; then
@@ -62,6 +71,10 @@ for LINE in "${LINES[@]}"; do
                 SKIPPED_TESTS=$(echo "$WORD" | grep -o '[0-9]\+')
             fi
         done
+    #Error message
+    elif [[ $LINE == *"BUILD FAILURE"* ]]; then
+        echo "Build failure"
+        exit 1
     fi
 done
 
