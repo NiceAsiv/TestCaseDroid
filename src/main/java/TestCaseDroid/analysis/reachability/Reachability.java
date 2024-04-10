@@ -15,34 +15,23 @@ import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 public class Reachability {
 
     private final JimpleBasedInterproceduralCFG icfg;
-    private String ClassName;
-    private String MethodName;
 
     /**
      * Default constructor, initializes the interprocedural control flow graph (ICFG).
      */
-    public Reachability(String targetClass, String targetMethod) {
-        this.ClassName = targetClass;
-        this.MethodName = targetMethod;
+    public Reachability(String targetClass) {
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(this.ClassName, true);
+        sootConfig.setupSoot(targetClass, true);
         this.icfg = new JimpleBasedInterproceduralCFG();
     }
 
-    /**
-     * Determines if the target method can be reached from the source method in the same execution path.
-     * @param source The source method
-     * @param target The target method
-     * @return The context of the reached target method if it can be reached, null otherwise
-     */
-    public Context onSameExecutionPath(SootMethod source, SootMethod target) {
+    public Context getExecutionPathFromEntryPoint(SootMethod targetMethod) {
         List<SootMethod> entryPoints = Scene.v().getEntryPoints();
         for(SootMethod entryPoint : entryPoints) {
-            Context reachedContext = inDynamicExtent(entryPoint, target);
+            Context reachedContext = inDynamicExtent(entryPoint, targetMethod);
             if(reachedContext != null)
             {
                 return reachedContext;
-
             }
         }
         return null;
@@ -83,9 +72,10 @@ public class Reachability {
             SootMethod reachedMethod = icfg.getMethodOf(reachedNode);
             if(reachedMethod.equals(target))
             {
-                for (Unit u : current.getCallStack()) {
-                    System.out.println(u);
-                }
+//                for (Unit u : current.getCallStack()) {
+//                    System.out.println(u);
+//                }
+                System.out.println(current);
                 return current;
             }
 
@@ -124,10 +114,10 @@ public class Reachability {
     }
 
     public static void main(String[] args) {
-        Reachability reachability = new Reachability("TestCaseDroid.test.CallGraphs", "main");
-        SootMethod source = Scene.v().getMainMethod();
+        Reachability reachability = new Reachability("TestCaseDroid.test.CallGraphs");
+        SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.CallGraphs").getMethod("void main(java.lang.String[])");
         SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.A2").getMethod("void bar()");
-        Context reachedContext = reachability.onSameExecutionPath(source, target);
+        Context reachedContext = reachability.inDynamicExtent(source, target);
         if(reachedContext != null) {
             System.out.println("The target method can be reached from the source method.");
         } else {

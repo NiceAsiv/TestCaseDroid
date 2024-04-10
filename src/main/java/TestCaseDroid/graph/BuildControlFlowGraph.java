@@ -15,8 +15,8 @@ import soot.util.dot.DotGraph;
 
 @Setter
 public class BuildControlFlowGraph {
-    private static String targetClassName = "TestCaseDroid.test.A2";
-    private static String entryMethod = "bar";
+    private static String targetClassName = "TestCaseDroid.test.CallGraphs";
+    private static String entryMethod = "main";
     private static DotGraphWrapper dotGraph = new DotGraphWrapper("controlFlowGraph");
     private static CFGToDotGraph drawer = new CFGToDotGraph();
 

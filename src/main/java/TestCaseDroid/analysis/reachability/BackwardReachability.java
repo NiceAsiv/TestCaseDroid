@@ -13,14 +13,10 @@ import java.util.*;
 public class BackwardReachability {
 
     private final BackwardsInterproceduralCFG icfg;
-    private String ClassName;
-    private String MethodName;
 
     public BackwardReachability(String targetClass, String targetMethod) {
-        this.ClassName = targetClass;
-        this.MethodName = targetMethod;
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(this.ClassName, true);
+        sootConfig.setupSoot(targetClass, true);
         BiDiInterproceduralCFG<Unit, SootMethod> biDiInterproceduralCFG = new JimpleBasedInterproceduralCFG();
         this.icfg = new BackwardsInterproceduralCFG(biDiInterproceduralCFG);
     }
@@ -36,31 +32,46 @@ public class BackwardReachability {
         return null;
     }
 
-    public Context reachable(Context source, SootMethod target) {
+    /**
+     * search the source method from the target method
+     * @param source The source context
+     * @param target The target method
+     * @return The context of the reached target method if it can be reached, null otherwise
+     */
+    public Context reachable(Context target, SootMethod source) {
 
         Deque<Context> worklist = new LinkedList<>();
         Set<Context> visited = new HashSet<>();
-        worklist.add(source);
-        visited.add(source);
-
+        worklist.add(target);
+        visited.add(target);
         while (!worklist.isEmpty()) {
             Context current = worklist.poll();
             Unit reachedNode = current.getReachedNode();
             SootMethod reachedMethod = icfg.getMethodOf(reachedNode);
             System.out.println("now reachedNode is: " + reachedNode + " in method: " + reachedMethod);
-            if (reachedMethod.equals(target)) {
-                for (Unit u : current.getCallStack()) {
-                    System.out.println(u);
-                }
-                return current;
-            }
-            List<Unit> preds = icfg.getPredsOf(reachedNode);
-            for (Unit pred : preds) {
+            if (reachedMethod.equals(source)) {
                 Context up = current.copy();
-                up.setReachedNode(pred);
                 up.getCallStack().addFirst(reachedNode);
-                if (visited.add(up)) {
-                    worklist.add(up);
+                up.setReachedNode(reachedNode);
+                up.getMethodCallStack().addFirst(reachedMethod);
+                Context down = up.copy();
+                List<Unit> succs = icfg.getSuccsOf(reachedNode);
+                for (Unit succ : succs) {
+                    down.setReachedNode(succ);
+                    down.getCallStack().addFirst(succ);
+                    down.getMethodCallStack().addFirst(icfg.getMethodOf(succ));
+                    System.out.println("now reachedNode is: " + succ + " in method: " + reachedMethod);
+                }
+                return down;
+            }
+            List<Unit> Succs = icfg.getSuccsOf(reachedNode);
+            for (Unit succ : Succs) {
+                Context down = current.copy();
+                down.setReachedNode(succ);
+                down.getCallStack().addFirst(reachedNode);
+                down.getMethodCallStack().addFirst(reachedMethod);
+                if (visited.add(down)) {
+                    worklist.add(down);
                 }
             }
             if (worklist.isEmpty()) {
@@ -70,6 +81,7 @@ public class BackwardReachability {
                         Context up = current.copy();
                         up.setReachedNode(caller);
                         up.getCallStack().addFirst(reachedNode);
+                        up.getMethodCallStack().addFirst(reachedMethod);
                         if (visited.add(up)) {
                             worklist.add(up);
                         }
