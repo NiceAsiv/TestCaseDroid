@@ -72,9 +72,6 @@ public class Reachability {
             SootMethod reachedMethod = icfg.getMethodOf(reachedNode);
             if(reachedMethod.equals(target))
             {
-//                for (Unit u : current.getCallStack()) {
-//                    System.out.println(u);
-//                }
                 System.out.println(current);
                 return current;
             }
@@ -97,7 +94,6 @@ public class Reachability {
                     }
                 }
             }
-
             // If the reached node is not a call statement or an exit statement, add all its successors to the worklist
             List<Unit> succs = icfg.getSuccsOf(reachedNode);
             for(Unit succ : succs) {

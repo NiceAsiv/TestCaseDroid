@@ -70,6 +70,24 @@ public class Context {
     }
 
     /**
+     * Gets the method call stack as a string.
+     * @return The method call stack as a string.
+     */
+    public String getMethodCallStackString() {
+        StringBuilder sb = new StringBuilder();
+        SootMethod currentMethod = null;
+        for (SootMethod method : getMethodCallStack()) {
+            if (currentMethod != null && !currentMethod.equals(method)) {
+                sb.append(currentMethod.getSignature()).append(" -> ");
+            }
+            currentMethod = method;
+        }
+        //remove the last " -> "
+        sb.delete(sb.length() - 4, sb.length());
+        return sb.toString();
+    }
+
+    /**
      * Checks if the current context is equal to the specified object.
      * @param obj The object to check
      * @return True if the current context is equal to the specified object, false otherwise.
@@ -82,21 +100,16 @@ public class Context {
         }
         return false;
     }
-    public Deque<Unit> getReversedCallStack() {
-        Deque<Unit> reversedCallStack = new LinkedList<>();
-        Iterator<Unit> it = this.callStack.descendingIterator();
-        while (it.hasNext()) {
-            reversedCallStack.add(it.next());
-        }
-        return reversedCallStack;
-    }
+
     @Override
     public String toString() {
         //输出调用链
         StringBuilder sb = new StringBuilder();
-        for(Unit unit : getReversedCallStack()) {
+        for(Unit unit : getCallStack()) {
             sb.append(unit.toString()).append(" -> ");
         }
+        //remove the last " -> "
+        sb.delete(sb.length() - 4, sb.length());
         return sb.toString();
     }
 }
