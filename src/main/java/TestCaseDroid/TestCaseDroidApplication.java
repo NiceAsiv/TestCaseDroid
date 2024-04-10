@@ -5,13 +5,6 @@ import TestCaseDroid.graph.BuildControlFlowGraph;
 import TestCaseDroid.graph.BuildICFG;
 import org.apache.commons.cli.*;
 
-/**
- * 功能 -h或者-help 显示帮助信息
- * 功能 -p或者-path或者classes-path 选择jar包路径或者class文件路径
- * 功能 -g 或者-graph 选择图的类型 cg cfg icfg
- * 功能 -c或者-class 选择分析的类名 默认为main类
- * 功能 -m或者-method 选择分析的方法名 默认为main方法
- */
 public class TestCaseDroidApplication {
     public static void main(String[] args) {
         Options options = getOptions();
