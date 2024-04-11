@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import lombok.Getter;
 import lombok.Setter;
+import soot.IFoundFile;
 import soot.SootMethod;
 import soot.Unit;
 
@@ -64,9 +65,7 @@ public class Context {
      * @return A new context that is a copy of the current context.
      */
     public Context copy() {
-        Deque<Unit> newCallStack = new LinkedList<>(this.callStack);
-        Deque<SootMethod> newMethodCallStack = new LinkedList<>(this.methodCallStack);
-        return new Context(this.reachedNode,newCallStack,newMethodCallStack);
+        return new Context(this.reachedNode, new LinkedList<>(this.callStack), new LinkedList<>(this.methodCallStack));
     }
 
     /**
@@ -103,13 +102,15 @@ public class Context {
 
     @Override
     public String toString() {
-        //输出调用链
         StringBuilder sb = new StringBuilder();
-        for(Unit unit : getCallStack()) {
-            sb.append(unit.toString()).append(" -> ");
+        if (!callStack.isEmpty()) {
+            sb.append("Call stack: ");
+            Iterator<Unit> it = callStack.descendingIterator();
+            while (it.hasNext()) {
+                sb.append(it.next()).append(" -> ");
+            }
+            sb.delete(sb.length() - 4, sb.length());
         }
-        //remove the last " -> "
-        sb.delete(sb.length() - 4, sb.length());
         return sb.toString();
     }
 }

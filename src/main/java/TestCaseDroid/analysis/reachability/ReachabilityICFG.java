@@ -12,14 +12,14 @@ import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 /**
  * The Reachability using ICFG
  */
-public class Reachability {
+public class ReachabilityICFG {
 
     private final JimpleBasedInterproceduralCFG icfg;
 
     /**
      * Default constructor, initializes the interprocedural control flow graph (ICFG).
      */
-    public Reachability(String targetClass) {
+    public ReachabilityICFG(String targetClass) {
         SootConfig sootConfig = new SootConfig();
         sootConfig.setupSoot(targetClass, true);
         this.icfg = new JimpleBasedInterproceduralCFG();
@@ -110,10 +110,10 @@ public class Reachability {
     }
 
     public static void main(String[] args) {
-        Reachability reachability = new Reachability("TestCaseDroid.test.CallGraphs");
+        ReachabilityICFG ReachabilityICFG = new ReachabilityICFG("TestCaseDroid.test.CallGraphs");
         SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.CallGraphs").getMethod("void main(java.lang.String[])");
         SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.A2").getMethod("void bar()");
-        Context reachedContext = reachability.inDynamicExtent(source, target);
+        Context reachedContext = ReachabilityICFG.inDynamicExtent(source, target);
         if(reachedContext != null) {
             System.out.println("The target method can be reached from the source method.");
         } else {
