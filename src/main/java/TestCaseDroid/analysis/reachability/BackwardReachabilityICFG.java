@@ -14,12 +14,19 @@ public class BackwardReachabilityICFG {
 
     private final BackwardsInterproceduralCFG icfg;
 
-    public BackwardReachabilityICFG(String targetClass, String targetMethod) {
+    public BackwardReachabilityICFG(String targetClass) {
         SootConfig sootConfig = new SootConfig();
         sootConfig.setupSoot(targetClass, true);
         BiDiInterproceduralCFG<Unit, SootMethod> biDiInterproceduralCFG = new JimpleBasedInterproceduralCFG();
         this.icfg = new BackwardsInterproceduralCFG(biDiInterproceduralCFG);
     }
+    public BackwardReachabilityICFG(String targetClass,String classPath) {
+        SootConfig sootConfig = new SootConfig();
+        sootConfig.setupSoot(targetClass, true,classPath);
+        BiDiInterproceduralCFG<Unit, SootMethod> biDiInterproceduralCFG = new JimpleBasedInterproceduralCFG();
+        this.icfg = new BackwardsInterproceduralCFG(biDiInterproceduralCFG);
+    }
+
 
     public Context inDynamicExtent(SootMethod source, SootMethod target) {
         for (Unit start : icfg.getStartPointsOf(target)) {
@@ -124,9 +131,9 @@ public class BackwardReachabilityICFG {
     }
 
     public static void main(String[] args) {
-        BackwardReachabilityICFG reachability = new BackwardReachabilityICFG("TestCaseDroid.test.CallGraphs", "main");
-        SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.CallGraphs").getMethod("void doStuff()");
-        SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.A2").getMethod("void bar()");
+        BackwardReachabilityICFG reachability = new BackwardReachabilityICFG("TestCaseDroid.test.ICFG","E:\\Tutorial\\TestCaseDroid\\target");
+        SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.ICFG").getMethod("void test1()");
+        SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.Vulnerable").getMethod("void vulnerable()");
         Context reachedContext = reachability.inDynamicExtent(source, target);
         if (reachedContext != null) {
             System.out.println("The source method can be reached from the target method.");
