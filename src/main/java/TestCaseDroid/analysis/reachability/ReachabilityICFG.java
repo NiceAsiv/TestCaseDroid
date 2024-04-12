@@ -110,9 +110,9 @@ public class ReachabilityICFG {
     }
 
     public static void main(String[] args) {
-        ReachabilityICFG ReachabilityICFG = new ReachabilityICFG("TestCaseDroid.test.CallGraphs");
-        SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.CallGraphs").getMethod("void main(java.lang.String[])");
-        SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.A2").getMethod("void bar()");
+        ReachabilityICFG ReachabilityICFG = new ReachabilityICFG("TestCaseDroid.test.Vulnerable");
+        SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.Vulnerable").getMethod("void main(java.lang.String[])");
+        SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.ICFG").getMethod("void test2()");
         Context reachedContext = ReachabilityICFG.inDynamicExtent(source, target);
         if(reachedContext != null) {
             System.out.println("The target method can be reached from the source method.");

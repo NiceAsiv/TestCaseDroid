@@ -77,7 +77,7 @@ public class Context {
         SootMethod currentMethod = null;
         for (SootMethod method : getMethodCallStack()) {
             if (currentMethod != null && !currentMethod.equals(method)) {
-                sb.append(currentMethod.getSignature()).append(" -> ");
+                sb.append(currentMethod.getSignature()).append("\n -> ");
             }
             currentMethod = method;
         }
@@ -107,7 +107,7 @@ public class Context {
             sb.append("Call stack: ");
             Iterator<Unit> it = callStack.descendingIterator();
             while (it.hasNext()) {
-                sb.append(it.next()).append(" -> ");
+                sb.append(it.next()).append("\n -> ");
             }
             sb.delete(sb.length() - 4, sb.length());
         }
