@@ -64,4 +64,14 @@ public class FileUtils {
         Path path = Paths.get(pathStr);
         return path.isAbsolute();
     }
+
+    public static boolean isPathExist(String path){
+        File file = new File(path);
+        if (file.exists()){
+            return true;
+        }else {
+            log.error("File or directory does not exist: {}", path);
+            return false;
+        }
+    }
 }

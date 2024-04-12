@@ -27,8 +27,7 @@ public class SootConfig {
     private  static  String  userDir = System.getProperty("user.dir");
     private  static  final String  javaPath = userDir + File.separator + "target" + File.separator + "classes";
     private  static  final String  jreDir = System.getProperty("java.home")+"/lib/rt.jar";
-    private  static String  sootClassPath = javaPath + File.pathSeparator + jreDir;
-    private String callGraphAlgorithm = "Spark";
+    private String callGraphAlgorithm = "CHA";
 
     /**
      * Soot configuration for class document
@@ -38,6 +37,7 @@ public class SootConfig {
     public  void setupSoot(String className, Boolean constructCallGraph)
     {
         //清除soot之前留下的所有缓存
+        String sootClassPath = javaPath + File.pathSeparator + jreDir;
         G.reset();
         //设置Soot类路径
         Options.v().set_soot_classpath(sootClassPath);
@@ -72,7 +72,7 @@ public class SootConfig {
     public  void setupSoot(String className,Boolean constructCallGraph,String classesPath) {
         //清除soot之前留下的所有缓存
         G.reset();
-        sootClassPath= sootClassPath + File.pathSeparator + FileUtils.classPathParser(classesPath);
+        String sootClassPath =jreDir + File.pathSeparator + FileUtils.classPathParser(classesPath);
         //设置Soot类路径
         Options.v().set_soot_classpath(sootClassPath);
         Options.v().set_whole_program(true);

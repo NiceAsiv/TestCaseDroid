@@ -11,28 +11,25 @@ import soot.jimple.toolkits.callgraph.Targets;
 import java.util.*;
 
 public class BuildCallGraph  extends SceneTransformer {
-    private static String targetPackageName = "TestCaseDroid";
-    private static String targetClass = "TestCaseDroid.test.MultilevelCall.LibraryApplication";
+    private static String targetClass = "TestCaseDroid.test.Vulnerable";
     public static String entryMethod = "main";
     private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
     private static int numOfEdges = 0;
-    private static List<SootMethod> callChain = new ArrayList<>();
+    private static final SootConfig sootConfig = new SootConfig();
 
 
 
     public static void main(String[] args) {
-        buildCallGraphForClass();
+        buildCallGraph();
     }
 
-    BuildCallGraph() {
+    public static void buildCallGraph(String callGraphAlgorithm, String className,String entryMethod) {
+          targetClass = className;
+          BuildCallGraph.entryMethod = entryMethod;
+          sootConfig.setCallGraphAlgorithm(callGraphAlgorithm);
+          buildCallGraph();
     }
-    public BuildCallGraph(String targetClass, String entryMethod) {
-        BuildCallGraph.targetClass = targetClass;
-        BuildCallGraph.entryMethod = entryMethod;
-    }
-    public static void buildCallGraphForClass() {
-        SootConfig sootConfig = new SootConfig();
-        sootConfig.setCallGraphAlgorithm("Spark");
+    public static void buildCallGraph() {
         sootConfig.setupSoot(targetClass, true);
 
         //add an inter-procedural analysis phase to Soot
@@ -49,26 +46,6 @@ public class BuildCallGraph  extends SceneTransformer {
         PackManager.v().runPacks();
     }
 
-    private static void reverseVisit(CallGraph cg,SootMethod method, DotGraphWrapper dotGraph)
-    {
-        String identifier = method.getSignature();
-        visited.put(method.getSignature(), true);
-        dotGraph.drawNode(identifier);
-
-        Iterator<MethodOrMethodContext> sources = new Sources(cg.edgesInto(method));//获取所有调用m的方法
-        while (sources.hasNext()) {
-            SootMethod src = (SootMethod) sources.next();
-            if (SootUtils.isNotExcludedMethod(src)&& (method.getDeclaringClass().getName().startsWith(targetPackageName) || src.getDeclaringClass().getName().startsWith(targetPackageName))) {
-                String srcIdentifier = src.getSignature();
-                if (!visited.containsKey(srcIdentifier)) {
-                    callChain.add(src);
-                    System.out.println(src + " may call " + method);
-                    numOfEdges++;
-                    reverseVisit(cg, src, dotGraph);
-                }
-            }
-        }
-    }
 
     @Override
     protected void internalTransform(String phaseName, Map options) {
@@ -105,7 +82,7 @@ public class BuildCallGraph  extends SceneTransformer {
         Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(method));//获取所有被m调用的方法
         while (targets.hasNext()) {
             SootMethod tgt = (SootMethod) targets.next();
-            if (SootUtils.isNotExcludedMethod(tgt)&& (method.getDeclaringClass().getName().startsWith(targetPackageName) || tgt.getDeclaringClass().getName().startsWith(targetPackageName))) {
+            if (SootUtils.isNotExcludedMethod(tgt)&& (method.getDeclaringClass().isApplicationClass()||tgt.getDeclaringClass().isApplicationClass())) {
                 String tgtIdentifier = tgt.getSignature();
                 if (!visited.containsKey(tgtIdentifier)&&!tgt.isJavaLibraryMethod()) {
                     dotGraph.drawNode(tgtIdentifier);
@@ -113,41 +90,6 @@ public class BuildCallGraph  extends SceneTransformer {
                     System.out.println(method + " may call " + tgt);
                     numOfEdges++;
                     visit(cg, tgt, dotGraph);
-                }
-            }
-        }
-    }
-
-
-    /**
-     * 递归遍历call graph,并且限制深度
-     * 为了避免重复遍历，使用visited map记录已经遍历过的方法
-     * @param method 当前方法
-     * @param cg call graph
-     * @param dotGraph dot图
-     * @param depth 当前深度
-     * @param maxDepth 最大深度
-     */
-    private static void visit(CallGraph cg,SootMethod method, DotGraphWrapper dotGraph , int depth, int maxDepth)
-    {
-
-        String identifier = method.getSignature();
-        visited.put(method.getSignature(), true);
-        dotGraph.drawNode(identifier);
-        Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(method));//获取所有被m调用的方法
-        if (depth >= maxDepth) {
-            return;
-        }
-        while (targets.hasNext()) {
-            SootMethod tgt = (SootMethod) targets.next();
-            if (SootUtils.isNotExcludedMethod(tgt)&&(method.getDeclaringClass().getName().startsWith(targetPackageName) || tgt.getDeclaringClass().getName().startsWith(targetPackageName))) {
-                String tgtIdentifier = tgt.getSignature();
-                if (!visited.containsKey(tgtIdentifier)) {
-                    dotGraph.drawNode(tgtIdentifier);
-                    dotGraph.drawEdge(identifier, tgtIdentifier);
-                    System.out.println(method + " may call " + tgt);
-                    numOfEdges++;
-                    visit(cg, tgt, dotGraph, depth + 1, maxDepth);
                 }
             }
         }

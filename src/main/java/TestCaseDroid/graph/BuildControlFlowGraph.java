@@ -19,6 +19,11 @@ public class BuildControlFlowGraph {
     private static String entryMethod = "main";
     private static DotGraphWrapper dotGraph = new DotGraphWrapper("controlFlowGraph");
     private static CFGToDotGraph drawer = new CFGToDotGraph();
+    private static final SootConfig sootConfig = new SootConfig();
+    @Setter
+    private static String graphAlgorithm;
+    @Setter
+    private static String classesPath;
 
 
 
@@ -26,13 +31,9 @@ public class BuildControlFlowGraph {
            buildControlFlowGraphForClass();
     }
     public static void buildControlFlowGraphForClass() {
-        buildControlFlowGraphForClass(null, targetClassName, entryMethod);
     }
 
     public static void buildControlFlowGraphForClass(String classesPath, String targetClassName, String entryMethod) {
-        //配置soot
-        SootConfig sootConfig = new SootConfig();
-        sootConfig.setCallGraphAlgorithm("Spark");
         if (classesPath != null) {
             sootConfig.setupSoot(BuildControlFlowGraph.targetClassName, true, classesPath);
         } else {
@@ -51,9 +52,9 @@ public class BuildControlFlowGraph {
         ClassicCompleteUnitGraph cfg = new ClassicCompleteUnitGraph(jimpleBody);
 
         //遍历控制流图
-//        graphTraverse(cfg);
-//        dotGraph.plot("cfg",targetClassName,entryMethod);
-        getPrettyCFG(jimpleBody, jimpleBody, targetClassName, entryMethod);
+        graphTraverse(cfg);
+        dotGraph.plot("cfg",targetClassName,entryMethod);
+//        getPrettyCFG(jimpleBody, jimpleBody, targetClassName, entryMethod);
     }
 
     private static void graphTraverse(ClassicCompleteUnitGraph cfg)

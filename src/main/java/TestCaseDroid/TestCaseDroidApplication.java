@@ -3,6 +3,7 @@ package TestCaseDroid;
 import TestCaseDroid.graph.BuildCallGraphForJar;
 import TestCaseDroid.graph.BuildControlFlowGraph;
 import TestCaseDroid.graph.BuildICFG;
+import TestCaseDroid.utils.FileUtils;
 import org.apache.commons.cli.*;
 
 public class TestCaseDroidApplication {
@@ -20,17 +21,22 @@ public class TestCaseDroidApplication {
             return;
         }
 
-        String inputFilePath = cmd.getOptionValue("path");
+        String processPath = cmd.getOptionValue("path");
         String graphType = cmd.getOptionValue("graph");
         String classNameForAnalysis = cmd.getOptionValue("class");
         String methodNameForAnalysis = cmd.getOptionValue("method");
 
+        //check if the process path exists
+        if(!FileUtils.isPathExist(processPath)) {
+            System.out.println("Error: The path does not exist.");
+            formatter.printHelp("usage: TestCaseDroid", options, true);
+        }
         if (graphType.equals("cg")) {
-            BuildCallGraphForJar.buildCallGraphForJar(inputFilePath,classNameForAnalysis,methodNameForAnalysis);
+            BuildCallGraphForJar.buildCallGraphForJar(processPath,classNameForAnalysis,methodNameForAnalysis);
         } else if (graphType.equals("cfg")) {
-            BuildControlFlowGraph.buildControlFlowGraphForClass(inputFilePath,classNameForAnalysis,methodNameForAnalysis);
+            BuildControlFlowGraph.buildControlFlowGraphForClass(processPath,classNameForAnalysis,methodNameForAnalysis);
         } else if (graphType.equals("icfg")) {
-            BuildICFG.buildICFGForClass(inputFilePath,classNameForAnalysis,methodNameForAnalysis);
+            BuildICFG.buildICFGForClass(processPath,classNameForAnalysis,methodNameForAnalysis);
         } else {
             System.out.println("Error: Invalid graph type. Use 'cg', 'cfg', or 'icfg'.");
             formatter.printHelp("usage: TestCaseDroid", options, true);

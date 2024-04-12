@@ -17,7 +17,7 @@ public class MethodContext {
     private String returnType;
     private String methodSignature; //current method signature
     private List<String> paramTypes;
-    Boolean isBackwardReachability = false;
+    Boolean isBackwardReachability = true;
     private Deque<SootMethod> methodCallStack;
 
     /**

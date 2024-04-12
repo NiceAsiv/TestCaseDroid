@@ -82,10 +82,9 @@ public class ReachabilityCG {
     }
 
     public static void main(String[] args) {
-        ReachabilityCG analysis = new ReachabilityCG("<TestCaseDroid.test.A2: void bar()>", "<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
+        ReachabilityCG analysis = new ReachabilityCG("<TestCaseDroid.test.ICFG: void test2()>", "<TestCaseDroid.test.Vulnerable: void main(java.lang.String[])>");
         MethodContext methodContext = analysis.runAnalysis();
         System.out.println(methodContext.getMethodCallStackString());
-//        System.out.println(callChain);
     }
 }
 
