@@ -14,15 +14,28 @@ public class BackwardReachabilityICFG {
 
     private final BackwardsInterproceduralCFG icfg;
 
-    public BackwardReachabilityICFG(String targetClass) {
+    /**
+     * Default constructor, initializes Backward Reachability using ICFG
+     * @param appMainClass The main class of the application to be analyzed,Due to the ICFG based on whole program analysis,
+     *                     it should be the entry point of the application or a class that contains the main method.
+     */
+    public BackwardReachabilityICFG(String appMainClass) {
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(targetClass, true);
+        sootConfig.setupSoot(appMainClass, true);
         BiDiInterproceduralCFG<Unit, SootMethod> biDiInterproceduralCFG = new JimpleBasedInterproceduralCFG();
         this.icfg = new BackwardsInterproceduralCFG(biDiInterproceduralCFG);
     }
-    public BackwardReachabilityICFG(String targetClass,String classPath) {
+
+    /**
+     * Constructor with class path
+     * @param appMainClass The main class of the application to be analyzed,the ICFG based on whole program analysis,
+     *                     it should be the entry point of the application or a class that contains the main method.
+     *
+     * @param classPath   The class path of the application to be analyzed it should be the path of the target class files
+     */
+    public BackwardReachabilityICFG(String appMainClass,String classPath) {
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(targetClass, true,classPath);
+        sootConfig.setupSoot(appMainClass, true,classPath);
         BiDiInterproceduralCFG<Unit, SootMethod> biDiInterproceduralCFG = new JimpleBasedInterproceduralCFG();
         this.icfg = new BackwardsInterproceduralCFG(biDiInterproceduralCFG);
     }
@@ -131,9 +144,9 @@ public class BackwardReachabilityICFG {
     }
 
     public static void main(String[] args) {
-        BackwardReachabilityICFG reachability = new BackwardReachabilityICFG("TestCaseDroid.test.ICFG","E:\\Tutorial\\TestCaseDroid\\target");
-        SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.ICFG").getMethod("void test1()");
-        SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.Vulnerable").getMethod("void vulnerable()");
+        BackwardReachabilityICFG reachability = new BackwardReachabilityICFG("TestCaseDroid.test.Vulnerable","E:\\Tutorial\\TestCaseDroid\\target\\classes");
+        SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.ICFG").getMethodByName("test1");
+        SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.ICFG").getMethodByName("test3");
         Context reachedContext = reachability.inDynamicExtent(source, target);
         if (reachedContext != null) {
             System.out.println("The source method can be reached from the target method.");
