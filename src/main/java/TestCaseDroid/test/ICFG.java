@@ -36,8 +36,9 @@ class Test4 {
     public void test4() {
         System.out.println("now in test4");
         ICFG icfg = new ICFG();
-        icfg.test1();
+        icfg.test3();
         System.out.println("test4");
+        icfg.test1();
     }
 }
 class Vulnerable {
@@ -51,7 +52,7 @@ class Vulnerable {
         System.out.println("--------------------");
         System.out.println("Start running the second test case");
         ICFG icfg = new ICFG();
-        icfg.test2();
+        icfg.test1();
         System.out.println("End running the second test case");
         System.out.println("--------------------");
     }

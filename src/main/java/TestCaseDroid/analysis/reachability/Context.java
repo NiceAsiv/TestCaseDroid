@@ -103,11 +103,11 @@ public class Context {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        sb.append("Reached node: ").append(reachedNode).append("\n");
         if (!callStack.isEmpty()) {
             sb.append("Call stack: ");
-            Iterator<Unit> it = callStack.descendingIterator();
-            while (it.hasNext()) {
-                sb.append(it.next()).append("\n -> ");
+            for (Unit unit : callStack) {
+                sb.append(unit).append("\n -> ");
             }
             sb.delete(sb.length() - 4, sb.length());
         }
