@@ -16,9 +16,8 @@ import java.util.Map;
 @Setter
 public class BuildICFG extends SceneTransformer {
 
-    private static String targetClassName = "TestCaseDroid.test.CallGraphs";
-    private static String targetMethodName = "doStuff";
-    private static String targetPackageName = "TestCaseDroid";
+    private static String targetClassName = "TestCaseDroid.test.Vulnerable";
+    private static String targetMethodName = "main";
     private static DotGraphWrapper dotGraph = new DotGraphWrapper("interproceduralCFG");
     private ArrayList<Unit> visited;
 

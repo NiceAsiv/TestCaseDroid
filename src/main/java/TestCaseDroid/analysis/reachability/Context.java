@@ -20,6 +20,7 @@ public class Context {
     private Deque<Unit> callStack;
     private Deque<SootMethod> methodCallStack;
     private Unit reachedNode;
+    private SootMethod reachedMethod;
 
     /**
      * Default constructor, initializes an empty call stack.

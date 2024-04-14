@@ -3,6 +3,7 @@ package TestCaseDroid.analysis.reachability;
 import java.util.*;
 
 import TestCaseDroid.config.SootConfig;
+import lombok.Setter;
 import soot.Scene;
 import soot.SootMethod;
 import soot.Unit;
@@ -15,9 +16,12 @@ import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 public class ReachabilityICFG {
 
     private final JimpleBasedInterproceduralCFG icfg;
+    @Setter
+    private int maxDepth = 100;
 
     /**
-     * Default constructor, initializes the interprocedural control flow graph (ICFG).
+     * Default constructor, initializes the interprocedural control flow graph
+     * (ICFG).
      */
     public ReachabilityICFG(String targetClass) {
         SootConfig sootConfig = new SootConfig();
@@ -25,96 +29,126 @@ public class ReachabilityICFG {
         this.icfg = new JimpleBasedInterproceduralCFG();
     }
 
-    public Context getExecutionPathFromEntryPoint(SootMethod targetMethod) {
-        List<SootMethod> entryPoints = Scene.v().getEntryPoints();
-        for(SootMethod entryPoint : entryPoints) {
-            Context reachedContext = inDynamicExtent(entryPoint, targetMethod);
-            if(reachedContext != null)
-            {
-                return reachedContext;
-            }
-        }
-        return null;
-    }
 
     /**
-     * Determines if the target method can be reached from the source method in the dynamic extent of the source method.
+     * Determines if the target method can be reached from the source method in the
+     * dynamic extent of the source method.
+     * 
      * @param source The source method
      * @param target The target method
-     * @return The context of the reached target method if it can be reached, null otherwise
+     * @return The context of the reached target method if it can be reached, null
+     *         otherwise
      */
-    public Context inDynamicExtent(SootMethod source, SootMethod target) {
-        for(Unit start : icfg.getStartPointsOf(source)) {
+    public List<Context> inDynamicExtent(SootMethod source, SootMethod target) {
+        for (Unit start : icfg.getStartPointsOf(source)) {
             Context startingContext = new Context(start);
-            Context reached = reachable(startingContext, target);
-            if(reached != null)
-                return reached;
+            List<Context> reached = reachable(startingContext, target);
+             if(reached.isEmpty()){
+                 return reached;
+             }
         }
         return null;
     }
 
     /**
-     * Determines if the target method can be reached from the source context.
-     * @param source The source context
-     * @param target The target method
-     * @return The context of the reached target method if it can be reached, null otherwise
+     * This method is used to determine the reachability from a source method to a target method.
+     * It uses a worklist algorithm to traverse the interprocedural control flow graph (ICFG).
+     * The algorithm starts from the source method and adds it to the worklist.
+     * It then iteratively removes an element from the worklist, checks if it is the target method, and if so, adds it to the paths.
+     * If the element is not the target method, it checks if it is a function call statement.
+     * If it is a function call statement, it adds all the nodes of the called function to the worklist.
+     * The process continues until the worklist is empty or the maximum depth is reached.
+     *
+     * @param source The source context from which the reachability is to be determined.
+     * @param target The target method to which the reachability is to be determined.
+     * @return A list of contexts that represent the paths from the source to the target.
      */
-    public Context reachable(Context source, SootMethod target) {
-
+    public List<Context> reachable(Context source, SootMethod target) {
         Deque<Context> worklist = new LinkedList<>();
-        Set<Context> visited = new HashSet<>(); // Record the visited nodes
-        worklist.add(source);
-        visited.add(source);
+        HashSet<Context> visited = new HashSet<>(); // Record the visited nodes
+        List<Context> paths = new ArrayList<>();
+        int depth = 0;
+        SootMethod sourceMethod = icfg.getMethodOf(source.getReachedNode());
 
-        while(!worklist.isEmpty()) {
+        //初始化worklist，将source method的全部节点加入到worklist中
+        getInvokeMethodWorklist(source, sourceMethod, visited, worklist);
+
+        //开始遍历worklist
+        while (!worklist.isEmpty()) {
             Context current = worklist.poll(); // Get a node from the worklist
             Unit reachedNode = current.getReachedNode(); // Get the reached node
             SootMethod reachedMethod = icfg.getMethodOf(reachedNode);
-            if(reachedMethod.equals(target))
-            {
+            System.out.println("now reached Node: " + reachedNode + " in method: " + reachedMethod);
+
+            //匹配到目标方法
+            if (reachedMethod.equals(target)) {
+                System.out.println("Find a path to the target method: " + target);
                 System.out.println(current);
-                return current;
+                paths.add(current);
+                continue;
+            }
+            if (depth >= maxDepth) {
+                return paths;
             }
 
-            //if the reached node is a call statement, add all the start points of the callee methods to the worklist
+            //如果遇到函数调用语句，将被调用函数的的节点内容全部加入到worklist中
             if (reachedNode instanceof InvokeStmt) {
                 final InvokeStmt invokeStmt = (InvokeStmt) reachedNode;
                 final SootMethod targetMethod = invokeStmt.getInvokeExpr().getMethod();
                 if (targetMethod.hasActiveBody()) {
-                    final Unit targetStartPoint = targetMethod.getActiveBody().getUnits().getFirst();
-                    Context targetContext = new Context(targetStartPoint);
-                    if (!visited.contains(targetContext)) {
-                        Context down = current.copy();
-                        down.getCallStack().addFirst(reachedNode);
-                        down.setReachedNode(targetStartPoint);
-                        if(visited.add(down))
-                        {
-                            worklist.add(down);
-                        }
-                    }
+                    depth++;
+                    //遍历被调用函数的所有节点
+                    getInvokeMethodWorklist(current, targetMethod, visited, worklist);
                 }
             }
-            // If the reached node is not a call statement or an exit statement, add all its successors to the worklist
-            List<Unit> succs = icfg.getSuccsOf(reachedNode);
-            for(Unit succ : succs) {
-                Context up = current.copy();
-                up.setReachedNode(succ);
-                up.getCallStack().addFirst(reachedNode);
-                if(visited.add(up))
-                {
-                    worklist.add(up);
-                }
-            }
+
         }
-        return null;
+        return paths;
+    }
+
+    /**
+     * This method is used to add all the nodes of a method to the worklist.
+     * It starts from the current context and iterates over all the units of the method.
+     * If a unit is not visited, it creates a new context for it and adds it to the worklist.
+     * If the unit is an InvokeStmt and the method is not a constructor, it sets the invokeFlag to true.
+     * If the method does not call any other methods, it adds the last node of the method to the worklist.
+     *
+     * @param current The current context from which the method is invoked.
+     * @param Method The method whose nodes are to be added to the worklist.
+     * @param visited A set of units that have been visited.
+     * @param worklist The worklist to which the nodes are to be added.
+     */
+    private static void getInvokeMethodWorklist(Context current, SootMethod Method, HashSet<Context> visited, Deque<Context> worklist) {
+        Context BeforeInvoke;
+        BeforeInvoke = current.copy();
+        boolean invokeFlag = false;
+        for (Unit targetStartPoint : Method.getActiveBody().getUnits()) {
+            Context down = BeforeInvoke.copy();
+            down.getCallStack().add(BeforeInvoke.getReachedNode());
+            down.getMethodCallStack().add(Method);
+            down.setReachedNode(targetStartPoint);
+            down.setReachedMethod(Method);
+            //如果是函数调用语句，还要遍历函数体,需要排除对象的构造函数
+            if (visited.add(down) && targetStartPoint instanceof InvokeStmt && !targetStartPoint.toString().contains("<init>")&& !targetStartPoint.toString().contains("void <clinit>")
+                    && !((InvokeStmt) targetStartPoint).getInvokeExpr().getMethod().isJavaLibraryMethod()) {
+                worklist.add(down);
+                invokeFlag = true;
+            }
+            BeforeInvoke = down;
+        }
+        //如果被调用函数没有调用其他函数，则将函数的最后一个节点加入到worklist中
+        if (!invokeFlag) {
+            worklist.add(BeforeInvoke);
+        }
     }
 
     public static void main(String[] args) {
         ReachabilityICFG ReachabilityICFG = new ReachabilityICFG("TestCaseDroid.test.Vulnerable");
-        SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.Vulnerable").getMethod("void main(java.lang.String[])");
-        SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.ICFG").getMethod("void test2()");
-        Context reachedContext = ReachabilityICFG.inDynamicExtent(source, target);
-        if(reachedContext != null) {
+        SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.Vulnerable")
+                .getMethod("void main(java.lang.String[])");
+        SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.ICFG").getMethod("void test1()");
+        List<Context> reachedContext = ReachabilityICFG.inDynamicExtent(source, target);
+        if (reachedContext != null && !reachedContext.isEmpty()) {
             System.out.println("The target method can be reached from the source method.");
         } else {
             System.out.println("The target method cannot be reached from the source method.");
