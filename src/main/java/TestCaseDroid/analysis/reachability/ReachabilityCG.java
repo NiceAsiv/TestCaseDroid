@@ -16,34 +16,34 @@ import java.util.*;
 @Getter
 @Setter
 public class ReachabilityCG {
-    private MethodContext entryMethodContext;
+    private MethodContext sourceMethodContext;
     private MethodContext targetMethodContext;
     private final CallGraph callGraph;
 
     /**
      * constructor of ReachabilityForFunction
-     *
+     * @param entryClass the entry class like "TestCaseDroid.test.CallGraphs"
      * @param targetMethodSig the target method like "<TestCaseDroid.test.A2: void bar()>"
-     * @param entryMethodSig  the entry method like "<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>"
+     * @param sourceMethodSig  the entry method like "<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>"
      */
-    public ReachabilityCG(String targetMethodSig, String entryMethodSig) {
-        this.entryMethodContext = new MethodContext(entryMethodSig);
+    public ReachabilityCG(String entryClass , String targetMethodSig, String sourceMethodSig) {
+        this.sourceMethodContext = new MethodContext(sourceMethodSig);
         this.targetMethodContext = new MethodContext(targetMethodSig);
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(this.entryMethodContext.getClassName(), true);
+        sootConfig.setupSoot(entryClass, true);
         this.callGraph = Scene.v().getCallGraph();
     }
 
-    public ReachabilityCG(String targetMethodSig, String entryMethodSig,String classPath) {
-        this.entryMethodContext = new MethodContext(entryMethodSig);
+    public ReachabilityCG(String entryClass , String targetMethodSig, String entryMethodSig,String classPath) {
+        this.sourceMethodContext = new MethodContext(entryMethodSig);
         this.targetMethodContext = new MethodContext(targetMethodSig);
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(this.entryMethodContext.getClassName(), true,classPath);
+        sootConfig.setupSoot(entryClass,true,classPath);
         this.callGraph = Scene.v().getCallGraph();
     }
 
-    public MethodContext runAnalysis() {
-        return analyzeCallGraph(this.entryMethodContext, this.targetMethodContext);
+    public List<MethodContext> runAnalysis() {
+        return analyzeCallGraph(this.sourceMethodContext, this.targetMethodContext);
     }
 
     /**
@@ -51,20 +51,21 @@ public class ReachabilityCG {
      * @return the call chain from the entry method to the target method
      *
      */
-    public MethodContext analyzeCallGraph(MethodContext entryMethod, MethodContext targetMethod) {
+    public List<MethodContext> analyzeCallGraph(MethodContext entryMethod, MethodContext targetMethod) {
         Set<String> visited = new HashSet<>();
         Queue<MethodContext> worklist = new LinkedList<>(); //这是一个队列，用于广度优先搜索
+        List<MethodContext> paths = new ArrayList<>();
         worklist.offer(entryMethod);
         visited.add(entryMethod.getMethodSignature());
 
         while (!worklist.isEmpty()) {
             MethodContext current = worklist.poll();
             SootMethod currentMethod = Scene.v().getMethod(current.getMethodSignature());
-//            System.out.println("currentMethod: " + currentMethod);
             if (currentMethod.getSignature().equals(targetMethod.getMethodSignature())) {
                 MethodContext up = current.copy();
                 up.getMethodCallStack().addFirst(currentMethod);
-                return up;
+                paths.add(up);
+                continue;
             }
             Iterator<MethodOrMethodContext> targets = new Targets(callGraph.edgesOutOf(currentMethod));//获取所有被m调用的方法
             while (targets.hasNext()) {
@@ -78,13 +79,15 @@ public class ReachabilityCG {
                 }
             }
         }
-        return null;
+        return paths;
     }
 
     public static void main(String[] args) {
-        ReachabilityCG analysis = new ReachabilityCG("<TestCaseDroid.test.ICFG: void test2()>", "<TestCaseDroid.test.Vulnerable: void main(java.lang.String[])>");
-        MethodContext methodContext = analysis.runAnalysis();
-        System.out.println(methodContext.getMethodCallStackString());
+        ReachabilityCG analysis = new ReachabilityCG("TestCaseDroid.test.Vulnerable","<TestCaseDroid.test.ICFG: void test2()>", "<TestCaseDroid.test.Vulnerable: void main(java.lang.String[])>");
+        List<MethodContext> methodContexts = analysis.runAnalysis();
+        for (MethodContext methodContext : methodContexts) {
+            System.out.println(methodContext.getMethodCallStackString());
+        }
     }
 }
 
