@@ -78,7 +78,7 @@ public class ReachabilityICFG {
             Context current = worklist.poll(); // Get a node from the worklist
             Unit reachedNode = current.getReachedNode(); // Get the reached node
             SootMethod reachedMethod = icfg.getMethodOf(reachedNode);
-            System.out.println("now reached Node: " + reachedNode + " in method: " + reachedMethod);
+            System.out.println("Searching .... now reached Node: " + reachedNode + " in method: " + reachedMethod);
 
             //匹配到目标方法
             if (reachedMethod.equals(target)) {
@@ -128,15 +128,15 @@ public class ReachabilityICFG {
             down.getMethodCallStack().add(Method);
             down.setReachedNode(targetStartPoint);
             down.setReachedMethod(Method);
-            //如果是函数调用语句，还要遍历函数体,需要排除对象的构造函数
-            if (visited.add(down) && targetStartPoint instanceof InvokeStmt && !targetStartPoint.toString().contains("<init>")&& !targetStartPoint.toString().contains("void <clinit>")
-                    && !((InvokeStmt) targetStartPoint).getInvokeExpr().getMethod().isJavaLibraryMethod()) {
+            //如果是函数调用语句，还要遍历函数体,需要排除对象的构造函数 以及调用java库函数的语句
+            if (visited.add(down) && targetStartPoint instanceof InvokeStmt && !targetStartPoint.toString().contains("<init>")
+                    && !targetStartPoint.toString().contains("void <clinit>") && !((InvokeStmt) targetStartPoint).getInvokeExpr().getMethod().isJavaLibraryMethod()) {
                 worklist.add(down);
                 invokeFlag = true;
             }
             BeforeInvoke = down;
         }
-        //如果被调用函数没有调用其他函数，则将函数的最后一个节点加入到worklist中
+        //如果被调用函数没有调用其他函数，则将函数的最后一个节点(已包含它之前的所有节点)加入到worklist中
         if (!invokeFlag) {
             worklist.add(BeforeInvoke);
         }

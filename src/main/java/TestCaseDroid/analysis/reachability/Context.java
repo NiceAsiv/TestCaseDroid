@@ -104,7 +104,7 @@ public class Context {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Reached node: ").append(reachedNode).append("\n");
+        sb.append("Reached node: ").append(reachedNode).append(" in method: ").append(reachedMethod).append("\n");
         if (!callStack.isEmpty()) {
             sb.append("Call stack: ");
             for (Unit unit : callStack) {
