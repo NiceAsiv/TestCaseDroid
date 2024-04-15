@@ -119,8 +119,7 @@ public class ReachabilityICFG {
      * @param worklist The worklist to which the nodes are to be added.
      */
     private static void getInvokeMethodWorklist(Context current, SootMethod Method, HashSet<Context> visited, Deque<Context> worklist) {
-        Context BeforeInvoke;
-        BeforeInvoke = current.copy();
+        Context BeforeInvoke = current.copy();
         boolean invokeFlag = false;
         for (Unit targetStartPoint : Method.getActiveBody().getUnits()) {
             Context down = BeforeInvoke.copy();

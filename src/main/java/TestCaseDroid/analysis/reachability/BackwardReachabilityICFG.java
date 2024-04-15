@@ -10,6 +10,7 @@ import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 
 import java.util.*;
 
+
 public class BackwardReachabilityICFG {
 
     private final BackwardsInterproceduralCFG icfg;
@@ -41,11 +42,15 @@ public class BackwardReachabilityICFG {
     }
 
 
-    public Context inDynamicExtent(SootMethod source, SootMethod target) {
+    public List<Context> inDynamicExtent(SootMethod source, SootMethod target) {
         for (Unit start : icfg.getStartPointsOf(target)) {
             Context startingContext = new Context(start);
-            Context reached = reachable(startingContext, source);
-            if (reached != null) {
+//            Context reached = reachable(startingContext, source);
+//            if (reached != null) {
+//                return reached;
+//            }
+            List<Context> reached = reachable(startingContext,source);
+            if(reached.isEmpty()){
                 return reached;
             }
         }
@@ -53,7 +58,7 @@ public class BackwardReachabilityICFG {
     }
 
 
-    public List<Context> reachable(Context target)
+    public List<Context> findUnknownSource(Context target)
     {
         List<Context> paths = new ArrayList<>();
         Deque<Context> worklist = new LinkedList<>(); // Deque is a double-ended queue
@@ -89,69 +94,75 @@ public class BackwardReachabilityICFG {
      * @param target The target method
      * @return The context of the reached target method if it can be reached, null otherwise
      */
-    public Context reachable(Context target, SootMethod source) {
+    public List<Context> reachable(Context target, SootMethod source) {
 
         Deque<Context> worklist = new LinkedList<>();
         Set<Context> visited = new HashSet<>();
-        worklist.add(target);
-        visited.add(target);
+        List<Context> paths = new ArrayList<>();
+        //初始化worklist，将target method的全部节点加入到worklist中
+        Context lastNode = getMethodBodyContext(target, target.getReachedNode(), target.getReachedMethod());
+        worklist.add(lastNode);
+        visited.add(lastNode);
+
         while (!worklist.isEmpty()) {
             Context current = worklist.poll();
             Unit reachedNode = current.getReachedNode();
             SootMethod reachedMethod = icfg.getMethodOf(reachedNode);
             System.out.println("now reachedNode is: " + reachedNode + " in method: " + reachedMethod);
+            
             if (reachedMethod.equals(source)) {
-                Context up = current.copy();
-                up.getCallStack().addFirst(reachedNode);
-                up.getMethodCallStack().addFirst(reachedMethod);
-                Context down = up.copy();
-                List<Unit> succs = icfg.getSuccsOf(reachedNode);
-                for (Unit succ : succs) {
-                    down.setReachedNode(succ);
-                    down.getCallStack().addFirst(succ);
-                    down.getMethodCallStack().addFirst(icfg.getMethodOf(succ));
-                    System.out.println("now reachedNode is: " + succ + " in method: " + reachedMethod);
-                }
-                return down;
+                Context down = getMethodBodyContext(current, reachedNode, reachedMethod);
+                System.out.println("Find a path to the source method: " + down);
+                paths.add(down);
+                continue;
             }
-            List<Unit> Succs = icfg.getSuccsOf(reachedNode);
-            for (Unit succ : Succs) {
-                Context down = current.copy();
-                down.setReachedNode(succ);
-                down.getCallStack().addFirst(reachedNode);
-                down.getMethodCallStack().addFirst(reachedMethod);
-                if (visited.add(down)) {
-                    worklist.add(down);
-                }
-            }
-            if (worklist.isEmpty()) {
-                Collection<Unit> callers = icfg.getCallersOf(reachedMethod);
-                for (Unit caller : callers) {
-                    if (visited.stream().noneMatch(context -> context.getReachedNode().equals(caller))) {
-                        Context up = current.copy();
-                        up.setReachedNode(caller);
-                        up.getCallStack().addFirst(reachedNode);
-                        up.getMethodCallStack().addFirst(reachedMethod);
-                        if (visited.add(up)) {
-                            worklist.add(up);
-                        }
-                    }
 
+            if (!icfg.getCallersOf(reachedMethod).isEmpty()) {
+                for (Unit caller : icfg.getCallersOf(reachedMethod)) {
+                    Context down = current.copy();
+                    down.setReachedNode(caller);
+                    down.setReachedMethod(reachedMethod);
+                    down.getCallStack().addFirst(reachedNode);
+                    down.getMethodCallStack().addFirst(reachedMethod);
+                    Context up = getMethodBodyContext(down, caller, reachedMethod);
+                    if (visited.add(up)) {
+                        worklist.add(up);
+                    }
                 }
             }
         }
-        return null;
+        return paths;
+    }
+
+    private Context getMethodBodyContext(Context current, Unit reachedNode, SootMethod reachedMethod) {
+        Context currentContext = current.copy();
+        Unit currentUnit = reachedNode;
+
+        while (!icfg.getSuccsOf(currentUnit).isEmpty()) {
+            for (Unit succ : icfg.getSuccsOf(currentUnit)) {
+                Context down = currentContext.copy();
+                down.setReachedNode(succ);
+                down.setReachedMethod(reachedMethod);
+                down.getCallStack().addFirst(currentUnit);
+                down.getMethodCallStack().addFirst(reachedMethod);
+                System.out.println("now reachedNode is: " + succ + " in method: " + reachedMethod);
+                currentUnit = succ;
+                currentContext = down;
+            }
+        }
+        return currentContext;
     }
 
     public static void main(String[] args) {
         BackwardReachabilityICFG reachability = new BackwardReachabilityICFG("TestCaseDroid.test.Vulnerable","E:\\Tutorial\\TestCaseDroid\\target\\classes");
-        SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.ICFG").getMethodByName("test1");
-        SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.ICFG").getMethodByName("test3");
-        Context reachedContext = reachability.inDynamicExtent(source, target);
-        if (reachedContext != null) {
+        SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.Vulnerable").getMethodByName("main");
+        SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.ICFG").getMethodByName("test1");
+        List<Context> reachedContext = reachability.inDynamicExtent(source, target);
+        if (reachedContext != null && !reachedContext.isEmpty()) {
             System.out.println("The source method can be reached from the target method.");
-            System.out.println("The Call Stack is:\n " + reachedContext);
-            System.out.println("The Method Call Stack is:\n " + reachedContext.getMethodCallStackString());
+            for (Context context : reachedContext) {
+                System.out.println(context.getMethodCallStackString());
+            }
         } else {
             System.out.println("The source method cannot be reached from the target method.");
         }
