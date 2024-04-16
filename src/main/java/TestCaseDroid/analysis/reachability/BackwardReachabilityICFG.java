@@ -50,7 +50,7 @@ public class BackwardReachabilityICFG {
 //                return reached;
 //            }
             List<Context> reached = reachable(startingContext,source);
-            if(reached.isEmpty()){
+            if(!reached.isEmpty()){
                 return reached;
             }
         }

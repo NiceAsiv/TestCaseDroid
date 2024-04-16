@@ -88,7 +88,7 @@ public class MethodContext {
         return Objects.equals(className, that.className) &&
                 Objects.equals(methodName, that.methodName) &&
                 Objects.equals(returnType, that.returnType) &&
-                Objects.equals(paramTypes, that.paramTypes);
+                Objects.equals(paramTypes, that.paramTypes) && Objects.equals(methodCallStack, that.methodCallStack);
     }
 
     private void parseMethodSignature(String methodSignature) {

@@ -43,7 +43,7 @@ public class ReachabilityICFG {
         for (Unit start : icfg.getStartPointsOf(source)) {
             Context startingContext = new Context(start);
             List<Context> reached = reachable(startingContext, target);
-             if(reached.isEmpty()){
+             if(!reached.isEmpty()){
                  return reached;
              }
         }

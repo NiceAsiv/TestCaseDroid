@@ -52,11 +52,11 @@ public class ReachabilityCG {
      *
      */
     public List<MethodContext> analyzeCallGraph(MethodContext entryMethod, MethodContext targetMethod) {
-        Set<String> visited = new HashSet<>();
+        Set<MethodContext> visited = new HashSet<>();
         Queue<MethodContext> worklist = new LinkedList<>(); //这是一个队列，用于广度优先搜索
         List<MethodContext> paths = new ArrayList<>();
         worklist.offer(entryMethod);
-        visited.add(entryMethod.getMethodSignature());
+        visited.add(entryMethod);
 
         while (!worklist.isEmpty()) {
             MethodContext current = worklist.poll();
@@ -70,12 +70,13 @@ public class ReachabilityCG {
             Iterator<MethodOrMethodContext> targets = new Targets(callGraph.edgesOutOf(currentMethod));//获取所有被m调用的方法
             while (targets.hasNext()) {
                 SootMethod target = (SootMethod) targets.next();
-                if (!visited.contains(target.getSignature())&&!target.isJavaLibraryMethod()) {
+                if (!target.isJavaLibraryMethod()) {
                     MethodContext down = current.copy();
                     down.setMethodSignature(target.getSignature());
                     down.getMethodCallStack().addFirst(currentMethod);
-                    visited.add(target.getSignature());
-                    worklist.offer(down);
+                    if(visited.add(down)){
+                        worklist.offer(down);
+                    }
                 }
             }
         }

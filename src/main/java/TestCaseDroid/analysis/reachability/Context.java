@@ -1,13 +1,11 @@
 package TestCaseDroid.analysis.reachability;
 
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Objects;
 
 import lombok.Getter;
 import lombok.Setter;
-import soot.IFoundFile;
 import soot.SootMethod;
 import soot.Unit;
 
@@ -21,6 +19,7 @@ public class Context {
     private Deque<SootMethod> methodCallStack;
     private Unit reachedNode;
     private SootMethod reachedMethod;
+    private boolean isBackward = false;
 
     /**
      * Default constructor, initializes an empty call stack.
@@ -87,6 +86,14 @@ public class Context {
         return sb.toString();
     }
 
+    Deque<Unit> getReversedCallStack() {
+        Deque<Unit> reversedCallStack = new LinkedList<>();
+        for (Unit unit : callStack) {
+            reversedCallStack.addFirst(unit);
+        }
+        return reversedCallStack;
+    }
+
     /**
      * Checks if the current context is equal to the specified object.
      * @param obj The object to check
@@ -107,8 +114,14 @@ public class Context {
         sb.append("Reached node: ").append(reachedNode).append(" in method: ").append(reachedMethod).append("\n");
         if (!callStack.isEmpty()) {
             sb.append("Call stack: ");
-            for (Unit unit : callStack) {
-                sb.append(unit).append("\n -> ");
+            if (isBackward) {
+                for (Unit unit : getReversedCallStack()) {
+                    sb.append(unit).append("\n -> ");
+                }
+            } else {
+                for (Unit unit : callStack) {
+                    sb.append(unit).append("\n -> ");
+                }
             }
             sb.delete(sb.length() - 4, sb.length());
         }
