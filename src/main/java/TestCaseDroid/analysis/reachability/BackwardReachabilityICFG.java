@@ -153,6 +153,20 @@ public class BackwardReachabilityICFG {
         return currentContext;
     }
 
+    public void runAnalysis(MethodContext entryMethod, MethodContext targetMethod) {
+        SootMethod source = Scene.v().getMethod(entryMethod.getMethodSignature());
+        SootMethod target = Scene.v().getMethod(targetMethod.getMethodSignature());
+        List<Context> reachedContext = inDynamicExtent(source, target);
+        if (reachedContext != null && !reachedContext.isEmpty()) {
+            System.out.println("The source method can be reached from the target method.");
+            for (Context context : reachedContext) {
+                System.out.println(context.getMethodCallStackString());
+            }
+        } else {
+            System.out.println("The source method cannot be reached from the target method.");
+        }
+    }
+
     public static void main(String[] args) {
         BackwardReachabilityICFG reachability = new BackwardReachabilityICFG("TestCaseDroid.test.Vulnerable","E:\\Tutorial\\TestCaseDroid\\target\\classes");
         SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.Vulnerable").getMethodByName("main");
@@ -167,4 +181,5 @@ public class BackwardReachabilityICFG {
             System.out.println("The source method cannot be reached from the target method.");
         }
     }
+
 }

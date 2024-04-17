@@ -40,6 +40,33 @@ public class ClassInfoExtractor {
         }
         return classInfo;
     }
+    public static ClassInfo extractClassInfo(String className, String classPath) {
+        SootConfig sootConfig = new SootConfig();
+        sootConfig.setupSoot(className, false,classPath);
+        ClassInfo classInfo = new ClassInfo(className);
+
+        SootClass sootClass = Scene.v().getSootClass(className);
+        sootClass.setApplicationClass();
+
+        // Extract class name
+        classInfo.setClassName(className);
+        // Extract package name
+        classInfo.setPackageName(className.substring(0, className.lastIndexOf('.')));
+
+        // Extract class fields
+        extractFieldsValue(sootClass, classInfo);
+        // Extract class methods
+        List <SootMethod> methods = sootClass.getMethods();
+        for (SootMethod method : methods) {
+            try {
+                classInfo.addMethod(method.getName(), method.retrieveActiveBody().toString());
+                classInfo.addMethodBody(method.getName(), method.retrieveActiveBody().toString());
+            } catch (Exception e) {
+                log.error("Failed to extract method: " + method.getName());
+            }
+        }
+        return classInfo;
+    }
 
     /**
      * Extract class fields value from the class 利用反射机制获取类的字段值

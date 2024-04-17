@@ -28,6 +28,11 @@ public class ReachabilityICFG {
         sootConfig.setupSoot(targetClass, true);
         this.icfg = new JimpleBasedInterproceduralCFG();
     }
+    public ReachabilityICFG(String targetClass,String classPath) {
+        SootConfig sootConfig = new SootConfig();
+        sootConfig.setupSoot(targetClass, true,classPath);
+        this.icfg = new JimpleBasedInterproceduralCFG();
+    }
 
 
     /**
@@ -138,6 +143,19 @@ public class ReachabilityICFG {
         //如果被调用函数没有调用其他函数，则将函数的最后一个节点(已包含它之前的所有节点)加入到worklist中
         if (!invokeFlag) {
             worklist.add(BeforeInvoke);
+        }
+    }
+    public void runAnalysis(MethodContext entryMethod, MethodContext targetMethod) {
+        SootMethod source = Scene.v().getMethod(entryMethod.getMethodSignature());
+        SootMethod target = Scene.v().getMethod(targetMethod.getMethodSignature());
+        List<Context> reachedContext = inDynamicExtent(source, target);
+        if (reachedContext != null && !reachedContext.isEmpty()) {
+            System.out.println("The target method can be reached from the source method.");
+            for (Context context : reachedContext) {
+                System.out.println(context.getMethodCallStackString());
+            }
+        } else {
+            System.out.println("The target method cannot be reached from the source method.");
         }
     }
 
