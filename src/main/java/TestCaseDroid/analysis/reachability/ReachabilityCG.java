@@ -2,6 +2,7 @@ package TestCaseDroid.analysis.reachability;
 
 
 import TestCaseDroid.config.SootConfig;
+import TestCaseDroid.utils.SootUtils;
 import lombok.Getter;
 import lombok.Setter;
 import soot.MethodOrMethodContext;
@@ -19,6 +20,7 @@ public class ReachabilityCG {
     private MethodContext sourceMethodContext;
     private MethodContext targetMethodContext;
     private final CallGraph callGraph;
+    private int maxDepth = 999;
 
     /**
      * constructor of ReachabilityForFunction
@@ -42,8 +44,16 @@ public class ReachabilityCG {
         this.callGraph = Scene.v().getCallGraph();
     }
 
-    public List<MethodContext> runAnalysis() {
-        return analyzeCallGraph(this.sourceMethodContext, this.targetMethodContext);
+    public void runAnalysis() {
+        List<MethodContext> paths = analyzeCallGraph(this.sourceMethodContext, this.targetMethodContext);
+        if (paths.isEmpty()) {
+            System.out.println("No path found from " + this.sourceMethodContext.getMethodSignature() + " to " + this.targetMethodContext.getMethodSignature());
+        } else {
+            for (MethodContext path : paths) {
+                System.out.println("Path found from " + this.sourceMethodContext.getMethodSignature() + " to " + this.targetMethodContext.getMethodSignature());
+                System.out.println(path.getMethodCallStackString());
+            }
+        }
     }
 
     /**
@@ -55,27 +65,35 @@ public class ReachabilityCG {
         Set<MethodContext> visited = new HashSet<>();
         Queue<MethodContext> worklist = new LinkedList<>(); //这是一个队列，用于广度优先搜索
         List<MethodContext> paths = new ArrayList<>();
+        int depth = 0;
         worklist.offer(entryMethod);
         visited.add(entryMethod);
-
+        //TODO 修复重复入库的问题
         while (!worklist.isEmpty()) {
             MethodContext current = worklist.poll();
             SootMethod currentMethod = Scene.v().getMethod(current.getMethodSignature());
+            System.out.println("Searching :" + currentMethod.getSignature());
             if (currentMethod.getSignature().equals(targetMethod.getMethodSignature())) {
                 MethodContext up = current.copy();
                 up.getMethodCallStack().addFirst(currentMethod);
+                System.out.println("Found path: " + up.getMethodCallStackString());
                 paths.add(up);
                 continue;
+            }
+
+            if (depth >= maxDepth) {
+                return paths;
             }
             Iterator<MethodOrMethodContext> targets = new Targets(callGraph.edgesOutOf(currentMethod));//获取所有被m调用的方法
             while (targets.hasNext()) {
                 SootMethod target = (SootMethod) targets.next();
-                if (!target.isJavaLibraryMethod()) {
+                if (!target.isJavaLibraryMethod()&& SootUtils.isNotExcludedMethod(target) && !target.getName().equals("<init>") && !target.getName().equals("<clinit>")) {
                     MethodContext down = current.copy();
                     down.setMethodSignature(target.getSignature());
                     down.getMethodCallStack().addFirst(currentMethod);
                     if(visited.add(down)){
                         worklist.offer(down);
+                        depth++;
                     }
                 }
             }
@@ -85,7 +103,7 @@ public class ReachabilityCG {
 
     public static void main(String[] args) {
         ReachabilityCG analysis = new ReachabilityCG("TestCaseDroid.test.Vulnerable","<TestCaseDroid.test.ICFG: void test2()>", "<TestCaseDroid.test.Vulnerable: void main(java.lang.String[])>");
-        List<MethodContext> methodContexts = analysis.runAnalysis();
+        List<MethodContext> methodContexts = analysis.analyzeCallGraph(analysis.sourceMethodContext, analysis.targetMethodContext);
         for (MethodContext methodContext : methodContexts) {
             System.out.println(methodContext.getMethodCallStackString());
         }
