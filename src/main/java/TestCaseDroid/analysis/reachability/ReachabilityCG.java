@@ -68,11 +68,11 @@ public class ReachabilityCG {
         int depth = 0;
         worklist.offer(entryMethod);
         visited.add(entryMethod);
-        //TODO 修复重复入库的问题
         while (!worklist.isEmpty()) {
             MethodContext current = worklist.poll();
+            depth++;
             SootMethod currentMethod = Scene.v().getMethod(current.getMethodSignature());
-            System.out.println("Searching :" + currentMethod.getSignature());
+//            System.out.println("Current method: " + currentMethod.getSignature() + "\npast call stack: " + current.getMethodCallStackString());
             if (currentMethod.getSignature().equals(targetMethod.getMethodSignature())) {
                 MethodContext up = current.copy();
                 up.getMethodCallStack().addFirst(currentMethod);
@@ -84,6 +84,7 @@ public class ReachabilityCG {
             if (depth >= maxDepth) {
                 return paths;
             }
+
             Iterator<MethodOrMethodContext> targets = new Targets(callGraph.edgesOutOf(currentMethod));//获取所有被m调用的方法
             while (targets.hasNext()) {
                 SootMethod target = (SootMethod) targets.next();
@@ -91,9 +92,9 @@ public class ReachabilityCG {
                     MethodContext down = current.copy();
                     down.setMethodSignature(target.getSignature());
                     down.getMethodCallStack().addFirst(currentMethod);
-                    if(visited.add(down)){
+                    if (!visited.contains(down)) {
                         worklist.offer(down);
-                        depth++;
+                        visited.add(down);
                     }
                 }
             }

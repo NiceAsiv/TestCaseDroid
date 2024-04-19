@@ -72,8 +72,15 @@ public class MethodContext {
                 sb.append(method.getSignature()).append(" -> ");
             }
         }
+        if (sb.length() == 0) {
+            return "";
+        }
         sb.delete(sb.length() - 4, sb.length());
         return sb.toString();
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(className, methodName, returnType, paramTypes, methodCallStack);
     }
 
     @Override

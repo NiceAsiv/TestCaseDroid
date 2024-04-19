@@ -17,7 +17,7 @@ public class ReachabilityICFG {
 
     private final JimpleBasedInterproceduralCFG icfg;
     @Setter
-    private int maxDepth = 100;
+    private int maxDepth = 999;
 
     /**
      * Default constructor, initializes the interprocedural control flow graph
