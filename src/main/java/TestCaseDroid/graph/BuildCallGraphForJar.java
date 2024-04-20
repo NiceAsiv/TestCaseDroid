@@ -25,7 +25,7 @@ public class BuildCallGraphForJar extends SceneTransformer{
 
 
     public static void main(String[] args) {
-        buildCallGraphForJar("E:\\Tutorial\\TestCaseDroid\\target\\classes", "TestCaseDroid.test.CallGraphs", "doStuff");
+        buildCallGraphForJar("E:\\Tutorial\\TestCaseDroid\\target\\classes", "TestCaseDroid.test.CallGraphs", new MethodContext("<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>"));
     }
     public static void buildCallGraphForJar(String targetJarPath,String callGraphAlgorithm, String className,MethodContext entryMethod) {
         sootConfig.setCallGraphAlgorithm(callGraphAlgorithm);
