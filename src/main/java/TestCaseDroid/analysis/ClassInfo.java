@@ -31,4 +31,16 @@ public class ClassInfo {
     public void addMethodBody(String methodName, String methodBody) {
         this.classMethodBodies.put(methodName, methodBody);
     }
+    @Override
+    public String toString() {
+        StringBuilder methodAndBody = new StringBuilder();
+        for (String methodName : classMethods.keySet()) {
+            methodAndBody.append(methodName).append(":\n").append(classMethodBodies.get(methodName)).append("\n");
+        }
+
+        return "packageName='" + packageName + '\'' +
+                ", className='" + className + '\'' +
+                ", classFields=" + classFields +",\n"+
+                "\nclassMethods=" + methodAndBody;
+    }
 }

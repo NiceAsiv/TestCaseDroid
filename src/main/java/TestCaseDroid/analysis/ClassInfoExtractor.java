@@ -13,7 +13,7 @@ import java.util.List;
 
 @Slf4j
 public class ClassInfoExtractor {
-    public static ClassInfo extractClassInfo(String className) {
+    private static ClassInfo extractClassInfo(String className) {
         SootConfig sootConfig = new SootConfig();
         sootConfig.setupSoot(className, false);
         ClassInfo classInfo = new ClassInfo(className);
@@ -40,7 +40,7 @@ public class ClassInfoExtractor {
         }
         return classInfo;
     }
-    public static ClassInfo extractClassInfo(String className, String classPath) {
+    private static ClassInfo extractClassInfo(String className, String classPath) {
         SootConfig sootConfig = new SootConfig();
         sootConfig.setupSoot(className, false,classPath);
         ClassInfo classInfo = new ClassInfo(className);
@@ -91,9 +91,9 @@ public class ClassInfoExtractor {
                 Object value = fieldObj.get(clazz.newInstance());
                 if (value != null)
                 {
-                    classInfo.addField(field.getName(), value.toString());
+                    classInfo.addField(field.getSignature(), value.toString());
                 }else {
-                    classInfo.addField(field.getName(), "null");
+                    classInfo.addField(field.getSignature(), "null");
                 }
             } catch (IllegalAccessException | NoSuchFieldException e) {
                 log.error("Failed to extract field value: " + field.getName());
@@ -103,7 +103,16 @@ public class ClassInfoExtractor {
         }
     }
 
+    public static void runAnalysis(String className) {
+        ClassInfo classInfo = extractClassInfo(className);
+        System.out.println(classInfo);
+    }
+    public static void runAnalysis(String className, String classPath) {
+        ClassInfo classInfo = extractClassInfo(className, classPath);
+        System.out.println(classInfo);
+    }
+
     public static void main(String[] args) {
-        ClassInfoExtractor.extractClassInfo("TestCaseDroid.test.CallGraph");
+        ClassInfoExtractor.runAnalysis("TestCaseDroid.test.CallGraph");
     }
 }

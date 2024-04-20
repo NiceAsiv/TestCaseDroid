@@ -96,7 +96,7 @@ public class TestCaseDroidApplication {
         {
             if (extraInfo.equals("true"))
             {
-                ClassInfoExtractor.extractClassInfo(classNameForAnalysis,classPath);
+                ClassInfoExtractor.runAnalysis(classNameForAnalysis, classPath);
             }
         }
 

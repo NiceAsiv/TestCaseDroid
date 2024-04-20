@@ -50,7 +50,7 @@ public class ReachabilityCG {
             System.out.println("No path found from " + this.sourceMethodContext.getMethodSignature() + " to " + this.targetMethodContext.getMethodSignature());
         } else {
             for (MethodContext path : paths) {
-                System.out.println("Path found from " + this.sourceMethodContext.getMethodSignature() + " to " + this.targetMethodContext.getMethodSignature());
+                System.out.println("Path found: ");
                 System.out.println(path.getMethodCallStackString());
             }
         }
@@ -76,7 +76,7 @@ public class ReachabilityCG {
             if (currentMethod.getSignature().equals(targetMethod.getMethodSignature())) {
                 MethodContext up = current.copy();
                 up.getMethodCallStack().addFirst(currentMethod);
-                System.out.println("Found path: " + up.getMethodCallStackString());
+//                System.out.println("Found path: " + up.getMethodCallStackString());
                 paths.add(up);
                 continue;
             }
