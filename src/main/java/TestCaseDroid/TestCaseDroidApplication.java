@@ -28,8 +28,6 @@ public class TestCaseDroidApplication {
         String classNameForAnalysis = cmd.getOptionValue("entryClass");
         String sourceMethodSig = cmd.getOptionValue("sourceMethodSig");
         String targetMethodSig = cmd.getOptionValue("targetMethodSig");
-        String backward = cmd.getOptionValue("backward");
-        String methodNameForAnalysis = cmd.getOptionValue("method");
         String reachabilityType = cmd.getOptionValue("reachability");
         String extraInfo = cmd.getOptionValue("extra");
 
@@ -54,18 +52,18 @@ public class TestCaseDroidApplication {
                         reachabilityCG.runAnalysis();
                         break;
                     case "icfg":
-                        if (backward != null && backward.equals("true")) {
-                            BackwardReachabilityICFG backwardReachabilityICFG = new BackwardReachabilityICFG(classNameForAnalysis, classPath);
-                            backwardReachabilityICFG.runAnalysis(sourceMethodContext, targetMethodContext);
-                        } else {
-                            ReachabilityICFG reachabilityICFG = new ReachabilityICFG(classNameForAnalysis, classPath);
-                            reachabilityICFG.runAnalysis(sourceMethodContext, targetMethodContext);
-                        }
+                        ReachabilityICFG reachabilityICFG = new ReachabilityICFG(classNameForAnalysis, classPath);
+                        reachabilityICFG.runAnalysis(sourceMethodContext, targetMethodContext);
                         break;
                     case "cfg":
                         ReachabilityCFG reachabilityCFG = new ReachabilityCFG(classNameForAnalysis, sourceMethodContext.getMethodName(), classPath);
                         reachabilityCFG.runAnalysis(targetMethodContext);
                         break;
+                    case "bicfg":
+                        BackwardReachabilityICFG backwardReachabilityICFG = new BackwardReachabilityICFG(classNameForAnalysis, classPath);
+                        backwardReachabilityICFG.runAnalysis(sourceMethodContext, targetMethodContext);
+                        break;
+
                     default:
                         System.out.println("Error: Invalid reachability analysis type. Use 'cg' 'cfg' or 'icfg'.");
                         formatter.printHelp("usage: TestCaseDroid", options, true);
@@ -76,18 +74,23 @@ public class TestCaseDroidApplication {
 
         if (graphType !=null)
         {
+            if (sourceMethodSig == null) {
+                System.out.println("Error: The source method is not specified.");
+                formatter.printHelp("usage: TestCaseDroid", options, true);
+            }
+            MethodContext sourceMethodContext = new MethodContext(sourceMethodSig);
             switch (graphType) {
                 case "cg":
-                    BuildCallGraphForJar.buildCallGraphForJar(classPath, classNameForAnalysis, methodNameForAnalysis);
+                    BuildCallGraphForJar.buildCallGraphForJar(classPath, classNameForAnalysis, sourceMethodContext);
                     break;
                 case "cfg":
-                    BuildControlFlowGraph.buildControlFlowGraphForClass(classPath, classNameForAnalysis, methodNameForAnalysis);
+                    BuildControlFlowGraph.buildControlFlowGraph(classPath, classNameForAnalysis,sourceMethodContext);
                     break;
                 case "icfg":
-                    BuildICFG.buildICFGForClass(classPath, classNameForAnalysis, methodNameForAnalysis);
+                    BuildICFG.buildICFGForClass(classPath, classNameForAnalysis, sourceMethodContext);
                     break;
                 default:
-                    System.out.println("Error: Invalid graph type. Use 'cg', 'cfg', or 'icfg'.");
+                    System.out.println("Error: Invalid graph type. Use 'cg', 'cfg','icfg', or 'bicfg'.");
                     formatter.printHelp("usage: TestCaseDroid", options, true);
                     break;
             }
@@ -123,14 +126,13 @@ public class TestCaseDroidApplication {
         options.addOption(entryClass);
 
 
-        Option entryMethodSig = new Option("sms", "sourceMethodSig", true, "entry source method signature for analysis e.g., -sms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
+        Option entryMethodSig = new Option("sms", "sourceMethodSig", true, "entry source method signature for analysis or graph build e.g., -sms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
         entryMethodSig.setRequired(false);
         options.addOption(entryMethodSig);
 
         Option targetMethodSig = new Option("tms", "targetMethodSig", true, "target method signature for analysis e.g., -tms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
         targetMethodSig.setRequired(false);
         options.addOption(targetMethodSig);
-
 
         //graph选项 选择分析的图类型
 
@@ -139,19 +141,10 @@ public class TestCaseDroidApplication {
         options.addOption(graph);
 
         //可达性分析
-        Option reachability = new Option("r", "reachability", true, "select reachability analysis type, e.g., -r cg");
+        Option reachability = new Option("r", "reachability", true, "select reachability analysis type, including 'cg', 'cfg', 'icfg', 'bicfg'(backward icfg) e.g., -r bicfg");
         reachability.setRequired(false);
         options.addOption(reachability);
 
-        //是否逆向分析
-        Option backward = new Option("b", "backward", false, "whether to perform backward analysis, e.g., -b true");
-        backward.setRequired(false);
-        options.addOption(backward);
-
-        //当进行建立cfg时，需要指定方法名
-        Option methodName = new Option("m", "method", true, "select method name for analysis");
-        methodName.setRequired(false);
-        options.addOption(methodName);
 
         Option extraInfo = new Option("e", "extra", true, "select extra information");
         extraInfo.setRequired(false);

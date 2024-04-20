@@ -1,5 +1,6 @@
 package TestCaseDroid.graph;
 
+import TestCaseDroid.analysis.reachability.MethodContext;
 import TestCaseDroid.config.SootConfig;
 import TestCaseDroid.utils.DotGraphWrapper;
 import lombok.Setter;
@@ -15,8 +16,6 @@ import soot.util.dot.DotGraph;
 
 @Setter
 public class BuildControlFlowGraph {
-    private static String targetClassName = "TestCaseDroid.test.CallGraphs";
-    private static String entryMethod = "main";
     private static DotGraphWrapper dotGraph = new DotGraphWrapper("controlFlowGraph");
     private static CFGToDotGraph drawer = new CFGToDotGraph();
     private static final SootConfig sootConfig = new SootConfig();
@@ -28,22 +27,23 @@ public class BuildControlFlowGraph {
 
 
     public static void main(String[] args) {
-           buildControlFlowGraphForClass();
-    }
-    public static void buildControlFlowGraphForClass() {
+        String targetClassName = "TestCaseDroid.test.CallGraphs";
+        String entryMethod = "TestCaseDroid.test.CallGraphs: void main(java.lang.String[])";
+        MethodContext methodEntryContext = new MethodContext(entryMethod);
+        buildControlFlowGraph(null, targetClassName, methodEntryContext);
     }
 
-    public static void buildControlFlowGraphForClass(String classesPath, String targetClassName, String entryMethod) {
+    public static void buildControlFlowGraph(String classesPath, String targetClassName, MethodContext entryMethod) {
         if (classesPath != null) {
-            sootConfig.setupSoot(BuildControlFlowGraph.targetClassName, true, classesPath);
+            sootConfig.setupSoot(targetClassName, true, classesPath);
         } else {
-            sootConfig.setupSoot(BuildControlFlowGraph.targetClassName, true);
+            sootConfig.setupSoot(targetClassName, true);
         }
 
         SootClass targetClass = Scene.v().getSootClass(targetClassName);
 
         //获取指定的方法
-        SootMethod targetMethod =  targetClass.getMethodByName(entryMethod);
+        SootMethod targetMethod =  targetClass.getMethod(entryMethod.getMethodSignature());
 
         //获取方法的Jimple body
         JimpleBody jimpleBody = (JimpleBody) targetMethod.retrieveActiveBody();
@@ -53,7 +53,7 @@ public class BuildControlFlowGraph {
 
         //遍历控制流图
         graphTraverse(cfg);
-        dotGraph.plot("cfg",targetClassName,entryMethod);
+        dotGraph.plot("cfg",targetClassName,entryMethod.getMethodName());
 //        getPrettyCFG(jimpleBody, jimpleBody, targetClassName, entryMethod);
     }
 

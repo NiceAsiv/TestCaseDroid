@@ -1,5 +1,6 @@
 package TestCaseDroid.graph;
 
+import TestCaseDroid.analysis.reachability.MethodContext;
 import TestCaseDroid.config.SootConfig;
 import TestCaseDroid.utils.DotGraphWrapper;
 import TestCaseDroid.utils.SootUtils;
@@ -9,7 +10,6 @@ import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -27,19 +27,19 @@ public class BuildCallGraphForJar extends SceneTransformer{
     public static void main(String[] args) {
         buildCallGraphForJar("E:\\Tutorial\\TestCaseDroid\\target\\classes", "TestCaseDroid.test.CallGraphs", "doStuff");
     }
-    public static void buildCallGraphForJar(String targetJarPath,String callGraphAlgorithm, String className,String entryMethod) {
+    public static void buildCallGraphForJar(String targetJarPath,String callGraphAlgorithm, String className,MethodContext entryMethod) {
         sootConfig.setCallGraphAlgorithm(callGraphAlgorithm);
         buildCallGraphForJar(targetJarPath,className,entryMethod);
     }
 
-    public static void buildCallGraphForJar(String targetJarPath,String className,String entryMethod) {
+    public static void buildCallGraphForJar(String targetJarPath, String className, MethodContext entryMethod) {
         BuildCallGraphForJar.setClassName(className);
         sootConfig.setupSoot(className, true, targetJarPath);
         //add an inter-procedural analysis phase to Soot
         BuildCallGraphForJar analysis = new BuildCallGraphForJar();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraphForJar", analysis));
         SootClass targetClass = Scene.v().getSootClass(className);
-        SootMethod entryPoint = targetClass.getMethodByName(entryMethod);
+        SootMethod entryPoint = targetClass.getMethod(entryMethod.getMethodSignature());
         //check if the mainClass is an application class
         SootUtils.isApplicationClass(targetClass.getName());
         //output the application classes and the function signatures loaded by each class in the current analysis environment

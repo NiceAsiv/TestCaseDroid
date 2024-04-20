@@ -1,5 +1,6 @@
 package TestCaseDroid.graph;
 
+import TestCaseDroid.analysis.reachability.MethodContext;
 import TestCaseDroid.config.SootConfig;
 import TestCaseDroid.utils.DotGraphWrapper;
 import heros.InterproceduralCFG;
@@ -17,32 +18,27 @@ import java.util.Map;
 public class BuildICFG extends SceneTransformer {
 
     private static String targetClassName = "TestCaseDroid.test.Vulnerable";
-    private static String targetMethodName = "main";
+    private static MethodContext methodEntryContext;
     private static DotGraphWrapper dotGraph = new DotGraphWrapper("interproceduralCFG");
     private ArrayList<Unit> visited;
 
     public static void main(String[] args) {
-        BuildICFGForClass();
+        String targetClassName = "TestCaseDroid.test.CallGraphs";
+        String entryMethod = "TestCaseDroid.test.CallGraphs: void main(java.lang.String[])";
+        MethodContext methodEntryContext = new MethodContext(entryMethod);
+        buildICFGForClass(null, targetClassName, methodEntryContext);
     }
 
-    public static void BuildICFGForClass() {
+    public static void buildICFGForClass(String inputFilePath, String classNameForAnalysis, MethodContext methodEntryContext) {
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(targetClassName, true);
-        sootConfig.setCallGraphAlgorithm("Spark");
-
-        //add an intra-procedural analysis phase to Soot
-        BuildICFG analysis = new BuildICFG();
-        PackManager.v().getPack("wjtp").add(new Transform("wjtp.ifds", analysis));
-        PackManager.v().runPacks();
-    }
-
-    public static void buildICFGForClass(String inputFilePath, String classNameForAnalysis, String methodNameForAnalysis) {
-
+        if (inputFilePath != null) {
+            sootConfig.setupSoot(classNameForAnalysis, true, inputFilePath);
+        } else {
+            sootConfig.setupSoot(classNameForAnalysis, true);
+        }
         targetClassName = classNameForAnalysis;
-        targetMethodName = methodNameForAnalysis;
-        SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(targetClassName, true, inputFilePath);
-        sootConfig.setCallGraphAlgorithm("Spark");
+        BuildICFG.methodEntryContext = methodEntryContext;
+        sootConfig.setCallGraphAlgorithm("CHA");
 
         //add an intra-procedural analysis phase to Soot
         BuildICFG analysis = new BuildICFG();
@@ -53,7 +49,7 @@ public class BuildICFG extends SceneTransformer {
     @Override
     protected void internalTransform(String phaseName, Map<String, String> options) {
         SootClass targetClass = Scene.v().getSootClass(targetClassName);
-        SootMethod targetMethod = targetClass.getMethodByName(targetMethodName);
+        SootMethod targetMethod = targetClass.getMethod(methodEntryContext.getMethodSignature());
         if (targetMethod.hasActiveBody()) {
             JimpleBasedInterproceduralCFG icfg = new JimpleBasedInterproceduralCFG();
             visited = new ArrayList<>();
@@ -62,9 +58,9 @@ public class BuildICFG extends SceneTransformer {
             graphTraverse(startPoint,returnPoint,icfg);
         }else
         {
-            System.out.println("No active body for method " + targetMethodName);
+            System.out.println("No active body for method " + targetMethod);
         }
-        dotGraph.plot("icfg", targetClassName, targetMethodName);
+        dotGraph.plot("icfg", targetClassName, targetMethod.getName());
     }
 
     public void graphTraverse(final Unit startPoint,final Unit returnPoint,final InterproceduralCFG<Unit, SootMethod> icfg) {
