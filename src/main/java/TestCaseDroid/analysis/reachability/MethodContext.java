@@ -99,6 +99,10 @@ public class MethodContext {
     }
 
     private void parseMethodSignature(String methodSignature) {
+        //if null
+        if (methodSignature == null) {
+            throw new IllegalArgumentException("Invalid method methodSignature null");
+        }
         String pattern = "<(.*): (.*?) (.*?)\\((.*?)\\)>"; //正则表达式
         if (!methodSignature.matches(pattern)) {
             throw new IllegalArgumentException("Invalid method methodSignature: " + methodSignature);

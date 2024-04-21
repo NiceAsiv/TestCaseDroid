@@ -77,22 +77,23 @@ public class TestCaseDroidApplication {
             if (sourceMethodSig == null) {
                 System.out.println("Error: The source method is not specified.");
                 formatter.printHelp("usage: TestCaseDroid", options, true);
-            }
-            MethodContext sourceMethodContext = new MethodContext(sourceMethodSig);
-            switch (graphType) {
-                case "cg":
-                    BuildCallGraphForJar.buildCallGraphForJar(classPath, classNameForAnalysis, sourceMethodContext);
-                    break;
-                case "cfg":
-                    BuildControlFlowGraph.buildControlFlowGraph(classPath, classNameForAnalysis,sourceMethodContext);
-                    break;
-                case "icfg":
-                    BuildICFG.buildICFGForClass(classPath, classNameForAnalysis, sourceMethodContext);
-                    break;
-                default:
-                    System.out.println("Error: Invalid graph type. Use 'cg', 'cfg','icfg', or 'bicfg'.");
-                    formatter.printHelp("usage: TestCaseDroid", options, true);
-                    break;
+            }else {
+                MethodContext sourceMethodContext = new MethodContext(sourceMethodSig);
+                switch (graphType) {
+                    case "cg":
+                        BuildCallGraphForJar.buildCallGraphForJar(classPath, classNameForAnalysis, sourceMethodContext);
+                        break;
+                    case "cfg":
+                        BuildControlFlowGraph.buildControlFlowGraph(classPath, classNameForAnalysis,sourceMethodContext);
+                        break;
+                    case "icfg":
+                        BuildICFG.buildICFGForClass(classPath, classNameForAnalysis, sourceMethodContext);
+                        break;
+                    default:
+                        System.out.println("Error: Invalid graph type. Use 'cg', 'cfg','icfg', or 'bicfg'.");
+                        formatter.printHelp("usage: TestCaseDroid", options, true);
+                        break;
+                }
             }
         }
         if (extraInfo!=null)

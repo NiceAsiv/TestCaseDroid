@@ -16,13 +16,11 @@ import soot.util.dot.DotGraph;
 
 @Setter
 public class BuildControlFlowGraph {
-    private static DotGraphWrapper dotGraph = new DotGraphWrapper("controlFlowGraph");
+    private static DotGraphWrapper dotGraph;
     private static CFGToDotGraph drawer = new CFGToDotGraph();
     private static final SootConfig sootConfig = new SootConfig();
     @Setter
     private static String graphAlgorithm;
-    @Setter
-    private static String classesPath;
 
 
 
@@ -40,10 +38,10 @@ public class BuildControlFlowGraph {
             sootConfig.setupSoot(targetClassName, true);
         }
 
-        SootClass targetClass = Scene.v().getSootClass(targetClassName);
+        dotGraph = new DotGraphWrapper(entryMethod.getMethodName());
 
         //获取指定的方法
-        SootMethod targetMethod =  targetClass.getMethod(entryMethod.getMethodSignature());
+        SootMethod targetMethod =  Scene.v().getMethod(entryMethod.getMethodSignature());
 
         //获取方法的Jimple body
         JimpleBody jimpleBody = (JimpleBody) targetMethod.retrieveActiveBody();

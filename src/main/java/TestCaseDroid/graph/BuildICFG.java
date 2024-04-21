@@ -49,7 +49,7 @@ public class BuildICFG extends SceneTransformer {
     @Override
     protected void internalTransform(String phaseName, Map<String, String> options) {
         SootClass targetClass = Scene.v().getSootClass(targetClassName);
-        SootMethod targetMethod = targetClass.getMethod(methodEntryContext.getMethodSignature());
+        SootMethod targetMethod = Scene.v().getMethod(methodEntryContext.getMethodSignature());
         if (targetMethod.hasActiveBody()) {
             JimpleBasedInterproceduralCFG icfg = new JimpleBasedInterproceduralCFG();
             visited = new ArrayList<>();

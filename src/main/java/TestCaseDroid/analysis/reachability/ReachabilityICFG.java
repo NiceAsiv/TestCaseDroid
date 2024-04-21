@@ -7,6 +7,7 @@ import lombok.Setter;
 import soot.Scene;
 import soot.SootMethod;
 import soot.Unit;
+import soot.jimple.AssignStmt;
 import soot.jimple.InvokeStmt;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 
@@ -105,8 +106,17 @@ public class ReachabilityICFG {
                     //遍历被调用函数的所有节点
                     getInvokeMethodWorklist(current, targetMethod, visited, worklist);
                 }
+            } else if (reachedMethod instanceof AssignStmt) {
+                // check if the target method is invoked in the right-hand side of the assignment
+                AssignStmt assignStmt = (AssignStmt) reachedNode;
+                if (assignStmt.containsInvokeExpr()) {
+                    SootMethod targetMethod = assignStmt.getInvokeExpr().getMethod();
+                    if (targetMethod.hasActiveBody()){
+                        depth++;
+                        getInvokeMethodWorklist(current, targetMethod, visited, worklist);
+                    }
+                }
             }
-
         }
         return paths;
     }

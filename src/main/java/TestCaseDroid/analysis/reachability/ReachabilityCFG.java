@@ -2,6 +2,8 @@ package TestCaseDroid.analysis.reachability;
 
 import TestCaseDroid.config.SootConfig;
 import soot.*;
+import soot.jimple.AssignStmt;
+import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.toolkits.graph.*;
 import java.util.*;
@@ -47,6 +49,16 @@ public class ReachabilityCFG {
                 if (targetMethod.equals(targetInvokeMethod)) {
                     return currentContext;
                 }
+            } else if (current instanceof AssignStmt) {
+                // check if the target method is invoked in the right-hand side of the assignment
+                AssignStmt assignStmt = (AssignStmt) current;
+                if (assignStmt.containsInvokeExpr()) {
+                    InvokeExpr invokeExpr = assignStmt.getInvokeExpr();
+                    SootMethod targetMethod = invokeExpr.getMethod();
+                    if (targetMethod.equals(targetInvokeMethod)) {
+                        return currentContext;
+                    }
+                }
             }
             for (Unit succ : cfg.getSuccsOf(current)) {
                 if (visited.add(succ)) {
@@ -56,6 +68,8 @@ public class ReachabilityCFG {
         }
         return null;
     }
+
+
     public void runAnalysis(MethodContext targetMethodContext) {
         SootMethod targetMethod = Scene.v().getMethod(targetMethodContext.getMethodSignature());
         Context reachedContext = inDynamicExtent(targetMethod);
