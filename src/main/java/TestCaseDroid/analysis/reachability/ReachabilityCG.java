@@ -13,6 +13,8 @@ import soot.jimple.toolkits.callgraph.Targets;
 
 import java.util.*;
 
+import static TestCaseDroid.utils.DotGraphWrapper.methodContextToDotGraph;
+
 
 @Getter
 @Setter
@@ -49,9 +51,13 @@ public class ReachabilityCG {
         if (paths.isEmpty()) {
             System.out.println("No path found from " + this.sourceMethodContext.getMethodSignature() + " to " + this.targetMethodContext.getMethodSignature());
         } else {
+            int pathIndex = 0;
             for (MethodContext path : paths) {
+                pathIndex++;
+                //path index
                 System.out.println("Path found: ");
                 System.out.println(path.getMethodCallStackString());
+                methodContextToDotGraph(path,sourceMethodContext, targetMethodContext,pathIndex);
             }
         }
     }
@@ -104,10 +110,7 @@ public class ReachabilityCG {
 
     public static void main(String[] args) {
         ReachabilityCG analysis = new ReachabilityCG("TestCaseDroid.test.Vulnerable","<TestCaseDroid.test.ICFG: void test2()>", "<TestCaseDroid.test.Vulnerable: void main(java.lang.String[])>");
-        List<MethodContext> methodContexts = analysis.analyzeCallGraph(analysis.sourceMethodContext, analysis.targetMethodContext);
-        for (MethodContext methodContext : methodContexts) {
-            System.out.println(methodContext.getMethodCallStackString());
-        }
+        analysis.runAnalysis();
     }
 }
 

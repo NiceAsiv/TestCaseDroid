@@ -1,7 +1,14 @@
 package TestCaseDroid.utils;
 
+import TestCaseDroid.analysis.reachability.Context;
+import TestCaseDroid.analysis.reachability.MethodContext;
 import lombok.extern.slf4j.Slf4j;
+import soot.SootMethod;
+import soot.Unit;
 import soot.util.dot.DotGraph;
+import soot.util.dot.DotGraphEdge;
+import soot.util.dot.DotGraphNode;
+import sun.security.provider.MD5;
 
 import java.io.File;
 
@@ -49,8 +56,8 @@ public class DotGraphWrapper {
         }
         switch (graphType) {
             case "cg":
-                String callGraphPath = "./sootOutput/dot/" + targetClass + ".cg.dot";
-                String outputPath = "./sootOutput/pic/" + targetClass+ ".cg.png";
+                String callGraphPath = "./sootOutput/dot/cg/" + targetClass + ".dot";
+                String outputPath = "./sootOutput/pic/cg/" + targetClass+ ".png";
                 folderExistenceTest(callGraphPath);
                 this.dotGraph.plot(callGraphPath);
                 try {
@@ -60,8 +67,8 @@ public class DotGraphWrapper {
                 }
                 break;
             case "cfg":
-                String cfgPath = "./sootOutput/dot/" + targetClass + "." + targetMethod[0] + ".cfg.dot";
-                String cfgOutputPath = "./sootOutput/pic/" + targetClass + "." + targetMethod[0] + ".cfg.png";
+                String cfgPath = "./sootOutput/dot/cfg/" + targetClass + "." + targetMethod[0] + ".dot";
+                String cfgOutputPath = "./sootOutput/pic/cdg/" + targetClass + "." + targetMethod[0] + ".png";
                 folderExistenceTest(cfgPath);
                 this.dotGraph.plot(cfgPath);
                 try {
@@ -87,7 +94,65 @@ public class DotGraphWrapper {
                 break;
         }
     }
+    public static void contextToDotGraph(Context context, String targetClass, String targetMethod) {
+        DotGraph dotGraphForContext = new DotGraph("Node call stack");
+        dotGraphForContext.setNodeShape("box");//设置节点的形状
+        dotGraphForContext.setGraphAttribute("fontname", "Helvetica");
+        dotGraphForContext.setGraphAttribute("fontsize", "12");
 
+        Unit previous = null;
+        for (Unit current : context.getReversedCallStack()) {
+            if (previous != null) {
+                // Draw edge
+                dotGraphForContext.drawEdge(previous.toString(), current.toString());
+            }
+            // Draw node
+            dotGraphForContext.drawNode(current.toString());
+            previous = current;
+        }
+        String contextPath = "./sootOutput/dot/reachability/" + targetClass + "." + targetMethod + ".unit.dot";
+        String outputPath = "./sootOutput/pic/reachability/" + targetClass + "." + targetMethod + ".unit.png";
+        folderExistenceTest(contextPath);
+        dotGraphForContext.plot(contextPath);
+        try {
+            convertDotToPng(contextPath, outputPath);
+        } catch (Exception e) {
+            log.error("Error in converting dot to png",e);
+        }
+    }
+
+    public static void methodContextToDotGraph(MethodContext methodContext, MethodContext sourceMethodContext, MethodContext targetMethodContext,int pathId) {
+        DotGraph dotGraphForContext = getDotGraphFromMethodContext(methodContext);
+        String contextPath = "./sootOutput/dot/reachability/" + sourceMethodContext.getClassName()+"."+sourceMethodContext.getMethodName()+ "_call_" + targetMethodContext.getClassName()+"."+targetMethodContext.getMethodName() + "_" + pathId+ ".dot";
+        String outputPath = "./sootOutput/pic/reachability/" + sourceMethodContext.getClassName()+"_"+ sourceMethodContext.getMethodName()+ "_call_" + targetMethodContext.getClassName()+"_"+targetMethodContext.getMethodName() + "_" + pathId + ".png";
+        folderExistenceTest(contextPath);
+        dotGraphForContext.plot(contextPath);
+        try {
+            convertDotToPng(contextPath, outputPath);
+        } catch (Exception e) {
+            log.error("Error in converting dot to png",e);
+        }
+    }
+
+    private static DotGraph getDotGraphFromMethodContext(MethodContext methodContext) {
+        DotGraph dotGraphForContext = new DotGraph("Method call stack");
+        dotGraphForContext.setNodeShape("box");//设置节点的形状
+        dotGraphForContext.setGraphAttribute("fontname", "Helvetica");
+        dotGraphForContext.setGraphAttribute("fontsize", "12");
+
+        SootMethod previousMethod = null;
+        for (SootMethod currentMethod : methodContext.getReverseMethodCallStack()) {
+            if (previousMethod != null) {
+                // Draw edge
+                DotGraphEdge edge = dotGraphForContext.drawEdge(previousMethod.getSignature(), currentMethod.getSignature());
+                edge.setLabel("call");
+            }
+            // Draw node
+            dotGraphForContext.drawNode(currentMethod.getSignature());
+            previousMethod = currentMethod;
+        }
+        return dotGraphForContext;
+    }
 
     /**
      * Convert a dot file to a png file
@@ -118,6 +183,7 @@ public class DotGraphWrapper {
             log.error(ex.getMessage(), ex);
         }
     }
+
 
     private static String getString(String graphvizFilePath) {
         String graphvizPath;

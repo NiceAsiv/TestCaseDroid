@@ -4,6 +4,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Objects;
 
+import TestCaseDroid.utils.DotGraphWrapper;
 import lombok.Getter;
 import lombok.Setter;
 import soot.SootMethod;
@@ -86,7 +87,7 @@ public class Context {
         return sb.toString();
     }
 
-    Deque<Unit> getReversedCallStack() {
+    public Deque<Unit> getReversedCallStack() {
         Deque<Unit> reversedCallStack = new LinkedList<>();
         for (Unit unit : callStack) {
             reversedCallStack.addFirst(unit);
@@ -127,4 +128,5 @@ public class Context {
         }
         return sb.toString();
     }
+
 }

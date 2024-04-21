@@ -8,6 +8,8 @@ import soot.jimple.InvokeStmt;
 import soot.toolkits.graph.*;
 import java.util.*;
 
+import static TestCaseDroid.utils.DotGraphWrapper.contextToDotGraph;
+
 public class ReachabilityCFG {
     private final ClassicCompleteUnitGraph cfg;
 
@@ -78,6 +80,7 @@ public class ReachabilityCFG {
             System.out.println("The path is: ");
             reachedContext.setBackward(true);
             System.out.println(reachedContext);
+            contextToDotGraph(reachedContext, targetMethod.getDeclaringClass().getName(), targetMethod.getName());
         } else {
             System.out.println("The target method cannot be reached from the source method.");
         }
@@ -92,6 +95,7 @@ public class ReachabilityCFG {
             System.out.println("The path is: ");
             result.setBackward(true);
             System.out.println(result);
+            contextToDotGraph(result, "TestCaseDroid.test.CFG", "method1");
         } else {
             System.out.println("The target method cannot be reached from the source Node.");
         }
