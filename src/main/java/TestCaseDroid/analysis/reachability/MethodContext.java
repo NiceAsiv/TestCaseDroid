@@ -3,7 +3,6 @@ package TestCaseDroid.analysis.reachability;
 import lombok.Getter;
 import lombok.Setter;
 import soot.SootMethod;
-import soot.Unit;
 
 import java.util.*;
 import java.util.regex.Matcher;
