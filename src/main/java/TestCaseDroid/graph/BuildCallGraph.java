@@ -76,7 +76,6 @@ public class BuildCallGraph  extends SceneTransformer {
     private static void visit(CallGraph cg,SootMethod method, DotGraphWrapper dotGraph)
     {
         String identifier = method.getSignature();
-        visited.put(method.getSignature(), true);
         dotGraph.drawNode(identifier);
 
         Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(method));//获取所有被m调用的方法
@@ -84,11 +83,13 @@ public class BuildCallGraph  extends SceneTransformer {
             SootMethod tgt = (SootMethod) targets.next();
             if (SootUtils.isNotExcludedMethod(tgt)&& (method.getDeclaringClass().isApplicationClass()||tgt.getDeclaringClass().isApplicationClass())) {
                 String tgtIdentifier = tgt.getSignature();
-                if (!visited.containsKey(tgtIdentifier)&&!tgt.isJavaLibraryMethod()) {
+                String edge = method.getSignature() + "->" + tgt.getSignature();
+                if (!visited.containsKey(edge)&&!tgt.isJavaLibraryMethod()) {
                     dotGraph.drawNode(tgtIdentifier);
                     dotGraph.drawEdge(identifier, tgtIdentifier);
                     System.out.println(method + " may call " + tgt);
                     numOfEdges++;
+                    visited.put(edge, true);
                     visit(cg, tgt, dotGraph);
                 }
             }

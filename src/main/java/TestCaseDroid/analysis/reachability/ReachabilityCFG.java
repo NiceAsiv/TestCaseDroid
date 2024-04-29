@@ -89,7 +89,7 @@ public class ReachabilityCFG {
     public static void main(String[] args) {
 
         ReachabilityCFG analysis = new ReachabilityCFG("TestCaseDroid.test.CFG", "method2");
-        Context result = analysis.inDynamicExtent(Scene.v().getSootClass("TestCaseDroid.test.CFG").getMethodByName("method1"));
+        Context result = analysis.inDynamicExtent(Scene.v().getSootClass("TestCaseDroid.test.CFG").getMethodByName("method3"));
         if (result != null) {
             System.out.println("The target method can be reached from the source method.");
             System.out.println("The path is: ");

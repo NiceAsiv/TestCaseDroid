@@ -10,22 +10,20 @@ import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class BuildCallGraphForJar extends SceneTransformer{
 
     @Setter
     private static String className;
-    private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
+    private static Set<String> visitedEdges = new HashSet<>();
     private static int numOfEdges = 0;
     private static final SootConfig sootConfig = new SootConfig();
 
 
     public static void main(String[] args) {
-        buildCallGraphForJar("E:\\Tutorial\\TestCaseDroid\\target\\classes", "TestCaseDroid.test.CallGraphs", new MethodContext("<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>"));
+        buildCallGraphForJar("E:\\Tutorial\\TestCaseDroid\\target\\classes", "TestCaseDroid.test.Vulnerable", new MethodContext("<TestCaseDroid.test.Vulnerable: void main(java.lang.String[])>"));
     }
     public static void buildCallGraphForJar(String targetJarPath,String callGraphAlgorithm, String className,MethodContext entryMethod) {
         sootConfig.setCallGraphAlgorithm(callGraphAlgorithm);
@@ -57,21 +55,27 @@ public class BuildCallGraphForJar extends SceneTransformer{
      */
     private static void visit(CallGraph cg,SootMethod method, DotGraphWrapper dotGraph)
     {
+        Queue<SootMethod> worklist = new LinkedList<>(); //这是一个队列，用于广度优先搜索
         String identifier = method.getSignature();
-        visited.put(method.getSignature(), true);
+        worklist.add(method);
         dotGraph.drawNode(identifier);
-
-        Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(method));//获取所有被m调用的方法
-        while (targets.hasNext()) {
-            SootMethod tgt = (SootMethod) targets.next();
-            if (SootUtils.isNotExcludedMethod(tgt)&&(method.getDeclaringClass().isApplicationClass()||tgt.getDeclaringClass().isApplicationClass())){
-                String tgtIdentifier = tgt.getSignature();
-                if (!visited.containsKey(tgtIdentifier)) {
+        while (!worklist.isEmpty()) {
+            SootMethod m = worklist.poll();
+            Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(m));
+            while (targets.hasNext()) {
+                SootMethod tgt = (SootMethod) targets.next();
+                if (SootUtils.isNotExcludedMethod(tgt)&&!tgt.isJavaLibraryMethod()){
+                    String tgtIdentifier = tgt.getSignature();
+                    String edge = m.getSignature() + "->" + tgt.getSignature();
                     dotGraph.drawNode(tgtIdentifier);
-                    dotGraph.drawEdge(identifier, tgtIdentifier);
-                    System.out.println(method + " may call " + tgt);
-                    numOfEdges++;
-                    visit(cg, tgt, dotGraph);
+                    if (!visitedEdges.contains(edge))
+                    {
+                        dotGraph.drawEdge(m.getSignature(), tgtIdentifier);
+                        System.out.println(m + " may call " + tgt);
+                        numOfEdges++;
+                        worklist.add(tgt);
+                        visitedEdges.add(edge);
+                    }
                 }
             }
         }
@@ -86,7 +90,7 @@ public class BuildCallGraphForJar extends SceneTransformer{
         List<SootMethod> sootEntryMethods = Scene.v().getEntryPoints();
         for (SootMethod entryMethod : sootEntryMethods) {
             System.out.println("Entry method: " + entryMethod);
-            visited.clear();
+            visitedEdges.clear();
             numOfEdges = 0;
             visit(callGraph, entryMethod, dotGraph);
             System.out.println("Total number of edges: " + numOfEdges);

@@ -14,8 +14,8 @@
 - [x] icfg cg漏洞路径寻找 getAllApplicationClasses 50%完成,下一步解决多路径和未知源方法问题
 - [x] 修复测试用例自动化执行脚本 依赖和参数问题
 - [x] A->B->E A->C A->D
+- [x] 修复callgraph多层调用(soot 相关)(测试用例见`test/MultilevelCall/LibraryApplication.java`)无法解决相关
+    问题
 
 ## Failed
 - [ ] neo4j集成(暂时不处理)
-- [ ] 修复callgraph多层调用(soot 相关)(测试用例见`test/MultilevelCall/LibraryApplication.java`)无法解决相关
-  问题
