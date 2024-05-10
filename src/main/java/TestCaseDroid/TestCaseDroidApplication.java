@@ -29,7 +29,7 @@ public class TestCaseDroidApplication {
         String sourceMethodSig = cmd.getOptionValue("sourceMethodSig");
         String targetMethodSig = cmd.getOptionValue("targetMethodSig");
         String reachabilityType = cmd.getOptionValue("reachability");
-        String extraInfo = cmd.getOptionValue("extra");
+        String extraInfo = cmd.getOptionValue("classInfo");
 
         //check if the process path exists
         if(classPath==null || !FileUtils.isPathExist(classPath)) {
@@ -146,10 +146,10 @@ public class TestCaseDroidApplication {
         reachability.setRequired(false);
         options.addOption(reachability);
 
-
-        Option extraInfo = new Option("e", "extra", true, "select extra information");
-        extraInfo.setRequired(false);
-        options.addOption(extraInfo);
+        //是否要提取类信息
+        Option classInfo = new Option("ci", "classInfo", true, "if extract class information, e.g., -ci true");
+        classInfo.setRequired(false);
+        options.addOption(classInfo);
         return options;
     }
 }

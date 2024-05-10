@@ -23,8 +23,8 @@ public class BuildICFG extends SceneTransformer {
     private ArrayList<Unit> visited;
 
     public static void main(String[] args) {
-        String targetClassName = "TestCaseDroid.test.CallGraphs";
-        String entryMethod = "TestCaseDroid.test.CallGraphs: void main(java.lang.String[])";
+        String targetClassName = "TestCaseDroid.test.Vulnerable";
+        String entryMethod = "<TestCaseDroid.test.Vulnerable: void main(java.lang.String[])>";
         MethodContext methodEntryContext = new MethodContext(entryMethod);
         buildICFGForClass(null, targetClassName, methodEntryContext);
     }
