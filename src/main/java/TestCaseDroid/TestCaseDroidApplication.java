@@ -137,7 +137,7 @@ public class TestCaseDroidApplication {
 
         //graph选项 选择分析的图类型
 
-        Option graph = new Option("g", "graph", true, "select graph type");
+        Option graph = new Option("gt", "graphType", true, "select graph type that you want to build, including 'cg', 'cfg', 'icfg' e.g., -gt cfg");
         graph.setRequired(false);
         options.addOption(graph);
 
