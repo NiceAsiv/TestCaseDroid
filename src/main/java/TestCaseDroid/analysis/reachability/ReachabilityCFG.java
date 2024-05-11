@@ -42,7 +42,7 @@ public class ReachabilityCFG {
         this.cfg = new ClassicCompleteUnitGraph(srcMethod.getActiveBody());
     }
 
-    public Context inDynamicExtent(SootMethod targetInvokeMethod) {
+    public List<Context> inDynamicExtent(SootMethod targetInvokeMethod) {
         for (Unit start : cfg.getHeads()) {
             if (reachable(start, targetInvokeMethod) != null) {
                 return reachable(start, targetInvokeMethod);
@@ -51,9 +51,10 @@ public class ReachabilityCFG {
         return null;
     }
 
-    public Context reachable(Unit source, SootMethod targetInvokeMethod) {
+    public List<Context> reachable(Unit source, SootMethod targetInvokeMethod) {
         Deque<Unit> worklist = new LinkedList<>();
         HashSet<Unit> visited = new HashSet<>();
+        List<Context> paths = new ArrayList<>();
         worklist.add(source);
         Context currentContext = new Context(source);
         while (!worklist.isEmpty()) {
@@ -65,7 +66,7 @@ public class ReachabilityCFG {
                 InvokeStmt invokeStmt = (InvokeStmt) current;
                 SootMethod targetMethod = invokeStmt.getInvokeExpr().getMethod();
                 if (targetMethod.equals(targetInvokeMethod)) {
-                    return currentContext;
+                    paths.add(currentContext.copy());
                 }
             } else if (current instanceof AssignStmt) {
                 // check if the target method is invoked in the right-hand side of the assignment
@@ -74,7 +75,7 @@ public class ReachabilityCFG {
                     InvokeExpr invokeExpr = assignStmt.getInvokeExpr();
                     SootMethod targetMethod = invokeExpr.getMethod();
                     if (targetMethod.equals(targetInvokeMethod)) {
-                        return currentContext;
+                        paths.add(currentContext.copy());
                     }
                 }
             }
@@ -84,36 +85,30 @@ public class ReachabilityCFG {
                 }
             }
         }
-        return null;
+        return paths;
     }
 
 
     public void runAnalysis() {
         SootMethod targetMethod = Scene.v().getMethod(targetMethodContext.getMethodSignature());
-        Context reachedContext = inDynamicExtent(targetMethod);
-        if (reachedContext != null) {
-            System.out.println("The target method can be reached from the source method.");
-            System.out.println("The path is: ");
-            reachedContext.setBackward(true);
-            System.out.println(reachedContext);
-            contextToDotGraph(reachedContext, targetMethod.getDeclaringClass().getName(), targetMethod.getName());
+        List<Context> paths = inDynamicExtent(targetMethod);
+        if (paths.isEmpty()) {
+            System.out.println("No path found from " + sourceMethodContext.getMethodSignature() + " to " + targetMethodContext.getMethodSignature());
         } else {
-            System.out.println("The target method cannot be reached from the source method.");
+            int pathIndex = 0;
+            System.out.println("Found " + paths.size() + " paths from " + sourceMethodContext.getMethodSignature() + " to " + targetMethodContext.getMethodSignature());
+            for (Context path : paths) {
+                path.setBackward(true);
+                pathIndex++;
+                System.out.println("The No." + pathIndex + " path:");
+                System.out.println(path);
+                contextToDotGraph(path, sourceMethodContext.getMethodSignature(), targetMethodContext.getMethodSignature(), pathIndex);
+            }
         }
     }
 
     public static void main(String[] args) {
-
-        ReachabilityCFG analysis = new ReachabilityCFG("TestCaseDroid.test.CFG", "method3", "method1");
-        Context result = analysis.inDynamicExtent(Scene.v().getSootClass("TestCaseDroid.test.CFG").getMethodByName("method3"));
-        if (result != null) {
-            System.out.println("The target method can be reached from the source method.");
-            System.out.println("The path is: ");
-            result.setBackward(true);
-            System.out.println(result);
-            contextToDotGraph(result, "TestCaseDroid.test.CFG", "method1");
-        } else {
-            System.out.println("The target method cannot be reached from the source Node.");
-        }
+        ReachabilityCFG analysis = new ReachabilityCFG("TestCaseDroid.test.CFG", "<TestCaseDroid.test.CFG: void method3()>", "<TestCaseDroid.test.CFG: void method1(int,int)>");
+        analysis.runAnalysis();
     }
 }

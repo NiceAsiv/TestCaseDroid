@@ -60,10 +60,11 @@ public class ReachabilityCG {
             System.out.println("No path found from " + this.sourceMethodContext.getMethodSignature() + " to " + this.targetMethodContext.getMethodSignature());
         } else {
             int pathIndex = 0;
+            System.out.println("Found " + paths.size() + " paths from " + this.sourceMethodContext.getMethodSignature() + " to " + this.targetMethodContext.getMethodSignature());
             for (MethodContext path : paths) {
                 pathIndex++;
                 //path index
-                System.out.println("Path found: ");
+                System.out.println("The No." + pathIndex + " path:");
                 System.out.println(path.getMethodCallStackString());
                 methodContextToDotGraph(path,sourceMethodContext, targetMethodContext,pathIndex);
             }

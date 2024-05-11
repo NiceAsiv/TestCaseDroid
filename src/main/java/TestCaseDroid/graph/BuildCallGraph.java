@@ -24,10 +24,10 @@ public class BuildCallGraph  extends SceneTransformer {
     }
 
     public static void buildCallGraph(String callGraphAlgorithm, String className,String entryMethod) {
-          targetClass = className;
-          BuildCallGraph.entryMethod = entryMethod;
-          sootConfig.setCallGraphAlgorithm(callGraphAlgorithm);
-          buildCallGraph();
+        targetClass = className;
+        BuildCallGraph.entryMethod = entryMethod;
+        sootConfig.setCallGraphAlgorithm(callGraphAlgorithm);
+        buildCallGraph();
     }
     public static void buildCallGraph() {
         sootConfig.setupSoot(targetClass, true);

@@ -6,12 +6,14 @@ import TestCaseDroid.utils.DotGraphWrapper;
 import lombok.Setter;
 import soot.*;
 import soot.jimple.JimpleBody;
-import soot.toolkits.graph.ClassicCompleteUnitGraph;
-import soot.toolkits.graph.DirectedGraph;
+import soot.jimple.ReturnStmt;
+import soot.toolkits.graph.*;
 import soot.util.cfgcmd.CFGGraphType;
 import soot.util.cfgcmd.CFGToDotGraph;
 import soot.util.dot.DotGraph;
+import soot.util.dot.DotGraphNode;
 
+import java.util.*;
 
 
 @Setter
@@ -25,8 +27,8 @@ public class BuildControlFlowGraph {
 
 
     public static void main(String[] args) {
-        String targetClassName = "TestCaseDroid.test.CallGraphs";
-        String entryMethod = "TestCaseDroid.test.CallGraphs: void main(java.lang.String[])";
+        String targetClassName = "TestCaseDroid.test.CFG";
+        String entryMethod = "<TestCaseDroid.test.CFG: void method1(int,int)>";
         MethodContext methodEntryContext = new MethodContext(entryMethod);
         buildControlFlowGraph(null, targetClassName, methodEntryContext);
     }
@@ -47,33 +49,43 @@ public class BuildControlFlowGraph {
         JimpleBody jimpleBody = (JimpleBody) targetMethod.retrieveActiveBody();
 
         //生成控制流图
-        ClassicCompleteUnitGraph cfg = new ClassicCompleteUnitGraph(jimpleBody);
-
+        CompleteUnitGraph cfg = new CompleteUnitGraph(jimpleBody);
         //遍历控制流图
-        graphTraverse(cfg);
-        dotGraph.plot("cfg",targetClassName,entryMethod.getMethodName());
-//        getPrettyCFG(jimpleBody, jimpleBody, targetClassName, entryMethod);
+//        graphTraverse(cfg);
+//        dotGraph.plot("cfg",targetClassName,entryMethod.getMethodName());
+        getPrettyCFG(jimpleBody, jimpleBody, targetClassName, entryMethod.getMethodName());
     }
 
-    private static void graphTraverse(ClassicCompleteUnitGraph cfg)
+    private static void graphTraverse(CompleteUnitGraph cfg)
     {
-        //遍历控制流图
-        for(Unit unit : cfg)
-        {
-            //获取当前单元的后继
-            for(Unit successor : cfg.getSuccsOf(unit))
-            {
-                //添加节点
-                dotGraph.drawNode(unit.toString());
-                dotGraph.drawNode(successor.toString());
-                //添加边
-                dotGraph.drawEdge(unit.toString(),successor.toString());
+        int nodeId = 0;
+        Map<Unit, Integer> nodeIds = new HashMap<>();
+        for (Unit unit : cfg) {
+            List<Unit> successors = cfg.getSuccsOf(unit);
+            for (Unit successor : successors) {
+                if (!nodeIds.containsKey(unit)) {
+                    nodeIds.put(unit, nodeId++);
+                }
+                if (!nodeIds.containsKey(successor)) {
+                    nodeIds.put(successor, nodeId++);
+                }
+                dotGraph.drawEdge(String.valueOf(nodeIds.get(unit)), String.valueOf(nodeIds.get(successor)));
+            }
+        }
+        for (Map.Entry<Unit, Integer> entry : nodeIds.entrySet()) {
+            Unit unit = entry.getKey();
+            Integer id = entry.getValue();
+            DotGraphNode node = dotGraph.getNode(id.toString());
+            node.setLabel(unit.toString());
+            if (unit instanceof ReturnStmt) {
+                node.setAttribute("style", "filled");
+                node.setAttribute("fillcolor", "lightgray");
+            } else if (unit.equals(cfg.getHeads().get(0))) {
+                node.setAttribute("style", "filled");
+                node.setAttribute("fillcolor", "gray");
             }
         }
     }
-
-
-
     /***
      * output the control flow graph of the method
      * @param b the body of the method
@@ -98,11 +110,11 @@ public class BuildControlFlowGraph {
         DotGraph dotGraphReal = cfgGraphType.drawGraph(drawer, graph, jimpleBody);
 
         //生成dot文件
-        String dotFilePath = "./sootOutput/dot/" + ClassName + "." + entryMethod + ".cfg.dot";
+        String dotFilePath = "./sootOutput/dot/cfg/" + ClassName + "." + entryMethod + ".dot";
         dotGraphReal.plot(dotFilePath);
 
         //生成png文件
-        String pngFilePath = "./sootOutput/pic/" + ClassName + "." + entryMethod + ".cfg.png";
+        String pngFilePath = "./sootOutput/pic/cfg/" + ClassName + "." + entryMethod + ".png";
         DotGraphWrapper.convertDotToPng(dotFilePath, pngFilePath);
     }
 }

@@ -42,6 +42,12 @@ public class DotGraphWrapper {
         this.dotGraph.drawNode(node);
     }
 
+    public void setNodeShape(String shape) {
+        this.dotGraph.setNodeShape(shape);
+    }
+    public DotGraphNode getNode(String name){
+        return this.dotGraph.getNode(name);
+    }
     /**
      * Plot the graph
      * @param graphType the type of graph including "cg", "cfg", "icfg"
@@ -68,7 +74,7 @@ public class DotGraphWrapper {
                 break;
             case "cfg":
                 String cfgPath = "./sootOutput/dot/cfg/" + targetClass + "." + targetMethod[0] + ".dot";
-                String cfgOutputPath = "./sootOutput/pic/cdg/" + targetClass + "." + targetMethod[0] + ".png";
+                String cfgOutputPath = "./sootOutput/pic/cfg/" + targetClass + "." + targetMethod[0] + ".png";
                 folderExistenceTest(cfgPath);
                 this.dotGraph.plot(cfgPath);
                 try {
@@ -79,8 +85,8 @@ public class DotGraphWrapper {
                 break;
 
             case "icfg":
-                String icfgPath = "./sootOutput/dot/" + targetClass + ".icfg.dot";
-                String icfgOutputPath = "./sootOutput/pic/" + targetClass + ".icfg.png";
+                String icfgPath = "./sootOutput/dot/icfg/" + targetClass + ".dot";
+                String icfgOutputPath = "./sootOutput/pic/icfg/" + targetClass + ".png";
                 folderExistenceTest(icfgPath);
                 this.dotGraph.plot(icfgPath);
                 try {
@@ -94,7 +100,7 @@ public class DotGraphWrapper {
                 break;
         }
     }
-    public static void contextToDotGraph(Context context, String targetClass, String targetMethod) {
+    public static void contextToDotGraph(Context context, String targetClass, String targetMethod,int pathId) {
         DotGraph dotGraphForContext = new DotGraph("Node call stack");
         dotGraphForContext.setNodeShape("box");//设置节点的形状
         dotGraphForContext.setGraphAttribute("fontname", "Helvetica");
@@ -110,8 +116,8 @@ public class DotGraphWrapper {
             dotGraphForContext.drawNode(current.toString());
             previous = current;
         }
-        String contextPath = "./sootOutput/dot/reachability/" + targetClass + "." + targetMethod + ".unit.dot";
-        String outputPath = "./sootOutput/pic/reachability/" + targetClass + "." + targetMethod + ".unit.png";
+        String contextPath = "./sootOutput/dot/reachability/" + targetClass + "." + targetMethod + ".unit" + pathId + ".dot";
+        String outputPath = "./sootOutput/pic/reachability/" + targetClass + "." + targetMethod + ".unit" + pathId + ".png";
         folderExistenceTest(contextPath);
         dotGraphForContext.plot(contextPath);
         try {

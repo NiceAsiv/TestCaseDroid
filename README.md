@@ -32,7 +32,7 @@ java -jar TestCaseDroid-1.2.jar [options]
 - `-ec` 或 `--entryClass`：指定要分析的类名。
 - `-sms` 或 `--sourceMethodSig`：指定要分析的源方法签名。
 - `-tms` 或 `--targetMethodSig`：指定要分析的目标方法签名。
-- `-g` 或 `--graph`：选择分析的图类型。
+- `-gt` 或 `--graphType`：选择需要生成的图类型。
 - `-r` 或 `--reachability`：选择可达性分析类型。
 - `-b` 或 `--backward`：是否进行逆向分析。
 - `-m` 或 `--method`：选择要分析的方法名。
@@ -338,6 +338,7 @@ Call stack: args := @parameter0: java.lang.String[]
  -> this := @this: TestCaseDroid.test.ICFG
  -> $stack1 = <java.lang.System: java.io.PrintStream out>
  -> virtualinvoke $stack1.<java.io.PrintStream: void println(java.lang.String)>("now in test1")
+
 ```
 
 

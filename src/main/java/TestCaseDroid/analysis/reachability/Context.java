@@ -82,8 +82,10 @@ public class Context {
             }
             currentMethod = method;
         }
-        //remove the last " -> "
-        sb.delete(sb.length() - 4, sb.length());
+        if (sb.length() > 4) {
+            //remove the last " -> "
+            sb.delete(sb.length() - 4, sb.length());
+        }
         return sb.toString();
     }
 

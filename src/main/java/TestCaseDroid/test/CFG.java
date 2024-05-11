@@ -14,10 +14,16 @@ public class CFG {
         this.CFGalgorithm = CFGalgorithm;
     }
 
-    public void method1() {
-        int a = 10;
+    public void method1(int a,int b) {
+//        int a = 10;
         CFGname = "Useless assignment";  // Useless statement
         if (a > 5) {
+            method2();
+        } else {
+            method3();
+        }
+
+        if (b > 4) {
             method2();
         } else {
             method3();
