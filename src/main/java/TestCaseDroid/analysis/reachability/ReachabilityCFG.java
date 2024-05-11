@@ -11,18 +11,34 @@ import java.util.*;
 import static TestCaseDroid.utils.DotGraphWrapper.contextToDotGraph;
 
 public class ReachabilityCFG {
+    private MethodContext sourceMethodContext;
+    private MethodContext targetMethodContext;
     private final ClassicCompleteUnitGraph cfg;
 
-    public ReachabilityCFG(String targetClass,String srcMethodName) {
+
+    public ReachabilityCFG(String entryClass,String targetMethodSig, String sourceMethodSig) {
+        this.sourceMethodContext = new MethodContext(sourceMethodSig);
+        this.targetMethodContext = new MethodContext(targetMethodSig);
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(targetClass, true);
-        SootMethod srcMethod = Scene.v().getSootClass(targetClass).getMethodByName(srcMethodName);
+        sootConfig.setupSoot(entryClass, true);
+        SootMethod srcMethod = Scene.v().getMethod(sourceMethodContext.getMethodSignature());
         this.cfg = new ClassicCompleteUnitGraph(srcMethod.getActiveBody());
     }
-    public ReachabilityCFG(String targetClass,String srcMethodName,String classPath) {
+    public ReachabilityCFG(String targetClass,String targetMethodSig, String sourceMethodSig,String classPath) {
+        this.sourceMethodContext = new MethodContext(sourceMethodSig);
+        this.targetMethodContext = new MethodContext(targetMethodSig);
         SootConfig sootConfig = new SootConfig();
         sootConfig.setupSoot(targetClass, true,classPath);
-        SootMethod srcMethod = Scene.v().getSootClass(targetClass).getMethodByName(srcMethodName);
+        SootMethod srcMethod = Scene.v().getMethod(sourceMethodContext.getMethodSignature());
+        this.cfg = new ClassicCompleteUnitGraph(srcMethod.getActiveBody());
+    }
+
+    public ReachabilityCFG(String classNameForAnalysis, MethodContext sourceMethodContext,MethodContext targetMethodContext,String classPath) {
+        this.sourceMethodContext = sourceMethodContext;
+        this.targetMethodContext = targetMethodContext;
+        SootConfig sootConfig = new SootConfig();
+        sootConfig.setupSoot(classNameForAnalysis, true, classPath);
+        SootMethod srcMethod = Scene.v().getMethod(sourceMethodContext.getMethodSignature());
         this.cfg = new ClassicCompleteUnitGraph(srcMethod.getActiveBody());
     }
 
@@ -72,7 +88,7 @@ public class ReachabilityCFG {
     }
 
 
-    public void runAnalysis(MethodContext targetMethodContext) {
+    public void runAnalysis() {
         SootMethod targetMethod = Scene.v().getMethod(targetMethodContext.getMethodSignature());
         Context reachedContext = inDynamicExtent(targetMethod);
         if (reachedContext != null) {
@@ -88,7 +104,7 @@ public class ReachabilityCFG {
 
     public static void main(String[] args) {
 
-        ReachabilityCFG analysis = new ReachabilityCFG("TestCaseDroid.test.CFG", "method2");
+        ReachabilityCFG analysis = new ReachabilityCFG("TestCaseDroid.test.CFG", "method3", "method1");
         Context result = analysis.inDynamicExtent(Scene.v().getSootClass("TestCaseDroid.test.CFG").getMethodByName("method3"));
         if (result != null) {
             System.out.println("The target method can be reached from the source method.");

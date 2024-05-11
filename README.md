@@ -338,35 +338,6 @@ Call stack: args := @parameter0: java.lang.String[]
  -> this := @this: TestCaseDroid.test.ICFG
  -> $stack1 = <java.lang.System: java.io.PrintStream out>
  -> virtualinvoke $stack1.<java.io.PrintStream: void println(java.lang.String)>("now in test1")
-
-Reached node: virtualinvoke this.<TestCaseDroid.test.ICFG: void test2()>() in method: <TestCaseDroid.test.ICFG: void test1()>
-Call stack: args := @parameter0: java.lang.String[]
- -> args := @parameter0: java.lang.String[]
- -> $stack2 = new TestCaseDroid.test.Vulnerable
- -> specialinvoke $stack2.<TestCaseDroid.test.Vulnerable: void <init>()>()
- -> virtualinvoke $stack2.<TestCaseDroid.test.Vulnerable: void vulnerable()>()
- -> this := @this: TestCaseDroid.test.Vulnerable
- -> $stack3 = <java.lang.System: java.io.PrintStream out>
- -> virtualinvoke $stack3.<java.io.PrintStream: void println(java.lang.String)>("--------------------")
- -> $stack4 = <java.lang.System: java.io.PrintStream out>
- -> virtualinvoke $stack4.<java.io.PrintStream: void println(java.lang.String)>("now in vulnerable")
- -> $stack5 = <java.lang.System: java.io.PrintStream out>
- -> virtualinvoke $stack5.<java.io.PrintStream: void println(java.lang.String)>("Start running the first test case")
- -> $stack6 = new TestCaseDroid.test.Test4
- -> specialinvoke $stack6.<TestCaseDroid.test.Test4: void <init>()>()
- -> virtualinvoke $stack6.<TestCaseDroid.test.Test4: void test4()>()
- -> this := @this: TestCaseDroid.test.Test4
- -> $stack2 = <java.lang.System: java.io.PrintStream out>
- -> virtualinvoke $stack2.<java.io.PrintStream: void println(java.lang.String)>("now in test4")
- -> $stack3 = new TestCaseDroid.test.ICFG
- -> specialinvoke $stack3.<TestCaseDroid.test.ICFG: void <init>()>()
- -> virtualinvoke $stack3.<TestCaseDroid.test.ICFG: void test3()>()
- -> $stack4 = <java.lang.System: java.io.PrintStream out>
- -> virtualinvoke $stack4.<java.io.PrintStream: void println(java.lang.String)>("test4")
- -> virtualinvoke $stack3.<TestCaseDroid.test.ICFG: void test1()>()
- -> this := @this: TestCaseDroid.test.ICFG
- -> $stack1 = <java.lang.System: java.io.PrintStream out>
- -> virtualinvoke $stack1.<java.io.PrintStream: void println(java.lang.String)>("now in test1")
 ```
 
 

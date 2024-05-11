@@ -46,6 +46,14 @@ public class ReachabilityCG {
         this.callGraph = Scene.v().getCallGraph();
     }
 
+    public ReachabilityCG(String classNameForAnalysis, MethodContext sourceMethodContext, MethodContext targetMethodContext, String classPath) {
+        this.sourceMethodContext = sourceMethodContext;
+        this.targetMethodContext = targetMethodContext;
+        SootConfig sootConfig = new SootConfig();
+        sootConfig.setupSoot(classNameForAnalysis, true, classPath);
+        this.callGraph = Scene.v().getCallGraph();
+    }
+
     public void runAnalysis() {
         List<MethodContext> paths = analyzeCallGraph(this.sourceMethodContext, this.targetMethodContext);
         if (paths.isEmpty()) {

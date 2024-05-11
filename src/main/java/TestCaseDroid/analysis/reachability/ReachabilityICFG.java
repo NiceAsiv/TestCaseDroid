@@ -20,6 +20,7 @@ public class ReachabilityICFG {
     @Setter
     private int maxDepth = 999;
 
+
     /**
      * Default constructor, initializes the interprocedural control flow graph
      * (ICFG).

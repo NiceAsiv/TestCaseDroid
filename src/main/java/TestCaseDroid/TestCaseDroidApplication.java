@@ -48,7 +48,7 @@ public class TestCaseDroidApplication {
                 MethodContext targetMethodContext = new MethodContext(targetMethodSig);
                 switch (reachabilityType) {
                     case "cg":
-                        ReachabilityCG reachabilityCG = new ReachabilityCG(classNameForAnalysis, targetMethodSig, sourceMethodSig,classPath);
+                        ReachabilityCG reachabilityCG = new ReachabilityCG(classNameForAnalysis,sourceMethodContext,targetMethodContext,classPath);
                         reachabilityCG.runAnalysis();
                         break;
                     case "icfg":
@@ -56,8 +56,8 @@ public class TestCaseDroidApplication {
                         reachabilityICFG.runAnalysis(sourceMethodContext, targetMethodContext);
                         break;
                     case "cfg":
-                        ReachabilityCFG reachabilityCFG = new ReachabilityCFG(classNameForAnalysis, sourceMethodContext.getMethodName(), classPath);
-                        reachabilityCFG.runAnalysis(targetMethodContext);
+                        ReachabilityCFG reachabilityCFG = new ReachabilityCFG(classNameForAnalysis,sourceMethodContext,targetMethodContext,classPath);
+                        reachabilityCFG.runAnalysis();
                         break;
                     case "bicfg":
                         BackwardReachabilityICFG backwardReachabilityICFG = new BackwardReachabilityICFG(classNameForAnalysis, classPath);
