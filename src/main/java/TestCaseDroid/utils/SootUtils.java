@@ -68,7 +68,7 @@ public class SootUtils {
 
             // 设置入口方法
             for (String methodSig : entryMethodSig) {
-                SootMethod entryPoint = sc.getMethod(methodSig);
+                SootMethod entryPoint = Scene.v().getMethod(methodSig);
                 entryPoints.add(entryPoint);
             }
             Scene.v().setEntryPoints(entryPoints);
