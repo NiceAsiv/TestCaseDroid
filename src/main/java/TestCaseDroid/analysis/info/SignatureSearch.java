@@ -60,6 +60,10 @@ public class SignatureSearch {
             } else {
                 String[] params = matcher.group(3).split(",");
                 methodInfo.paramNum = params.length;
+                // 去掉参数前后的空格
+                for (int i = 0; i < params.length; i++) {
+                    params[i] = params[i].trim();
+                }
                 methodInfo.paramters.addAll(Arrays.asList(params));
             }
             return true;
@@ -94,11 +98,12 @@ public class SignatureSearch {
         SootClass sootClass = Scene.v().getSootClass(methodInfo.className);
         sootClass.setApplicationClass();
         if (!methodInfo.isOverRide) {
-           SootMethod method = sootClass.getMethodByName(methodInfo.methodName);
-              return method.getSignature();
+            SootMethod method = sootClass.getMethodByName(methodInfo.methodName);
+            return method.getSignature();
         } else {
             for (SootMethod method : sootClass.getMethods()) {
-                if (method.getName().equals(methodInfo.methodName) && method.getParameterCount() == methodInfo.paramNum) {
+                if (method.getName().equals(methodInfo.methodName)
+                        && method.getParameterCount() == methodInfo.paramNum) {
                     if (methodInfo.paramNum == 0) {
                         return method.getSignature();
                     }
@@ -141,6 +146,7 @@ public class SignatureSearch {
     }
 
     public static void main(String[] args) {
+        getMethodSignatureByIDEARef("TestCaseDroid.test.CFG#method2(int, int)", "E:\\Tutorial\\TestCaseDroid\\target\\classes");
 
     }
 

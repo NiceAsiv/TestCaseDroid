@@ -50,8 +50,10 @@ public class SootConfig {
         Options.v().set_allow_phantom_refs(true);
         //排除JDK和其他库
         excludeJDKLibrary();
+
         //加载必要类
         SootClass appClass = Scene.v().loadClassAndSupport(className);
+        //是否加载成功
 //        //设置主类
 //        Scene.v().setMainClass(appClass);
         //将待分析类设为应用类
