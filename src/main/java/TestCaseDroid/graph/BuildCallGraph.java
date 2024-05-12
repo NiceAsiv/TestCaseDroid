@@ -10,6 +10,7 @@ import soot.jimple.toolkits.callgraph.Targets;
 
 import java.util.*;
 
+@Deprecated
 public class BuildCallGraph  extends SceneTransformer {
     private static String targetClass = "TestCaseDroid.test.Vulnerable";
     public static String entryMethod = "main";

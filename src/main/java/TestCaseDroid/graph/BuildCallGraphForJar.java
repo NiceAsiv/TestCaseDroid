@@ -4,7 +4,6 @@ import TestCaseDroid.analysis.reachability.MethodContext;
 import TestCaseDroid.config.SootConfig;
 import TestCaseDroid.utils.DotGraphWrapper;
 import TestCaseDroid.utils.SootUtils;
-import com.google.gson.internal.LinkedHashTreeMap;
 import lombok.Setter;
 import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
@@ -16,7 +15,7 @@ import java.util.*;
 public class BuildCallGraphForJar extends SceneTransformer{
 
     @Setter
-    private static String className;
+    private static MethodContext entryMethodContext;
     private static Set<String> visitedEdges = new HashSet<>();
     private static int numOfEdges = 0;
     private static final SootConfig sootConfig = new SootConfig();
@@ -25,22 +24,21 @@ public class BuildCallGraphForJar extends SceneTransformer{
     public static void main(String[] args) {
         buildCallGraphForJar("E:\\Tutorial\\TestCaseDroid\\target\\classes", "TestCaseDroid.test.Vulnerable", new MethodContext("<TestCaseDroid.test.Vulnerable: void main(java.lang.String[])>"));
     }
-    public static void buildCallGraphForJar(String targetJarPath,String callGraphAlgorithm, String className,MethodContext entryMethod) {
+    public static void buildCallGraphForJar(String targetJarPath,String callGraphAlgorithm, String entryClassName,MethodContext entryMethod) {
         sootConfig.setCallGraphAlgorithm(callGraphAlgorithm);
-        buildCallGraphForJar(targetJarPath,className,entryMethod);
+        buildCallGraphForJar(targetJarPath,entryClassName,entryMethod);
     }
 
-    public static void buildCallGraphForJar(String targetJarPath, String className, MethodContext entryMethod) {
-        BuildCallGraphForJar.setClassName(className);
-        sootConfig.setupSoot(className, true, targetJarPath);
+    public static void buildCallGraphForJar(String targetJarPath, String entryClassName, MethodContext entryMethod) {
+        BuildCallGraphForJar.setEntryMethodContext(entryMethod);
+        sootConfig.setupSoot(entryClassName, true, targetJarPath);
         //add an inter-procedural analysis phase to Soot
         BuildCallGraphForJar analysis = new BuildCallGraphForJar();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraphForJar", analysis));
-        SootClass targetClass = Scene.v().getSootClass(className);
         //check if the mainClass is an application class
-        SootUtils.isApplicationClass(targetClass.getName());
+        SootUtils.isApplicationClass(entryClassName);
         //output the application classes and the function signatures loaded by each class in the current analysis environment
-        SootUtils.setEntryPoints(targetClass.getName(), entryMethod.getMethodSignature());
+        SootUtils.setEntryPoints(entryClassName, entryMethod.getMethodSignature());
         //run the analysis
         PackManager.v().runPacks();
     }
@@ -84,7 +82,7 @@ public class BuildCallGraphForJar extends SceneTransformer{
     @Override
     protected void internalTransform(String phaseName, Map<String, String> options) {
         CallGraph callGraph = Scene.v().getCallGraph();
-        DotGraphWrapper dotGraph = new DotGraphWrapper("callgraph");
+        DotGraphWrapper dotGraph = new DotGraphWrapper("The call graph of " + entryMethodContext.getClassName()+"."+ entryMethodContext.getMethodName());
         //获取所有入口函数
         List<SootMethod> sootEntryMethods = Scene.v().getEntryPoints();
         for (SootMethod entryMethod : sootEntryMethods) {
@@ -93,7 +91,7 @@ public class BuildCallGraphForJar extends SceneTransformer{
             numOfEdges = 0;
             visit(callGraph, entryMethod, dotGraph);
             System.out.println("Total number of edges: " + numOfEdges);
-            dotGraph.plot("cg", className+ "." + entryMethod.getName());
+            dotGraph.plot("cg", entryMethodContext.getClassName()+ "." + entryMethod.getName());
         }
     }
 
