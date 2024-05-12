@@ -1,6 +1,7 @@
 package TestCaseDroid;
 
 import TestCaseDroid.analysis.info.ClassInfoExtractor;
+import TestCaseDroid.analysis.info.SignatureSearch;
 import TestCaseDroid.analysis.reachability.*;
 import TestCaseDroid.graph.BuildCallGraphForJar;
 import TestCaseDroid.graph.BuildControlFlowGraph;
@@ -30,6 +31,7 @@ public class TestCaseDroidApplication {
         String targetMethodSig = cmd.getOptionValue("targetMethodSig");
         String reachabilityType = cmd.getOptionValue("reachability");
         String extraInfo = cmd.getOptionValue("classInfo");
+        String methodName = cmd.getOptionValue("methodName");
 
         // check if the process path exists
         if (classPath == null || !FileUtils.isPathExist(classPath)) {
@@ -98,6 +100,12 @@ public class TestCaseDroidApplication {
                 }
             }
         }
+        if (cmd.hasOption("methodName")) {
+            if (methodName != null && !methodName.isEmpty()) {
+                SignatureSearch signatureSearch = new SignatureSearch(classNameForAnalysis, methodName);
+                signatureSearch.getMethodSignature();
+            }
+        }
         if (extraInfo != null) {
             if (extraInfo.equals("true")) {
                 ClassInfoExtractor.runAnalysis(classNameForAnalysis, classPath);
@@ -150,6 +158,11 @@ public class TestCaseDroidApplication {
                 "select reachability analysis type, including 'cg', 'cfg', 'icfg', 'bicfg'(backward icfg) e.g., -r bicfg");
         reachability.setRequired(false);
         options.addOption(reachability);
+
+        //是否要查找方法签名
+        Option searchMethodSig = new Option("mn", "methodName", true, "if you find method signature by method name, e.g., -mn main");
+        searchMethodSig.setRequired(false);
+        options.addOption(searchMethodSig);
 
         // 是否要提取类信息
         Option classInfo = new Option("ci", "classInfo", true, "if extract class information, e.g., -ci true");

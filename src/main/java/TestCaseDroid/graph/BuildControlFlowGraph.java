@@ -15,6 +15,8 @@ import soot.util.dot.DotGraphNode;
 
 import java.util.*;
 
+import static TestCaseDroid.utils.FileUtils.folderExistenceTest;
+
 
 @Setter
 public class BuildControlFlowGraph {
@@ -49,7 +51,7 @@ public class BuildControlFlowGraph {
         JimpleBody jimpleBody = (JimpleBody) targetMethod.retrieveActiveBody();
 
         //生成控制流图
-        CompleteUnitGraph cfg = new CompleteUnitGraph(jimpleBody);
+//        CompleteUnitGraph cfg = new CompleteUnitGraph(jimpleBody);
         //遍历控制流图
 //        graphTraverse(cfg);
 //        dotGraph.plot("cfg",targetClassName,entryMethod.getMethodName());
@@ -111,6 +113,7 @@ public class BuildControlFlowGraph {
 
         //生成dot文件
         String dotFilePath = "./sootOutput/dot/cfg/" + ClassName + "." + entryMethod + ".dot";
+        folderExistenceTest(dotFilePath);
         dotGraphReal.plot(dotFilePath);
 
         //生成png文件
