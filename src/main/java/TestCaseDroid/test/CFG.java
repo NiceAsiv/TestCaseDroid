@@ -34,6 +34,7 @@ public class CFG {
         CFGtype = "Another useless assignment";  // Useless statement
     }
 
+
     public void method2() {
         int b = 20;
         CFGpath = "Yet another useless assignment";  // Useless statement
@@ -46,6 +47,28 @@ public class CFG {
         }
     }
     public void method2(int a) {
+        int b = 20;
+        CFGpath = "Yet another useless assignment";  // Useless statement
+        while (b > 0) {
+            b--;
+        }
+        CFGalgorithm = "Final useless assignment";  // Useless statement
+        if (b == 0) {
+            method3();
+        }
+    }
+    public void method2(String a) {
+        int b = 20;
+        CFGpath = "Yet another useless assignment";  // Useless statement
+        while (b > 0) {
+            b--;
+        }
+        CFGalgorithm = "Final useless assignment";  // Useless statement
+        if (b == 0) {
+            method3();
+        }
+    }
+    public void method2(int c,int d) {
         int b = 20;
         CFGpath = "Yet another useless assignment";  // Useless statement
         while (b > 0) {

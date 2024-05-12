@@ -23,7 +23,8 @@ public class SootUtils {
         String declaringClassName = method.getDeclaringClass().getName();
         for(String s : excludeClassesList)
         {
-            if(declaringClassName.startsWith(s)) {
+            //需要去掉通配符
+            if (declaringClassName.startsWith(s.substring(0, s.length() - 2))) {
                 return false;
             }
         }
@@ -38,11 +39,11 @@ public class SootUtils {
         if (excludeClassesList == null) {
             excludeClassesList = new ArrayList<>();
             //排除特定的类
-            excludeClassesList.add("java.");
-            excludeClassesList.add("sun.");
-            excludeClassesList.add("com.sun.");
-            excludeClassesList.add("javax.");
-            excludeClassesList.add("jdk.");
+            excludeClassesList.add("java.*");
+            excludeClassesList.add("sun.*");
+            excludeClassesList.add("com.sun.*");
+            excludeClassesList.add("javax.*");
+            excludeClassesList.add("jdk.*");
         }
         return excludeClassesList;
     }

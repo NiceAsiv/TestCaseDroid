@@ -30,13 +30,35 @@ java -jar TestCaseDroid-1.2.jar [options]
 
 - `-p` 或 `--path`：指定要分析的 jar 包路径或者 class 文件路径。
 - `-ec` 或 `--entryClass`：指定要分析的类名。
-- `-sms` 或 `--sourceMethodSig`：指定要分析的源方法签名。
-- `-tms` 或 `--targetMethodSig`：指定要分析的目标方法签名。
+- `-sms` 或 `--sourceMethodSig`：指定要分析的源方法签名或者是IDEA中函数引用。
+- `-tms` 或 `--targetMethodSig`：指定要分析的目标方法签名或者是IDEA中的函数引用。
 - `-gt` 或 `--graphType`：选择需要生成的图类型。
 - `-r` 或 `--reachability`：选择可达性分析类型。
 - `-b` 或 `--backward`：是否进行逆向分析。
 - `-m` 或 `--method`：选择要分析的方法名。
-- `-ci`或 `-classInfo`: 提取相关类信息。
+- `-ci`或 `--classInfo`: 提取相关类信息。
+- `mn`或者`--methodName`:如果你如果无法直接获取IDEA的引用的话，那么推荐使用这个参数，并带上方法名来获取方法签名。
+
+**注意**
+
+IDEA引用获取方式如图右键点击函数
+
+<img src="./README.assets/image-20240512182129262.png" alt="image-20240512182129262" style="zoom:67%;" />
+
+如果未发生重载则形式应该如下：
+
+```bash
+TestCaseDroid.test.CFG#method2
+```
+
+如果发生重载后的引用格式应该如下：
+
+```bash
+TestCaseDroid.test.CFG#method2(int)
+TestCaseDroid.test.CFG#method2(java.lang.String)
+TestCaseDroid.test.CFG#method2()
+TestCaseDroid.test.CFG#method2(int, int)
+```
 
 ### 图构建案例
 

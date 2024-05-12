@@ -129,8 +129,6 @@ public class SootConfig {
     {
         //exclude jdk classes
         Options.v().set_exclude(SootUtils.excludeClassesList);
-        Options.v().set_exclude(Collections.singletonList("java.*"));
-        Options.v().set_exclude(Collections.singletonList("sun.*"));
         //this option must be disabled for a sound call graph
         Options.v().set_no_bodies_for_excluded(true);
         Options.v().set_allow_phantom_refs(true);//关键!!!!

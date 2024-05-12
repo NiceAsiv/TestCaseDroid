@@ -5,37 +5,132 @@ import lombok.Setter;
 import TestCaseDroid.config.SootConfig;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
+import soot.Type;
+
+class MethodInfo {
+    public String className;
+    public String methodName;
+    public int paramNum;
+    public List<String> paramters = new ArrayList<>();
+    public Boolean isOverRide = false;
+
+    MethodInfo() {
+    }
+
+    MethodInfo(String className, String methodName) {
+        this.className = className;
+        this.methodName = methodName;
+    }
+
+    MethodInfo(String className, String methodName, int paramNum, List<String> paramters) {
+        this.className = className;
+        this.methodName = methodName;
+        this.paramNum = paramNum;
+        this.paramters = paramters;
+    }
+}
 
 /**
  * 函数签名模糊搜索
  */
 public class SignatureSearch {
-    @Getter
-    @Setter
-    private String className;// 必要，模糊搜索的类名
-    private String methodName;// 必要，模糊搜索的方法名
 
-    public SignatureSearch(String entryClassName, String methodName) {
-        this.className = entryClassName;
-        this.methodName = methodName;
+    private static MethodInfo methodInfo = new MethodInfo();
+    private static final Pattern METHOD_SIGNATURE_PATTERN = Pattern.compile("^(.+)#(\\w+)\\((.*)\\)$");
+    private static final Pattern METHOD_SIGNATURE_PATTERN_WITHOUT_PARAMS = Pattern.compile("^(.+)#(\\w+)$");
+
+    public static Boolean parseIDEARef(String ideaRef) {
+        // IDEA中的引用格式为：
+        // TestCaseDroid.test.CFG#method2(int)
+        // TestCaseDroid.test.CFG#method2(java.lang.String)
+        // TestCaseDroid.test.CFG#method2()
+        // TestCaseDroid.test.CFG#method2(int, int)
+        Matcher matcher = METHOD_SIGNATURE_PATTERN.matcher(ideaRef);
+        if (matcher.find()) {
+            methodInfo.isOverRide = true;
+            methodInfo.className = matcher.group(1);
+            methodInfo.methodName = matcher.group(2);
+            if (matcher.group(3).isEmpty()) {
+                methodInfo.paramNum = 0;
+            } else {
+                String[] params = matcher.group(3).split(",");
+                methodInfo.paramNum = params.length;
+                methodInfo.paramters.addAll(Arrays.asList(params));
+            }
+            return true;
+        } else {
+            // TestCaseDroid.test.CFG#main
+            matcher = METHOD_SIGNATURE_PATTERN_WITHOUT_PARAMS.matcher(ideaRef);
+            if (matcher.find()) {
+                methodInfo.isOverRide = false;
+                methodInfo.className = matcher.group(1);
+                methodInfo.methodName = matcher.group(2);
+                methodInfo.paramNum = 0;
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    public SignatureSearch(String entryClassName, String methodName, String classPath) {
+        methodInfo = new MethodInfo(entryClassName, methodName);
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(className, false);
+        sootConfig.setupSoot(entryClassName, false, classPath);
+    }
+
+    public static String getMethodSignatureByIDEARef(String ideaRef, String classPath) {
+        if (!parseIDEARef(ideaRef)) {
+            return null;
+        }
+        SootConfig sootConfig = new SootConfig();
+        sootConfig.setupSoot(methodInfo.className, false, classPath);
+
+        SootClass sootClass = Scene.v().getSootClass(methodInfo.className);
+        sootClass.setApplicationClass();
+        if (!methodInfo.isOverRide) {
+           SootMethod method = sootClass.getMethodByName(methodInfo.methodName);
+              return method.getSignature();
+        } else {
+            for (SootMethod method : sootClass.getMethods()) {
+                if (method.getName().equals(methodInfo.methodName) && method.getParameterCount() == methodInfo.paramNum) {
+                    if (methodInfo.paramNum == 0) {
+                        return method.getSignature();
+                    }
+                    List<Type> methodParams = method.getParameterTypes();
+                    boolean match = true;
+                    for (int i = 0; i < methodParams.size(); i++) {
+                        if (!methodParams.get(i).toString().equals(methodInfo.paramters.get(i))) {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match) {
+                        return method.getSignature();
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public void getMethodSignature() {
-        SootClass sootClass = Scene.v().getSootClass(className);
+        SootClass sootClass = Scene.v().getSootClass(methodInfo.className);
         sootClass.setApplicationClass();
         List<SootMethod> methods = sootClass.getMethods();
         List<SootMethod> result = new ArrayList<>();
         // 搜索匹配的方法需要考虑重载的情况
         for (SootMethod method : methods) {
-            if (method.getName().equals(this.methodName)) {
+            if (method.getName().equals(methodInfo.methodName)) {
                 result.add(method);
             }
         }
@@ -47,17 +142,10 @@ public class SignatureSearch {
                 System.out.println(method.getSignature());
             }
         }
-
     }
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Please input the class name:");
-        String className = scanner.nextLine();
-        System.out.println("Please input the method name:");
-        String methodName = scanner.nextLine();
-        SignatureSearch signatureSearch = new SignatureSearch(className, methodName);
-        signatureSearch.getMethodSignature();
+
     }
 
 }

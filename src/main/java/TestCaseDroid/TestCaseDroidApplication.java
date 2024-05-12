@@ -7,6 +7,7 @@ import TestCaseDroid.graph.BuildCallGraphForJar;
 import TestCaseDroid.graph.BuildControlFlowGraph;
 import TestCaseDroid.graph.BuildICFG;
 import TestCaseDroid.utils.FileUtils;
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import org.apache.commons.cli.*;
 
 public class TestCaseDroidApplication {
@@ -45,6 +46,21 @@ public class TestCaseDroidApplication {
                 System.out.println("Error: The source method or target method is not specified.");
                 formatter.printHelp("usage: TestCaseDroid", options, true);
             } else {
+                if (sourceMethodSig.contains("#")) {
+                    if (SignatureSearch.getMethodSignatureByIDEARef(sourceMethodSig, classPath) == null) {
+                        System.out.println("Error: The source method is not found.");
+                        formatter.printHelp("usage: TestCaseDroid", options, true);
+                    }
+                    sourceMethodSig = SignatureSearch.getMethodSignatureByIDEARef(sourceMethodSig, classPath);
+                }
+                if (targetMethodSig.contains("#")) {
+                    if (SignatureSearch.getMethodSignatureByIDEARef(targetMethodSig, classPath) == null) {
+                        System.out.println("Error: The target method is not found.");
+                        formatter.printHelp("usage: TestCaseDroid", options, true);
+                    }
+                    targetMethodSig = SignatureSearch.getMethodSignatureByIDEARef(targetMethodSig, classPath);
+                }
+
                 MethodContext sourceMethodContext = new MethodContext(sourceMethodSig);
                 MethodContext targetMethodContext = new MethodContext(targetMethodSig);
                 switch (reachabilityType) {
@@ -102,8 +118,18 @@ public class TestCaseDroidApplication {
         }
         if (cmd.hasOption("methodName")) {
             if (methodName != null && !methodName.isEmpty()) {
-                SignatureSearch signatureSearch = new SignatureSearch(classNameForAnalysis, methodName);
-                signatureSearch.getMethodSignature();
+                if (methodName.contains("#")) {
+                    String signature = SignatureSearch.getMethodSignatureByIDEARef(methodName, classPath);
+                    if (signature != null) {
+                        System.out.println("The method signature is: " + signature);
+                    } else {
+                        System.out.println("No method found, please check the method name.");
+                        formatter.printHelp("usage: TestCaseDroid", options, true);
+                    }
+                }else {
+                    SignatureSearch signatureSearch = new SignatureSearch(classNameForAnalysis, methodName, classPath);
+                    signatureSearch.getMethodSignature();
+                }
             }
         }
         if (extraInfo != null) {
@@ -137,12 +163,14 @@ public class TestCaseDroidApplication {
         options.addOption(entryClass);
 
         Option entryMethodSig = new Option("sms", "sourceMethodSig", true,
-                "entry source method signature for analysis or graph build e.g., -sms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
+                "entry source method signature for analysis or graph build e.g., -sms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>" +
+                        " or -sms use idea reference like TestCaseDroid.test.CFG#method2(int)");
         entryMethodSig.setRequired(false);
         options.addOption(entryMethodSig);
 
         Option targetMethodSig = new Option("tms", "targetMethodSig", true,
-                "target method signature for analysis e.g., -tms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
+                "target method signature for analysis e.g., -tms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>" +
+                        " or -tms use idea reference like TestCaseDroid.test.CFG#main");
         targetMethodSig.setRequired(false);
         options.addOption(targetMethodSig);
 
@@ -159,8 +187,9 @@ public class TestCaseDroidApplication {
         reachability.setRequired(false);
         options.addOption(reachability);
 
-        //是否要查找方法签名
-        Option searchMethodSig = new Option("mn", "methodName", true, "if you find method signature by method name, e.g., -mn main");
+        // 是否要查找方法签名
+        Option searchMethodSig = new Option("mn", "methodName", true,
+                "if you want to find method signature by method name, e.g., -mn method2 or -mn TestCaseDroid.test.CFG.method2(int)");
         searchMethodSig.setRequired(false);
         options.addOption(searchMethodSig);
 
