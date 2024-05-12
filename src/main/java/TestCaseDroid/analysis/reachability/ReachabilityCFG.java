@@ -102,7 +102,7 @@ public class ReachabilityCFG {
                 pathIndex++;
                 System.out.println("The No." + pathIndex + " path:");
                 System.out.println(path);
-                contextToDotGraph(path, sourceMethodContext.getMethodSignature(), targetMethodContext.getMethodSignature(), pathIndex);
+                contextToDotGraph(path, targetMethodContext.getClassName(), targetMethodContext.getMethodName(), pathIndex);
             }
         }
     }

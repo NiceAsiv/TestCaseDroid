@@ -116,8 +116,8 @@ public class DotGraphWrapper {
             dotGraphForContext.drawNode(current.toString());
             previous = current;
         }
-        String contextPath = "./sootOutput/dot/reachability/" + targetClass + "." + targetMethod + ".unit" + pathId + ".dot";
-        String outputPath = "./sootOutput/pic/reachability/" + targetClass + "." + targetMethod + ".unit" + pathId + ".png";
+        String contextPath = "./sootOutput/dot/reachability/" + targetClass + "." + targetMethod + ".unit." + pathId + ".dot";
+        String outputPath = "./sootOutput/pic/reachability/" + targetClass + "." + targetMethod + ".unit." + pathId + ".png";
         folderExistenceTest(contextPath);
         dotGraphForContext.plot(contextPath);
         try {
