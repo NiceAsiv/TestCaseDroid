@@ -1,4 +1,4 @@
-package TestCaseDroid.analysis;
+package TestCaseDroid.analysis.info;
 
 import TestCaseDroid.config.SootConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class ClassInfoExtractor {
         // Extract class fields
         extractFieldsValue(sootClass, classInfo);
         // Extract class methods
-        List <SootMethod> methods = sootClass.getMethods();
+        List<SootMethod> methods = sootClass.getMethods();
         for (SootMethod method : methods) {
             try {
                 classInfo.addMethod(method.getName(), method.retrieveActiveBody().toString());
@@ -40,9 +40,10 @@ public class ClassInfoExtractor {
         }
         return classInfo;
     }
+
     private static ClassInfo extractClassInfo(String className, String classPath) {
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(className, false,classPath);
+        sootConfig.setupSoot(className, false, classPath);
         ClassInfo classInfo = new ClassInfo(className);
 
         SootClass sootClass = Scene.v().getSootClass(className);
@@ -56,7 +57,7 @@ public class ClassInfoExtractor {
         // Extract class fields
         extractFieldsValue(sootClass, classInfo);
         // Extract class methods
-        List <SootMethod> methods = sootClass.getMethods();
+        List<SootMethod> methods = sootClass.getMethods();
         for (SootMethod method : methods) {
             try {
                 classInfo.addMethod(method.getName(), method.retrieveActiveBody().toString());
@@ -70,11 +71,12 @@ public class ClassInfoExtractor {
 
     /**
      * Extract class fields value from the class 利用反射机制获取类的字段值
+     * 
      * @param sootClass SootClass
      * @param classInfo ClassInfo
      */
     private static void extractFieldsValue(SootClass sootClass, ClassInfo classInfo) {
-        Chain <SootField> fields = sootClass.getFields();
+        Chain<SootField> fields = sootClass.getFields();
         Class<?> clazz = null;
         try {
             clazz = Class.forName(sootClass.getName());
@@ -87,12 +89,11 @@ public class ClassInfoExtractor {
             try {
                 assert clazz != null;
                 Field fieldObj = clazz.getDeclaredField(field.getName());
-                fieldObj.setAccessible(true);//设置为可访问
+                fieldObj.setAccessible(true);// 设置为可访问
                 Object value = fieldObj.get(clazz.newInstance());
-                if (value != null)
-                {
+                if (value != null) {
                     classInfo.addField(field.getSignature(), value.toString());
-                }else {
+                } else {
                     classInfo.addField(field.getSignature(), "null");
                 }
             } catch (IllegalAccessException | NoSuchFieldException e) {
@@ -107,6 +108,7 @@ public class ClassInfoExtractor {
         ClassInfo classInfo = extractClassInfo(className);
         System.out.println(classInfo);
     }
+
     public static void runAnalysis(String className, String classPath) {
         ClassInfo classInfo = extractClassInfo(className, classPath);
         System.out.println(classInfo);

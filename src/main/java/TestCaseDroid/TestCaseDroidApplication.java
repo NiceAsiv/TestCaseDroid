@@ -1,6 +1,6 @@
 package TestCaseDroid;
 
-import TestCaseDroid.analysis.ClassInfoExtractor;
+import TestCaseDroid.analysis.info.ClassInfoExtractor;
 import TestCaseDroid.analysis.reachability.*;
 import TestCaseDroid.graph.BuildCallGraphForJar;
 import TestCaseDroid.graph.BuildControlFlowGraph;
@@ -24,22 +24,21 @@ public class TestCaseDroidApplication {
         }
 
         String classPath = cmd.getOptionValue("path");
-        String graphType = cmd.getOptionValue("graph");
+        String graphType = cmd.getOptionValue("graphType");
         String classNameForAnalysis = cmd.getOptionValue("entryClass");
         String sourceMethodSig = cmd.getOptionValue("sourceMethodSig");
         String targetMethodSig = cmd.getOptionValue("targetMethodSig");
         String reachabilityType = cmd.getOptionValue("reachability");
         String extraInfo = cmd.getOptionValue("classInfo");
 
-        //check if the process path exists
-        if(classPath==null || !FileUtils.isPathExist(classPath)) {
+        // check if the process path exists
+        if (classPath == null || !FileUtils.isPathExist(classPath)) {
             System.out.println("Error: The path does not exist.");
             formatter.printHelp("usage: TestCaseDroid", options, true);
         }
 
-
         if (reachabilityType != null) {
-            //check if the source method and target method is not null
+            // check if the source method and target method is not null
             if (sourceMethodSig == null || targetMethodSig == null) {
                 System.out.println("Error: The source method or target method is not specified.");
                 formatter.printHelp("usage: TestCaseDroid", options, true);
@@ -48,7 +47,8 @@ public class TestCaseDroidApplication {
                 MethodContext targetMethodContext = new MethodContext(targetMethodSig);
                 switch (reachabilityType) {
                     case "cg":
-                        ReachabilityCG reachabilityCG = new ReachabilityCG(classNameForAnalysis,sourceMethodContext,targetMethodContext,classPath);
+                        ReachabilityCG reachabilityCG = new ReachabilityCG(classNameForAnalysis, sourceMethodContext,
+                                targetMethodContext, classPath);
                         reachabilityCG.runAnalysis();
                         break;
                     case "icfg":
@@ -56,11 +56,13 @@ public class TestCaseDroidApplication {
                         reachabilityICFG.runAnalysis(sourceMethodContext, targetMethodContext);
                         break;
                     case "cfg":
-                        ReachabilityCFG reachabilityCFG = new ReachabilityCFG(classNameForAnalysis,sourceMethodContext,targetMethodContext,classPath);
+                        ReachabilityCFG reachabilityCFG = new ReachabilityCFG(classNameForAnalysis, sourceMethodContext,
+                                targetMethodContext, classPath);
                         reachabilityCFG.runAnalysis();
                         break;
                     case "bicfg":
-                        BackwardReachabilityICFG backwardReachabilityICFG = new BackwardReachabilityICFG(classNameForAnalysis, classPath);
+                        BackwardReachabilityICFG backwardReachabilityICFG = new BackwardReachabilityICFG(
+                                classNameForAnalysis, classPath);
                         backwardReachabilityICFG.runAnalysis(sourceMethodContext, targetMethodContext);
                         break;
 
@@ -72,19 +74,19 @@ public class TestCaseDroidApplication {
             }
         }
 
-        if (graphType !=null)
-        {
+        if (graphType != null) {
             if (sourceMethodSig == null) {
                 System.out.println("Error: The source method is not specified.");
                 formatter.printHelp("usage: TestCaseDroid", options, true);
-            }else {
+            } else {
                 MethodContext sourceMethodContext = new MethodContext(sourceMethodSig);
                 switch (graphType) {
                     case "cg":
                         BuildCallGraphForJar.buildCallGraphForJar(classPath, classNameForAnalysis, sourceMethodContext);
                         break;
                     case "cfg":
-                        BuildControlFlowGraph.buildControlFlowGraph(classPath, classNameForAnalysis,sourceMethodContext);
+                        BuildControlFlowGraph.buildControlFlowGraph(classPath, classNameForAnalysis,
+                                sourceMethodContext);
                         break;
                     case "icfg":
                         BuildICFG.buildICFGForClass(classPath, classNameForAnalysis, sourceMethodContext);
@@ -96,10 +98,8 @@ public class TestCaseDroidApplication {
                 }
             }
         }
-        if (extraInfo!=null)
-        {
-            if (extraInfo.equals("true"))
-            {
+        if (extraInfo != null) {
+            if (extraInfo.equals("true")) {
                 ClassInfoExtractor.runAnalysis(classNameForAnalysis, classPath);
             }
         }
@@ -108,45 +108,50 @@ public class TestCaseDroidApplication {
 
     /**
      * Get the command line options
+     * 
      * @return Options
      */
     private static Options getOptions() {
         Options options = new Options();
-        //帮助选项
+        // 帮助选项
         Option help = new Option("h", "help", false, "display help");
         options.addOption(help);
 
-        //class path选项 要分析的jar包路径或者class文件路径(对于maven项目，可以需要指定至target/classes目录)
+        // class path选项 要分析的jar包路径或者class文件路径(对于maven项目，可以需要指定至target/classes目录)
         Option path = new Option("p", "path", true, "select jar path or class file path, e.g.,-p /path/target/classes");
         path.setRequired(true);
         options.addOption(path);
 
-        //输入要分析的类名
-        Option entryClass = new Option("ec", "entryClass", true, "entry class for analysis e.g., -ec TestCaseDroid.test.CallGraphs");
+        // 输入要分析的类名
+        Option entryClass = new Option("ec", "entryClass", true,
+                "entry class for analysis e.g., -ec TestCaseDroid.test.CallGraphs");
         entryClass.setRequired(true);
         options.addOption(entryClass);
 
-
-        Option entryMethodSig = new Option("sms", "sourceMethodSig", true, "entry source method signature for analysis or graph build e.g., -sms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
+        Option entryMethodSig = new Option("sms", "sourceMethodSig", true,
+                "entry source method signature for analysis or graph build e.g., -sms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
         entryMethodSig.setRequired(false);
         options.addOption(entryMethodSig);
 
-        Option targetMethodSig = new Option("tms", "targetMethodSig", true, "target method signature for analysis e.g., -tms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
+        Option targetMethodSig = new Option("tms", "targetMethodSig", true,
+                "target method signature for analysis e.g., -tms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
         targetMethodSig.setRequired(false);
         options.addOption(targetMethodSig);
 
-        //graph选项 选择分析的图类型
+        // graph选项 选择分析的图类型
 
-        Option graph = new Option("gt", "graphType", true, "select graph type that you want to build, including 'cg', 'cfg', 'icfg' e.g., -gt cfg");
-        graph.setRequired(false);
-        options.addOption(graph);
+        Option graphType = new Option("gt", "graphType", true,
+                "select graph type that you want to build, including 'cg', 'cfg', 'icfg' e.g., -gt cfg");
+        graphType.setRequired(false);
+        options.addOption(graphType);
 
-        //可达性分析
-        Option reachability = new Option("r", "reachability", true, "select reachability analysis type, including 'cg', 'cfg', 'icfg', 'bicfg'(backward icfg) e.g., -r bicfg");
+        // 可达性分析
+        Option reachability = new Option("r", "reachability", true,
+                "select reachability analysis type, including 'cg', 'cfg', 'icfg', 'bicfg'(backward icfg) e.g., -r bicfg");
         reachability.setRequired(false);
         options.addOption(reachability);
 
-        //是否要提取类信息
+        // 是否要提取类信息
         Option classInfo = new Option("ci", "classInfo", true, "if extract class information, e.g., -ci true");
         classInfo.setRequired(false);
         options.addOption(classInfo);

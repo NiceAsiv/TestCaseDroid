@@ -1,10 +1,11 @@
-package TestCaseDroid.analysis;
+package TestCaseDroid.analysis.info;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
+
 @Setter
 @Getter
 public class ClassInfo {
@@ -20,6 +21,7 @@ public class ClassInfo {
         this.classMethods = new HashMap<>();
         this.classMethodBodies = new HashMap<>();
     }
+
     public void addField(String fieldName, String fieldValue) {
         this.classFields.put(fieldName, fieldValue);
     }
@@ -31,6 +33,7 @@ public class ClassInfo {
     public void addMethodBody(String methodName, String methodBody) {
         this.classMethodBodies.put(methodName, methodBody);
     }
+
     @Override
     public String toString() {
         StringBuilder methodAndBody = new StringBuilder();
@@ -40,7 +43,7 @@ public class ClassInfo {
 
         return "packageName='" + packageName + '\'' +
                 ", className='" + className + '\'' +
-                ", classFields=" + classFields +",\n"+
+                ", classFields=" + classFields + ",\n" +
                 "\nclassMethods=" + methodAndBody;
     }
 }
