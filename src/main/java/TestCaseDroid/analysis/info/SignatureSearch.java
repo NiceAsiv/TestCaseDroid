@@ -1,20 +1,16 @@
 package TestCaseDroid.analysis.info;
 
-import lombok.Getter;
-import lombok.Setter;
 import TestCaseDroid.config.SootConfig;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.Type;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class MethodInfo {
     public String className;

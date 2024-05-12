@@ -21,7 +21,7 @@ import static TestCaseDroid.utils.FileUtils.folderExistenceTest;
 @Setter
 public class BuildControlFlowGraph {
     private static DotGraphWrapper dotGraph;
-    private static CFGToDotGraph drawer = new CFGToDotGraph();
+    private static CFGToDotGraph drawer;
     private static final SootConfig sootConfig = new SootConfig();
     @Setter
     private static String graphAlgorithm;
@@ -30,7 +30,7 @@ public class BuildControlFlowGraph {
 
     public static void main(String[] args) {
         String targetClassName = "TestCaseDroid.test.CFG";
-        String entryMethod = "<TestCaseDroid.test.CFG: void method1(int,int)>";
+        String entryMethod = "<TestCaseDroid.test.CFG: void method2()>";
         MethodContext methodEntryContext = new MethodContext(entryMethod);
         buildControlFlowGraph(null, targetClassName, methodEntryContext);
     }
@@ -90,13 +90,13 @@ public class BuildControlFlowGraph {
     }
     /***
      * output the control flow graph of the method
-     * @param b the body of the method
+     * @param body the body of the method
      * @param jimpleBody the Jimple body of the method
      * @param ClassName the name of the class
      * @param entryMethod the name of the method
      * In this method,wo only wanna beautiful control flow graph,but not disturb the attention of the LLM
      */
-    private static void getPrettyCFG(Body b, JimpleBody jimpleBody, String ClassName, String entryMethod) {
+    private static void getPrettyCFG(Body body, JimpleBody jimpleBody, String ClassName, String entryMethod) {
         drawer = new CFGToDotGraph();
         drawer.setBriefLabels(false);//标签简洁模式
         drawer.setOnePage(false);//允许多页
@@ -107,7 +107,7 @@ public class BuildControlFlowGraph {
 
 
         CFGGraphType cfgGraphType = CFGGraphType.getGraphType("ClassicCompleteUnitGraph");
-        DirectedGraph<?> graph = cfgGraphType.buildGraph(b);
+        DirectedGraph<?> graph = cfgGraphType.buildGraph(body);
 
         DotGraph dotGraphReal = cfgGraphType.drawGraph(drawer, graph, jimpleBody);
 

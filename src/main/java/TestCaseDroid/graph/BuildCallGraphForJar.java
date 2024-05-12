@@ -37,11 +37,10 @@ public class BuildCallGraphForJar extends SceneTransformer{
         BuildCallGraphForJar analysis = new BuildCallGraphForJar();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraphForJar", analysis));
         SootClass targetClass = Scene.v().getSootClass(className);
-        SootMethod entryPoint = Scene.v().getMethod(entryMethod.getMethodSignature());
         //check if the mainClass is an application class
         SootUtils.isApplicationClass(targetClass.getName());
         //output the application classes and the function signatures loaded by each class in the current analysis environment
-        SootUtils.setEntryPoints(targetClass.getName(), entryPoint.getName());
+        SootUtils.setEntryPoints(targetClass.getName(), entryMethod.getMethodSignature());
         //run the analysis
         PackManager.v().runPacks();
     }

@@ -7,7 +7,6 @@ import TestCaseDroid.graph.BuildCallGraphForJar;
 import TestCaseDroid.graph.BuildControlFlowGraph;
 import TestCaseDroid.graph.BuildICFG;
 import TestCaseDroid.utils.FileUtils;
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import org.apache.commons.cli.*;
 
 public class TestCaseDroidApplication {
@@ -133,7 +132,7 @@ public class TestCaseDroidApplication {
                         System.out.println("No method found, please check the method name.");
                         formatter.printHelp("usage: TestCaseDroid", options, true);
                     }
-                }else {
+                } else {
                     SignatureSearch signatureSearch = new SignatureSearch(classNameForAnalysis, methodName, classPath);
                     signatureSearch.getMethodSignature();
                 }
@@ -170,13 +169,15 @@ public class TestCaseDroidApplication {
         options.addOption(entryClass);
 
         Option entryMethodSig = new Option("sms", "sourceMethodSig", true,
-                "entry source method signature for analysis or graph build e.g., -sms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>" +
+                "entry source method signature for analysis or graph build e.g., -sms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>"
+                        +
                         " or -sms use idea reference like TestCaseDroid.test.CFG#method2(int)");
         entryMethodSig.setRequired(false);
         options.addOption(entryMethodSig);
 
         Option targetMethodSig = new Option("tms", "targetMethodSig", true,
-                "target method signature for analysis e.g., -tms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>" +
+                "target method signature for analysis e.g., -tms <TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>"
+                        +
                         " or -tms use idea reference like TestCaseDroid.test.CFG#main");
         targetMethodSig.setRequired(false);
         options.addOption(targetMethodSig);

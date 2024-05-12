@@ -15,8 +15,7 @@ public class ReachabilityCFG {
     private MethodContext targetMethodContext;
     private final ClassicCompleteUnitGraph cfg;
 
-
-    public ReachabilityCFG(String entryClass,String targetMethodSig, String sourceMethodSig) {
+    public ReachabilityCFG(String entryClass, String targetMethodSig, String sourceMethodSig) {
         this.sourceMethodContext = new MethodContext(sourceMethodSig);
         this.targetMethodContext = new MethodContext(targetMethodSig);
         SootConfig sootConfig = new SootConfig();
@@ -24,16 +23,18 @@ public class ReachabilityCFG {
         SootMethod srcMethod = Scene.v().getMethod(sourceMethodContext.getMethodSignature());
         this.cfg = new ClassicCompleteUnitGraph(srcMethod.getActiveBody());
     }
-    public ReachabilityCFG(String targetClass,String targetMethodSig, String sourceMethodSig,String classPath) {
+
+    public ReachabilityCFG(String targetClass, String targetMethodSig, String sourceMethodSig, String classPath) {
         this.sourceMethodContext = new MethodContext(sourceMethodSig);
         this.targetMethodContext = new MethodContext(targetMethodSig);
         SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(targetClass, true,classPath);
+        sootConfig.setupSoot(targetClass, true, classPath);
         SootMethod srcMethod = Scene.v().getMethod(sourceMethodContext.getMethodSignature());
         this.cfg = new ClassicCompleteUnitGraph(srcMethod.getActiveBody());
     }
 
-    public ReachabilityCFG(String classNameForAnalysis, MethodContext sourceMethodContext,MethodContext targetMethodContext,String classPath) {
+    public ReachabilityCFG(String classNameForAnalysis, MethodContext sourceMethodContext,
+            MethodContext targetMethodContext, String classPath) {
         this.sourceMethodContext = sourceMethodContext;
         this.targetMethodContext = targetMethodContext;
         SootConfig sootConfig = new SootConfig();
@@ -69,7 +70,8 @@ public class ReachabilityCFG {
                     paths.add(currentContext.copy());
                 }
             } else if (current instanceof AssignStmt) {
-                // check if the target method is invoked in the right-hand side of the assignment
+                // check if the target method is invoked in the right-hand side of the
+                // assignment
                 AssignStmt assignStmt = (AssignStmt) current;
                 if (assignStmt.containsInvokeExpr()) {
                     InvokeExpr invokeExpr = assignStmt.getInvokeExpr();
@@ -88,27 +90,30 @@ public class ReachabilityCFG {
         return paths;
     }
 
-
     public void runAnalysis() {
         SootMethod targetMethod = Scene.v().getMethod(targetMethodContext.getMethodSignature());
         List<Context> paths = inDynamicExtent(targetMethod);
         if (paths.isEmpty()) {
-            System.out.println("No path found from " + sourceMethodContext.getMethodSignature() + " to " + targetMethodContext.getMethodSignature());
+            System.out.println("No path found from " + sourceMethodContext.getMethodSignature() + " to "
+                    + targetMethodContext.getMethodSignature());
         } else {
             int pathIndex = 0;
-            System.out.println("Found " + paths.size() + " paths from " + sourceMethodContext.getMethodSignature() + " to " + targetMethodContext.getMethodSignature());
+            System.out.println("Found " + paths.size() + " paths from " + sourceMethodContext.getMethodSignature()
+                    + " to " + targetMethodContext.getMethodSignature());
             for (Context path : paths) {
                 path.setBackward(true);
                 pathIndex++;
                 System.out.println("The No." + pathIndex + " path:");
                 System.out.println(path);
-                contextToDotGraph(path, targetMethodContext.getClassName(), targetMethodContext.getMethodName(), pathIndex);
+                contextToDotGraph(path, targetMethodContext.getClassName(), targetMethodContext.getMethodName(),
+                        pathIndex);
             }
         }
     }
 
     public static void main(String[] args) {
-        ReachabilityCFG analysis = new ReachabilityCFG("TestCaseDroid.test.CFG", "<TestCaseDroid.test.CFG: void method3()>", "<TestCaseDroid.test.CFG: void method1(int,int)>");
+        ReachabilityCFG analysis = new ReachabilityCFG("TestCaseDroid.test.CFG",
+                "<TestCaseDroid.test.CFG: void method3()>", "<TestCaseDroid.test.CFG: void method1(int,int)>");
         analysis.runAnalysis();
     }
 }
