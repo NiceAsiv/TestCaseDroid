@@ -97,6 +97,13 @@ public class TestCaseDroidApplication {
                 System.out.println("Error: The source method is not specified.");
                 formatter.printHelp("usage: TestCaseDroid", options, true);
             } else {
+                if (sourceMethodSig.contains("#")) {
+                    if (SignatureSearch.getMethodSignatureByIDEARef(sourceMethodSig, classPath) == null) {
+                        System.out.println("Error: The source method is not found.");
+                        formatter.printHelp("usage: TestCaseDroid", options, true);
+                    }
+                    sourceMethodSig = SignatureSearch.getMethodSignatureByIDEARef(sourceMethodSig, classPath);
+                }
                 MethodContext sourceMethodContext = new MethodContext(sourceMethodSig);
                 switch (graphType) {
                     case "cg":
