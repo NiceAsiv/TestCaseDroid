@@ -75,14 +75,14 @@ public class TestCaseDroidApplication {
                     case "cfg":
                         ReachabilityCFG reachabilityCFG = new ReachabilityCFG(classNameForAnalysis, sourceMethodContext,
                                 targetMethodContext, classPath);
-                        reachabilityCFG.runAnalysis();
+                        reachabilityCFG.runAnalysisUsingMarkNode();
+//                        reachabilityCFG.runAnalysis();
                         break;
                     case "bicfg":
                         BackwardReachabilityICFG backwardReachabilityICFG = new BackwardReachabilityICFG(
                                 classNameForAnalysis, classPath);
                         backwardReachabilityICFG.runAnalysis(sourceMethodContext, targetMethodContext);
                         break;
-
                     default:
                         System.out.println("Error: Invalid reachability analysis type. Use 'cg' 'cfg' or 'icfg'.");
                         formatter.printHelp("usage: TestCaseDroid", options, true);
@@ -109,6 +109,10 @@ public class TestCaseDroidApplication {
                         BuildCallGraphForJar.buildCallGraphForJar(classPath, classNameForAnalysis, sourceMethodContext);
                         break;
                     case "cfg":
+                        BuildControlFlowGraph.buildPrettyControlFlowGraph(classPath, classNameForAnalysis,
+                                sourceMethodContext);
+                        break;
+                    case "rcfg":
                         BuildControlFlowGraph.buildControlFlowGraph(classPath, classNameForAnalysis,
                                 sourceMethodContext);
                         break;
@@ -185,7 +189,7 @@ public class TestCaseDroidApplication {
         // graph选项 选择分析的图类型
 
         Option graphType = new Option("gt", "graphType", true,
-                "select graph type that you want to build, including 'cg', 'cfg', 'icfg' e.g., -gt cfg");
+                "select graph type that you want to build, including 'cg', 'cfg'(pretty),'rcfg'(raw),'icfg' e.g., -gt cfg");
         graphType.setRequired(false);
         options.addOption(graphType);
 

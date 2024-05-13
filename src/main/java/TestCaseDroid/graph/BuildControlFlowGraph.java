@@ -23,17 +23,6 @@ public class BuildControlFlowGraph {
     private static DotGraphWrapper dotGraph;
     private static CFGToDotGraph drawer;
     private static final SootConfig sootConfig = new SootConfig();
-    @Setter
-    private static String graphAlgorithm;
-
-
-
-    public static void main(String[] args) {
-        String targetClassName = "TestCaseDroid.test.CFG";
-        String entryMethod = "<TestCaseDroid.test.CFG: void method2()>";
-        MethodContext methodEntryContext = new MethodContext(entryMethod);
-        buildControlFlowGraph(null, targetClassName, methodEntryContext);
-    }
 
     public static void buildControlFlowGraph(String classesPath, String targetClassName, MethodContext entryMethod) {
         if (classesPath != null) {
@@ -41,7 +30,6 @@ public class BuildControlFlowGraph {
         } else {
             sootConfig.setupSoot(targetClassName, true);
         }
-
         dotGraph = new DotGraphWrapper(entryMethod.getMethodName());
 
         //获取指定的方法
@@ -49,29 +37,46 @@ public class BuildControlFlowGraph {
 
         //获取方法的Jimple body
         JimpleBody jimpleBody = (JimpleBody) targetMethod.retrieveActiveBody();
+//        生成控制流图
+        CompleteUnitGraph cfg = new CompleteUnitGraph(jimpleBody);
+//        遍历控制流图
+        graphTraverse(cfg);
+        dotGraph.plot("cfg",targetClassName,entryMethod.getMethodName());
+    }
 
-        //生成控制流图
-//        CompleteUnitGraph cfg = new CompleteUnitGraph(jimpleBody);
-        //遍历控制流图
-//        graphTraverse(cfg);
-//        dotGraph.plot("cfg",targetClassName,entryMethod.getMethodName());
-        getPrettyCFG(jimpleBody, jimpleBody, targetClassName, entryMethod.getMethodName());
+    /***
+     * output the control flow graph of the method
+     * @param classPath the path of the class
+     * @param classNameForAnalysis the name of the class
+     * @param sourceMethodContext the context of the method
+     */
+    public static void buildPrettyControlFlowGraph(String classPath, String classNameForAnalysis, MethodContext sourceMethodContext) {
+
+        if (classPath != null) {
+            sootConfig.setupSoot(classNameForAnalysis, true, classPath);
+        } else {
+            sootConfig.setupSoot(classNameForAnalysis, true);
+        }
+
+        SootMethod srcMethod = Scene.v().getMethod(sourceMethodContext.getMethodSignature());
+        JimpleBody jimpleBody = (JimpleBody) srcMethod.retrieveActiveBody();
+        getPrettyCFG(srcMethod.getActiveBody(), jimpleBody, classNameForAnalysis, sourceMethodContext.getMethodName());
     }
 
     private static void graphTraverse(CompleteUnitGraph cfg)
     {
         int nodeId = 0;
-        Map<Unit, Integer> nodeIds = new HashMap<>();
+        Map<Unit, Integer> nodeIds = new HashMap<>();//创建一个map用于存储basic block节点和节点的id
         for (Unit unit : cfg) {
-            List<Unit> successors = cfg.getSuccsOf(unit);
+            List<Unit> successors = cfg.getSuccsOf(unit);//获取当前节点的后继节点
             for (Unit successor : successors) {
-                if (!nodeIds.containsKey(unit)) {
+                if (!nodeIds.containsKey(unit)) {//如果当前节点不在map中，将当前节点加入map
                     nodeIds.put(unit, nodeId++);
                 }
-                if (!nodeIds.containsKey(successor)) {
+                if (!nodeIds.containsKey(successor)) {//如果后继节点不在map中，将后继节点加入map
                     nodeIds.put(successor, nodeId++);
                 }
-                dotGraph.drawEdge(String.valueOf(nodeIds.get(unit)), String.valueOf(nodeIds.get(successor)));
+                dotGraph.drawEdge(String.valueOf(nodeIds.get(unit)), String.valueOf(nodeIds.get(successor)));//连接当前节点和后继节点
             }
         }
         for (Map.Entry<Unit, Integer> entry : nodeIds.entrySet()) {
@@ -119,5 +124,12 @@ public class BuildControlFlowGraph {
         //生成png文件
         String pngFilePath = "./sootOutput/pic/cfg/" + ClassName + "." + entryMethod + ".png";
         DotGraphWrapper.convertDotToPng(dotFilePath, pngFilePath);
+    }
+
+    public static void main(String[] args) {
+        String targetClassName = "TestCaseDroid.test.CFG";
+        String entryMethod = "<TestCaseDroid.test.CFG: void method1(int,int)>";
+        MethodContext methodEntryContext = new MethodContext(entryMethod);
+        buildControlFlowGraph(null, targetClassName, methodEntryContext);
     }
 }

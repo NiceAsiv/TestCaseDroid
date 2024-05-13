@@ -81,7 +81,7 @@ public class ClassInfoExtractor {
         try {
             clazz = Class.forName(sootClass.getName());
         } catch (ClassNotFoundException e) {
-            log.error("Failed to load class: " + sootClass.getName());
+            log.error("Failed to load class: {}", sootClass.getName());
         }
 
         // Extract field value
@@ -97,7 +97,7 @@ public class ClassInfoExtractor {
                     classInfo.addField(field.getSignature(), "null");
                 }
             } catch (IllegalAccessException | NoSuchFieldException e) {
-                log.error("Failed to extract field value: " + field.getName());
+                log.error("Failed to extract field value: {}", field.getName());
             } catch (InstantiationException e) {
                 throw new RuntimeException(e);
             }

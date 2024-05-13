@@ -12,29 +12,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class MethodInfo {
-    public String className;
-    public String methodName;
-    public int paramNum;
-    public List<String> paramters = new ArrayList<>();
-    public Boolean isOverRide = false;
-
-    MethodInfo() {
-    }
-
-    MethodInfo(String className, String methodName) {
-        this.className = className;
-        this.methodName = methodName;
-    }
-
-    MethodInfo(String className, String methodName, int paramNum, List<String> paramters) {
-        this.className = className;
-        this.methodName = methodName;
-        this.paramNum = paramNum;
-        this.paramters = paramters;
-    }
-}
-
 /**
  * 函数签名模糊搜索
  */
@@ -147,7 +124,6 @@ public class SignatureSearch {
 
     public static void main(String[] args) {
         getMethodSignatureByIDEARef("TestCaseDroid.test.CFG#method2(int, int)", "E:\\Tutorial\\TestCaseDroid\\target\\classes");
-
     }
 
 }
