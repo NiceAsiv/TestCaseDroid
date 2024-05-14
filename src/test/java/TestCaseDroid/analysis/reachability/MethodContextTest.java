@@ -8,17 +8,6 @@ class MethodContextTest {
 
         @Test
         void testMethodContext() {
-                // MethodContext methodContext = new MethodContext(
-                // "<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>");
-                // assertEquals("TestCaseDroid.test.CallGraphs", methodContext.getClassName());
-                // assertEquals("main", methodContext.getMethodName());
-                // assertEquals("void", methodContext.getReturnType());
-                // assertEquals("<TestCaseDroid.test.CallGraphs: void
-                // main(java.lang.String[])>",
-                // methodContext.getMethodSignature());
-                // assertEquals(1, methodContext.getParamTypes().size());
-                // assertEquals("java.lang.String[]", methodContext.getParamTypes().get(0));
-                // <TestCaseDroid.test.ICFG: void <clinit>()>
                 MethodContext methodContext1 = new MethodContext("<TestCaseDroid.test.ICFG: void <clinit>()>");
                 assertEquals("TestCaseDroid.test.ICFG", methodContext1.getClassName());
                 assertEquals("<clinit>", methodContext1.getMethodName());
