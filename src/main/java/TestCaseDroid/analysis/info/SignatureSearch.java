@@ -32,6 +32,9 @@ public class SignatureSearch {
             methodInfo.isOverRide = true;
             methodInfo.className = matcher.group(1);
             methodInfo.methodName = matcher.group(2);
+            if (methodInfo.className.substring(methodInfo.className.lastIndexOf(".") + 1).equals(methodInfo.methodName)) {
+                methodInfo.isConstructor = true;
+            }
             if (matcher.group(3).isEmpty()) {
                 methodInfo.paramNum = 0;
             } else {
@@ -51,6 +54,9 @@ public class SignatureSearch {
                 methodInfo.isOverRide = false;
                 methodInfo.className = matcher.group(1);
                 methodInfo.methodName = matcher.group(2);
+                if (methodInfo.className.substring(methodInfo.className.lastIndexOf(".") + 1).equals(methodInfo.methodName)) {
+                    methodInfo.isConstructor = true;
+                }
                 methodInfo.paramNum = 0;
                 return true;
             } else {
@@ -71,7 +77,9 @@ public class SignatureSearch {
         }
         SootConfig sootConfig = new SootConfig();
         sootConfig.setupSoot(methodInfo.className, false, classPath);
-
+        if (methodInfo.isConstructor) {
+            methodInfo.methodName = "<init>";
+        }
         SootClass sootClass = Scene.v().getSootClass(methodInfo.className);
         sootClass.setApplicationClass();
         if (!methodInfo.isOverRide) {

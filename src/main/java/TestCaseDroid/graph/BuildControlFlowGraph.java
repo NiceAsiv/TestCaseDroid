@@ -118,17 +118,21 @@ public class BuildControlFlowGraph {
 
         //生成dot文件
         String dotFilePath = "./sootOutput/dot/cfg/" + ClassName + "." + entryMethod + ".dot";
+        //check the dotFilePath contains illegal characters
+        dotFilePath = dotFilePath.replace("<", "").replace(">", "").replace(":", "");
         folderExistenceTest(dotFilePath);
         dotGraphReal.plot(dotFilePath);
 
         //生成png文件
         String pngFilePath = "./sootOutput/pic/cfg/" + ClassName + "." + entryMethod + ".png";
+        //check the pngFilePath contains illegal characters
+        pngFilePath = pngFilePath.replace("<", "").replace(">", "").replace(":", "");
         DotGraphWrapper.convertDotToPng(dotFilePath, pngFilePath);
     }
 
     public static void main(String[] args) {
-        String targetClassName = "TestCaseDroid.test.CFG";
-        String entryMethod = "<TestCaseDroid.test.CFG: void method1(int,int)>";
+        String targetClassName = "TestCaseDroid.test.Test4";
+        String entryMethod = "<TestCaseDroid.test.Test4: void <init>()>";
         MethodContext methodEntryContext = new MethodContext(entryMethod);
         buildControlFlowGraph(null, targetClassName, methodEntryContext);
     }

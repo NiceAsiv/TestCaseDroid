@@ -9,6 +9,7 @@ class MethodInfo {
     public int paramNum;
     public List<String> paramters = new ArrayList<>();
     public Boolean isOverRide = false;
+    public Boolean isConstructor = false;
 
     MethodInfo() {
     }
