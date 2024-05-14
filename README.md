@@ -130,7 +130,7 @@ class Vulnerable {
 命令行输入
 
 ```shell
-java -jar .\TestCaseDroid-1.2-jar-with-dependencies.jar -p "E:\Tutorial\TestCaseDroid\target\classes" -ec TestCaseDroid.test.Vulnerable -g cg -sourceMethodSig "<TestCaseDroid.test.Vulnerable: void main(java.lang.String[])>"
+java -jar .\TestCaseDroid-1.2-jar-with-dependencies.jar -p "E:\Tutorial\TestCaseDroid\target\classes" -ec TestCaseDroid.test.Vulnerable -gt cg -sourceMethodSig "<TestCaseDroid.test.Vulnerable: void main(java.lang.String[])>"
 ```
 
 输出结果
@@ -403,7 +403,7 @@ Where, `[options]` is a series of command line options for specifying the type o
 - `-ec` or `--entryClass`: Specify the class name to be analyzed.
 - `-sms` or `--sourceMethodSig`: Specify the source method signature to be analyzed.
 - `-tms` or `--targetMethodSig`: Specify the target method signature to be analyzed.
-- `-g` or `--graph`: Select the type of graph to analyze.
+- `-gt` or `--graph`: Select the type of graph to analyze.
 - `-r` or `--reachability`: Select the type of reachability analysis.
 - `-b` or `--backward`: Whether to perform reverse analysis.
 - `-m` or `--method`: Select the method name to be analyzed.
