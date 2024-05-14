@@ -90,6 +90,8 @@ public class DotGraphWrapper {
             log.error("DotGraph is null");
             return;
         }
+        //check if the targetClass contains illegal characters
+        targetClass = targetClass.replace("<", "").replace(">", "").replace(":", "");
         switch (graphType) {
             case "cg":
                 String callGraphPath = "./sootOutput/dot/cg/" + targetClass + ".dot";
@@ -103,6 +105,8 @@ public class DotGraphWrapper {
                 }
                 break;
             case "cfg":
+                //检查是存在非法字符
+                targetMethod[0] = targetMethod[0].replace("<", "").replace(">", "").replace(":", "");
                 String cfgPath = "./sootOutput/dot/cfg/" + targetClass + "." + targetMethod[0] + ".dot";
                 String cfgOutputPath = "./sootOutput/pic/cfg/" + targetClass + "." + targetMethod[0] + ".png";
                 folderExistenceTest(cfgPath);
@@ -131,12 +135,17 @@ public class DotGraphWrapper {
     }
 
     public void plot(MethodContext sourceMethodContext, MethodContext targetMethodContext, int pathId) {
+
+
         String contextPath = "./sootOutput/dot/reachability/" + sourceMethodContext.getClassName() + "."
                 + sourceMethodContext.getMethodName() + "_call_" + targetMethodContext.getClassName() + "."
                 + targetMethodContext.getMethodName() + "_" + pathId + ".dot";
         String outputPath = "./sootOutput/pic/reachability/" + sourceMethodContext.getClassName() + "_"
                 + sourceMethodContext.getMethodName() + "_call_" + targetMethodContext.getClassName() + "_"
                 + targetMethodContext.getMethodName() + "_" + pathId + ".png";
+        // Check if the path contains illegal characters
+        contextPath = contextPath.replace("<", "").replace(">", "").replace(":", "");
+        outputPath = outputPath.replace("<", "").replace(">", "").replace(":", "");
         folderExistenceTest(contextPath);
         this.dotGraph.plot(contextPath);
         try {
@@ -166,6 +175,9 @@ public class DotGraphWrapper {
                 + ".dot";
         String outputPath = "./sootOutput/pic/reachability/" + targetClass + "." + targetMethod + ".unit." + pathId
                 + ".png";
+        // Check if the path contains illegal characters
+        contextPath = contextPath.replace("<", "").replace(">", "").replace(":", "");
+        outputPath = outputPath.replace("<", "").replace(">", "").replace(":", "");
         folderExistenceTest(contextPath);
         dotGraphForContext.plot(contextPath);
         try {
@@ -184,6 +196,9 @@ public class DotGraphWrapper {
         String outputPath = "./sootOutput/pic/reachability/" + sourceMethodContext.getClassName() + "_"
                 + sourceMethodContext.getMethodName() + "_call_" + targetMethodContext.getClassName() + "_"
                 + targetMethodContext.getMethodName() + "_" + pathId + ".png";
+        // Check if the path contains illegal characters
+        contextPath = contextPath.replace("<", "").replace(">", "").replace(":", "");
+        outputPath = outputPath.replace("<", "").replace(">", "").replace(":", "");
         folderExistenceTest(contextPath);
         dotGraphForContext.plot(contextPath);
         try {
