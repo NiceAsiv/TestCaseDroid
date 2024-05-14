@@ -81,6 +81,7 @@ public class SootConfig {
         Options.v().set_allow_phantom_refs(true);
         Options.v().set_process_dir(Collections.singletonList(classesPath));
         //加载指定的类
+        excludeJDKLibrary();
         SootClass appClass = Scene.v().loadClassAndSupport(className);
         //将待分析类设为应用类
         appClass.setApplicationClass();
@@ -133,6 +134,5 @@ public class SootConfig {
         Options.v().set_exclude(SootUtils.excludeClassesList);
         //this option must be disabled for a sound call graph
         Options.v().set_no_bodies_for_excluded(true);
-        Options.v().set_allow_phantom_refs(true);//关键!!!!
     }
 }
