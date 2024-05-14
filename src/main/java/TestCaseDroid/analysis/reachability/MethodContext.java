@@ -14,14 +14,17 @@ public class MethodContext {
     private String className;
     private String methodName;
     private String returnType;
-    private String methodSignature; //current method signature
+    private String methodSignature; // current method signature
     private List<String> paramTypes;
     Boolean isBackwardReachability = true;
     private Deque<SootMethod> methodCallStack;
 
     /**
      * Constructor of MethodContext
-     * @param methodSignature The method signature like "<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>"
+     * 
+     * @param methodSignature The method signature like
+     *                        "<TestCaseDroid.test.CallGraphs: void
+     *                        main(java.lang.String[])>"
      */
     public MethodContext(String methodSignature) {
         this.methodSignature = methodSignature;
@@ -48,10 +51,11 @@ public class MethodContext {
         parseMethodSignature(methodSignature);
     }
 
-    //copy
+    // copy
     public MethodContext copy() {
         return new MethodContext(this.methodSignature, new LinkedList<>(this.methodCallStack));
     }
+
     public Deque<SootMethod> getReverseMethodCallStack() {
         Deque<SootMethod> reverseMethodCallStack = new LinkedList<>();
         for (SootMethod method : methodCallStack) {
@@ -66,7 +70,7 @@ public class MethodContext {
             for (SootMethod method : getReverseMethodCallStack()) {
                 sb.append(method.getSignature()).append(" -> ");
             }
-        }else {
+        } else {
             for (SootMethod method : methodCallStack) {
                 sb.append(method.getSignature()).append(" -> ");
             }
@@ -77,6 +81,7 @@ public class MethodContext {
         sb.delete(sb.length() - 4, sb.length());
         return sb.toString();
     }
+
     @Override
     public int hashCode() {
         return Objects.hash(className, methodName, returnType, paramTypes, methodCallStack);
@@ -98,17 +103,51 @@ public class MethodContext {
     }
 
     private void parseMethodSignature(String methodSignature) {
-        //if null
+        // if null
         if (methodSignature == null) {
             throw new IllegalArgumentException("Invalid method methodSignature null");
         }
-        String pattern = "<(.*): (.*?) (.*?)\\((.*?)\\)>"; //正则表达式
-        if (!methodSignature.matches(pattern)) {
-            throw new IllegalArgumentException("Invalid method methodSignature: " + methodSignature);
-        }
-        Pattern r = Pattern.compile(pattern);
-        Matcher m = r.matcher(methodSignature);
-        if (m.find()) {
+
+        // 匹配类名、返回值、方法名、参数
+        // <TestCaseDroid.test.Vulnerable: void main(java.lang.String[])>
+        // <TestCaseDroid.test.CFG: void method1(int,int)>
+        String pattern = "<(.*): (.*?) (.*?)\\((.*?)\\)>";
+        // 特殊字符
+        // <TestCaseDroid.test.ICFG: void <clinit>()>
+        // <org.apache.commons.beanutils2.BeanUtilsBean:<init>(org.apache.commons.beanutils2.ConvertUtilsBean)>
+        String initPattern = "<([^:]*):\\s*(.*?)\\s*(<\\w+>)\\((.*)\\)>";
+        String clinitPattern = "<(.*): (.*?) (<clinit>)\\(\\)>";
+        Pattern r;
+        Matcher m;
+        if (methodSignature.contains("<clinit>")) {
+            r = Pattern.compile(clinitPattern);
+            m = r.matcher(methodSignature);
+            if (!m.matches()) {
+                throw new IllegalArgumentException("Invalid method methodSignature: " + methodSignature);
+            }
+            this.className = m.group(1);
+            this.returnType = m.group(2);
+            this.methodName = m.group(3);
+            this.paramTypes = new ArrayList<>();
+        } else if (methodSignature.contains("<init>")) {
+            r = Pattern.compile(initPattern);
+            m = r.matcher(methodSignature);
+            if (!m.matches()) {
+                throw new IllegalArgumentException("Invalid method methodSignature: " + methodSignature);
+            }
+            this.className = m.group(1);
+            this.methodName = m.group(3);
+            this.paramTypes = new ArrayList<>();
+            if (!m.group(4).isEmpty()) {
+                String[] paramArray = m.group(4).split(",");
+                this.paramTypes.addAll(Arrays.asList(paramArray));
+            }
+        } else {
+            r = Pattern.compile(pattern);
+            m = r.matcher(methodSignature);
+            if (!m.matches()) {
+                throw new IllegalArgumentException("Invalid method methodSignature: " + methodSignature);
+            }
             this.className = m.group(1);
             this.returnType = m.group(2);
             this.methodName = m.group(3);
@@ -117,13 +156,12 @@ public class MethodContext {
                 String[] paramArray = m.group(4).split(",");
                 this.paramTypes.addAll(Arrays.asList(paramArray));
             }
-        } else {
-            throw new IllegalArgumentException("Invalid method methodSignature: " + methodSignature);
         }
     }
 
     public static void main(String[] args) {
-        MethodContext methodContext = new MethodContext("<TestCaseDroid.test.CallGraphs: void main(java.lang.String[],int)>");
+        MethodContext methodContext = new MethodContext(
+                "<TestCaseDroid.test.CallGraphs: void main(java.lang.String[],int)>");
         System.out.println(methodContext.className);
         System.out.println(methodContext.methodName);
         System.out.println(methodContext.returnType);

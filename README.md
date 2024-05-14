@@ -37,7 +37,7 @@ java -jar TestCaseDroid-1.2.jar [options]
 - `-b` 或 `--backward`：是否进行逆向分析。
 - `-m` 或 `--method`：选择要分析的方法名。
 - `-ci`或 `--classInfo`: 提取相关类信息。
-- `mn`或者`--methodName`:如果你如果无法直接获取IDEA的引用的话，那么推荐使用这个参数，并带上方法名来获取方法签名。
+- `mn`或者`--methodName`:如果你如果无法直接获取IDEA的引用的话，那么推荐使用这个参数，并带上方法名来进行模糊搜索获取方法签名。
 
 **注意**
 

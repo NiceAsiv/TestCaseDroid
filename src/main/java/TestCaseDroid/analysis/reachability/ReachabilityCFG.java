@@ -136,7 +136,7 @@ public class ReachabilityCFG {
                     + " to " + targetMethodContext.getMethodSignature());
             for (DotGraphWrapper dotPath : dotPaths) {
                 pathIndex++;
-                dotPath.plot(sourceMethodContext,targetMethodContext, pathIndex);
+                dotPath.plot(sourceMethodContext, targetMethodContext, pathIndex);
             }
         }
     }
@@ -155,7 +155,7 @@ public class ReachabilityCFG {
                 pathIndex++;
                 DotGraphWrapper thisDotGraphWrapper = dotGraph.copy();
                 thisDotGraphWrapper.setGraphName(targetMethodContext.getMethodName() + "_path_" + pathIndex);
-                darwLabel(cfg, thisDotGraphWrapper, nodeIds);
+                drawLabel(cfg, thisDotGraphWrapper, nodeIds);
                 dotPaths.add(thisDotGraphWrapper);
                 hasTargetNode = false;
             }
@@ -176,7 +176,7 @@ public class ReachabilityCFG {
         return dotPaths;
     }
 
-    private void darwLabel(CompleteUnitGraph cfg, DotGraphWrapper dotGraph, Map<Unit, Integer> nodeIds) {
+    private void drawLabel(CompleteUnitGraph cfg, DotGraphWrapper dotGraph, Map<Unit, Integer> nodeIds) {
         for (Map.Entry<Unit, Integer> entry : nodeIds.entrySet()) {
             Unit unit = entry.getKey();
             Integer id = entry.getValue();
