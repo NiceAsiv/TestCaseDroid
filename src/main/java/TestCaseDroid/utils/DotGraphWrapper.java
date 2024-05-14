@@ -2,19 +2,14 @@ package TestCaseDroid.utils;
 
 import TestCaseDroid.analysis.reachability.Context;
 import TestCaseDroid.analysis.reachability.MethodContext;
-import fj.data.Array;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import soot.SootMethod;
 import soot.Unit;
 import soot.util.dot.DotGraph;
 import soot.util.dot.DotGraphEdge;
 import soot.util.dot.DotGraphNode;
-import sun.security.provider.MD5;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
