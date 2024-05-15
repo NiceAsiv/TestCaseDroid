@@ -28,7 +28,7 @@ java -jar TestCaseDroid-1.2.jar [options]
 
 其中，`[options]` 是一系列的命令行选项，用于指定分析的类型、路径、类名等信息。具体的选项包括：
 
-- `-p` 或 `--path`：指定要分析的 jar 包路径或者 class 文件路径。
+- `-p` 或 `--path`：指定要分析的 jar 包路径或者 class 文件路径,如果有多个路径，可以使用";"分隔。
 - `-ec` 或 `--entryClass`：指定要分析的类名。
 - `-sms` 或 `--sourceMethodSig`：指定要分析的源方法签名或者是IDEA中函数引用。
 - `-tms` 或 `--targetMethodSig`：指定要分析的目标方法签名或者是IDEA中的函数引用。
