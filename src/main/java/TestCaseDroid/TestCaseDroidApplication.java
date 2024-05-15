@@ -33,9 +33,10 @@ public class TestCaseDroidApplication {
         String extraInfo = cmd.getOptionValue("classInfo");
         String methodName = cmd.getOptionValue("methodName");
 
-        // check if the process path exists
-        if (classPath == null || !FileUtils.isPathExist(classPath)) {
-            System.out.println("Error: The path does not exist.");
+
+        // check if the process path is set
+        if (classPath == null) {
+            System.out.println("Error: The path is not specified.");
             formatter.printHelp("usage: TestCaseDroid", options, true);
         }
 
@@ -210,5 +211,6 @@ public class TestCaseDroidApplication {
         classInfo.setRequired(false);
         options.addOption(classInfo);
         return options;
+
     }
 }
