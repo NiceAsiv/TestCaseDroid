@@ -403,7 +403,7 @@ Where, `[options]` is a series of command line options for specifying the type o
 - `-ec` or `--entryClass`: Specify the class name to be analyzed.
 - `-sms` or `--sourceMethodSig`: Specify the source method signature to be analyzed.
 - `-tms` or `--targetMethodSig`: Specify the target method signature to be analyzed.
-- `-gt` or `--graph`: Select the type of graph to analyze.
+- `-gt` or `--graphType`: Select the type of graph to analyze.
 - `-r` or `--reachability`: Select the type of reachability analysis.
 - `-b` or `--backward`: Whether to perform reverse analysis.
 - `-m` or `--method`: Select the method name to be analyzed.

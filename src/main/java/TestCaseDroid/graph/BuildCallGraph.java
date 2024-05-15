@@ -12,7 +12,7 @@ import java.util.*;
 
 @Deprecated
 public class BuildCallGraph  extends SceneTransformer {
-    private static String targetClass = "TestCaseDroid.test.Vulnerable";
+    private static String targetClass = "com.alibaba.fastjson.JSON.createReadContext";
     public static String entryMethod = "main";
     private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
     private static int numOfEdges = 0;

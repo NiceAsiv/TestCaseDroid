@@ -75,6 +75,8 @@ public class SootConfig {
         //清除soot之前留下的所有缓存
         G.reset();
         String sootClassPath =jreDir + File.pathSeparator + FileUtils.classPathParser(classesPath);
+        log.info("Soot class path: {}", sootClassPath);
+        log.info("Classes path: {}", System.getProperty("java.class.path"));
         //设置Soot类路径
         Options.v().set_soot_classpath(sootClassPath);
         Options.v().set_whole_program(true);

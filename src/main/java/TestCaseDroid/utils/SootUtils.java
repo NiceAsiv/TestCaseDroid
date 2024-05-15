@@ -83,8 +83,9 @@ public class SootUtils {
             reportSootEntryPointsInfo();
 
         } catch (RuntimeException e) {
-            System.err.println("发生了运行时异常，是否是类名和方法名设置错误？\n" + e.getMessage());
-            log.error(e.getMessage(), e);
+            log.error("发生了运行时异常，是否是类名和方法名设置错误？\n", e);
+            //terminate the program
+            System.exit(-1);
         }
     }
 
