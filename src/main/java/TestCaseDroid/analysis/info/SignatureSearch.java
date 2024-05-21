@@ -32,7 +32,8 @@ public class SignatureSearch {
             methodInfo.isOverRide = true;
             methodInfo.className = matcher.group(1);
             methodInfo.methodName = matcher.group(2);
-            if (methodInfo.className.substring(methodInfo.className.lastIndexOf(".") + 1).equals(methodInfo.methodName)) {
+            if (methodInfo.className.substring(methodInfo.className.lastIndexOf(".") + 1)
+                    .equals(methodInfo.methodName)) {
                 methodInfo.isConstructor = true;
             }
             if (matcher.group(3).isEmpty()) {
@@ -43,6 +44,13 @@ public class SignatureSearch {
                 // 去掉参数前后的空格
                 for (int i = 0; i < params.length; i++) {
                     params[i] = params[i].trim();
+                    // java.util.Optional<java.lang.Class<?>>
+                    if (params[i].contains("<") && params[i].contains(">")) {
+                        // String[] temp = params[i].split("<");
+                        // params[i] = temp[0];
+                        params[i] = params[i].substring(0, params[i].indexOf("<"));
+                    }
+
                 }
                 methodInfo.paramters.addAll(Arrays.asList(params));
             }
@@ -54,7 +62,8 @@ public class SignatureSearch {
                 methodInfo.isOverRide = false;
                 methodInfo.className = matcher.group(1);
                 methodInfo.methodName = matcher.group(2);
-                if (methodInfo.className.substring(methodInfo.className.lastIndexOf(".") + 1).equals(methodInfo.methodName)) {
+                if (methodInfo.className.substring(methodInfo.className.lastIndexOf(".") + 1)
+                        .equals(methodInfo.methodName)) {
                     methodInfo.isConstructor = true;
                 }
                 methodInfo.paramNum = 0;
@@ -131,7 +140,8 @@ public class SignatureSearch {
     }
 
     public static void main(String[] args) {
-        getMethodSignatureByIDEARef("TestCaseDroid.test.CFG#method2(int, int)", "E:\\Tutorial\\TestCaseDroid\\target\\classes");
+        getMethodSignatureByIDEARef("TestCaseDroid.test.CFG#method2(int, int)",
+                "E:\\Tutorial\\TestCaseDroid\\target\\classes");
     }
 
 }

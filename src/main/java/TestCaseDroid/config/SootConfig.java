@@ -30,7 +30,7 @@ public class SootConfig {
     private String callGraphAlgorithm = "CHA";
 
     /**
-     * Soot configuration for class document
+     * Soot configuration for project classes
      * @param className the main class name e.g. "TestCaseDroid.tests.CallGraph"
      * @param constructCallGraph whether to construct call graph
      */
