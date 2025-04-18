@@ -7,6 +7,13 @@
     <groupId>edu.xjtu</groupId>
     <artifactId>TestCaseDroid</artifactId>
     <version>1.2</version>
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
