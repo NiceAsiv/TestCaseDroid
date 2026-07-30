@@ -4,95 +4,84 @@ import TestCaseDroid.analysis.reachability.MethodContext;
 import TestCaseDroid.config.SootConfig;
 import TestCaseDroid.utils.DotGraphWrapper;
 import TestCaseDroid.utils.SootUtils;
-import lombok.Setter;
-import soot.*;
+import soot.MethodOrMethodContext;
+import soot.Scene;
+import soot.SootMethod;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Queue;
+import java.util.Set;
 
-
-public class BuildCallGraphForJar extends SceneTransformer{
-
-    @Setter
-    private static MethodContext entryMethodContext;
-    private static Set<String> visitedEdges = new HashSet<>();
-    private static int numOfEdges = 0;
-    private static final SootConfig sootConfig = new SootConfig();
-
-
-    public static void main(String[] args) {
-        buildCallGraphForJar("E:\\Tutorial\\TestCaseDroid\\target\\classes", "TestCaseDroid.test.Vulnerable", new MethodContext("<TestCaseDroid.test.Vulnerable: void main(java.lang.String[])>"));
-    }
-    public static void buildCallGraphForJar(String targetJarPath,String callGraphAlgorithm, String entryClassName,MethodContext entryMethod) {
-        sootConfig.setCallGraphAlgorithm(callGraphAlgorithm);
-        buildCallGraphForJar(targetJarPath,entryClassName,entryMethod);
+/** Builds and exports a call graph rooted at one method. */
+public final class BuildCallGraphForJar {
+    private BuildCallGraphForJar() {
     }
 
-    public static void buildCallGraphForJar(String targetJarPath, String entryClassName, MethodContext entryMethod) {
-        BuildCallGraphForJar.setEntryMethodContext(entryMethod);
-        sootConfig.setupSoot(entryClassName, true, targetJarPath);
-        //add an inter-procedural analysis phase to Soot
-        BuildCallGraphForJar analysis = new BuildCallGraphForJar();
-        PackManager.v().getPack("wjtp").add(new Transform("wjtp.BuildCallGraphForJar", analysis));
-        //check if the mainClass is an application class
-        SootUtils.isApplicationClass(entryClassName);
-        //output the application classes and the function signatures loaded by each class in the current analysis environment
-        SootUtils.setEntryPoints(entryClassName, entryMethod.getMethodSignature());
-        //run the analysis
-        PackManager.v().runPacks();
+    public static void buildCallGraphForJar(String targetPath, String callGraphAlgorithm,
+                                             String entryClassName, MethodContext entryMethod) {
+        SootConfig config = new SootConfig();
+        config.setCallGraphAlgorithm(callGraphAlgorithm);
+        build(targetPath, entryClassName, entryMethod, config);
     }
 
+    public static void buildCallGraphForJar(String targetPath, String entryClassName,
+                                             MethodContext entryMethod) {
+        build(targetPath, entryClassName, entryMethod, new SootConfig());
+    }
 
-    /**
-     * Visit the call graph starting from the entry method
-     * @param cg call graph
-     * @param method entry method
-     * @param dotGraph dot graph
-     */
-    private static void visit(CallGraph cg,SootMethod method, DotGraphWrapper dotGraph)
-    {
-        Queue<SootMethod> worklist = new LinkedList<>(); //这是一个队列，用于广度优先搜索
-        String identifier = method.getSignature();
-        worklist.add(method);
-        dotGraph.drawNode(identifier);
+    private static void build(String targetPath, String entryClassName,
+                              MethodContext entryMethod, SootConfig config) {
+        if (entryMethod == null) {
+            throw new IllegalArgumentException("Entry method must not be null");
+        }
+        config.setupSoot(entryClassName, true, targetPath,
+                Collections.singletonList(entryMethod.getMethodSignature()));
+
+        SootMethod root = Scene.v().getMethod(entryMethod.getMethodSignature());
+        DotGraphWrapper graph = new DotGraphWrapper(
+                "The call graph of " + entryMethod.getClassName() + "." + entryMethod.getMethodName());
+        int edges = visit(Scene.v().getCallGraph(), root, graph);
+        System.out.println("Entry method: " + root);
+        System.out.println("Total number of edges: " + edges);
+        graph.plot("cg", entryMethod.getClassName() + "." + entryMethod.getMethodName());
+    }
+
+    private static int visit(CallGraph callGraph, SootMethod root, DotGraphWrapper graph) {
+        Queue<SootMethod> worklist = new ArrayDeque<>();
+        Set<String> visitedMethods = new HashSet<>();
+        Set<String> visitedEdges = new HashSet<>();
+        worklist.add(root);
+        graph.drawNode(root.getSignature());
+        int edgeCount = 0;
+
         while (!worklist.isEmpty()) {
-            SootMethod m = worklist.poll();
-            Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(m));
+            SootMethod source = worklist.remove();
+            if (!visitedMethods.add(source.getSignature())) {
+                continue;
+            }
+            Iterator<MethodOrMethodContext> targets = new Targets(callGraph.edgesOutOf(source));
             while (targets.hasNext()) {
-                SootMethod tgt = (SootMethod) targets.next();
-                if (SootUtils.isNotExcludedMethod(tgt)&&!tgt.isJavaLibraryMethod()){
-                    String tgtIdentifier = tgt.getSignature();
-                    String edge = m.getSignature() + "->" + tgt.getSignature();
-                    dotGraph.drawNode(tgtIdentifier);
-                    if (!visitedEdges.contains(edge))
-                    {
-                        dotGraph.drawEdge(m.getSignature(), tgtIdentifier);
-                        System.out.println(m + " may call " + tgt);
-                        numOfEdges++;
-                        worklist.add(tgt);
-                        visitedEdges.add(edge);
-                    }
+                SootMethod target = (SootMethod) targets.next();
+                if (target.isJavaLibraryMethod() || !SootUtils.isNotExcludedMethod(target)) {
+                    continue;
+                }
+                String edge = source.getSignature() + " -> " + target.getSignature();
+                if (visitedEdges.add(edge)) {
+                    graph.drawNode(target.getSignature());
+                    graph.drawEdge(source.getSignature(), target.getSignature());
+                    System.out.println(source + " may call " + target);
+                    edgeCount++;
+                }
+                if (!visitedMethods.contains(target.getSignature())) {
+                    worklist.add(target);
                 }
             }
         }
+        return edgeCount;
     }
-
-
-    @Override
-    protected void internalTransform(String phaseName, Map<String, String> options) {
-        CallGraph callGraph = Scene.v().getCallGraph();
-        DotGraphWrapper dotGraph = new DotGraphWrapper("The call graph of " + entryMethodContext.getClassName()+"."+ entryMethodContext.getMethodName());
-        //获取所有入口函数
-        List<SootMethod> sootEntryMethods = Scene.v().getEntryPoints();
-        for (SootMethod entryMethod : sootEntryMethods) {
-            System.out.println("Entry method: " + entryMethod);
-            visitedEdges.clear();
-            numOfEdges = 0;
-            visit(callGraph, entryMethod, dotGraph);
-            System.out.println("Total number of edges: " + numOfEdges);
-            dotGraph.plot("cg", entryMethodContext.getClassName()+ "." + entryMethod.getName());
-        }
-    }
-
 }

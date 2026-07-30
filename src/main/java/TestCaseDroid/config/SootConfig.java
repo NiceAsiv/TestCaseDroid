@@ -1,139 +1,172 @@
 package TestCaseDroid.config;
 
-import TestCaseDroid.utils.FileUtils;
 import TestCaseDroid.utils.SootUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import soot.*;
-import soot.jimple.toolkits.callgraph.CHATransformer;
+import soot.G;
+import soot.PackManager;
+import soot.Scene;
+import soot.SootClass;
+import soot.SootMethod;
 import soot.options.Options;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
-
+/**
+ * Creates an isolated Soot scene for one analysis.
+ *
+ * <p>Soot stores most analysis state in global singletons. Every setup therefore
+ * starts with {@link G#reset()} and the setup operation is synchronized so that
+ * two analyses cannot corrupt one another in the same JVM.</p>
+ */
 @Setter
 @Getter
 @Slf4j
 public class SootConfig {
-    /**
-     * javaPath collects all dependency libraries in the project.
-     * jreDir is path to rt.jar
-     * sootClassPath combines javaPath and jreDir to form the analysis environment.
-     */
+    private static final String JVM_CLASS_PATH = System.getProperty("java.class.path", "");
 
-    // javaPath 收集项目中所有依赖库包括项目自身target目录下的类
-    private  static  String  userDir = System.getProperty("user.dir");
-    private  static  final String  javaclassPath = System.getProperty("java.class.path");
-    private  static  final String  jreDir = System.getProperty("java.home")+"/lib/rt.jar";
     private String callGraphAlgorithm = "CHA";
 
-    /**
-     * Soot configuration for project classes
-     * @param className the main class name e.g. "TestCaseDroid.tests.CallGraph"
-     * @param constructCallGraph whether to construct call graph
-     */
-    public  void setupSoot(String className, Boolean constructCallGraph)
-    {
-        //清除soot之前留下的所有缓存
-        String sootClassPath = javaclassPath + File.pathSeparator + jreDir;
-        G.reset();
-        //设置Soot类路径
-        Options.v().set_soot_classpath(sootClassPath);
-        //设置是否分析整个程序
-        Options.v().set_whole_program(true);
-        //设将类路径中的类均设为应用类，并仅分析应用类
-//        Options.v().set_app(true)
-        //允许phantom引用
-        Options.v().set_allow_phantom_refs(true);
-        //排除JDK和其他库
-        excludeJDKLibrary();
-
-        //加载必要类
-        SootClass appClass = Scene.v().loadClassAndSupport(className);
-        //是否加载成功
-//        //设置主类
-//        Scene.v().setMainClass(appClass);
-        //将待分析类设为应用类
-        appClass.setApplicationClass();
-        //加载 Soot 依赖的类和命令行指定的类
-        Scene.v().loadNecessaryClasses();
-
-        commonSetup(constructCallGraph);
+    public void setupSoot(String className, Boolean constructCallGraph) {
+        setupSoot(className, constructCallGraph, null, Collections.<String>emptyList());
     }
 
-
-    /**
-     * Soot configuration for jar file
-     * @param className the main class name e.g. "TestCaseDroid.tests.CallGraph"
-     * @param constructCallGraph whether to construct call graph
-     * @param classesPath the path to the classes or jar file
-     */
-    public  void setupSoot(String className,Boolean constructCallGraph,String classesPath) {
-        //清除soot之前留下的所有缓存
-        G.reset();
-//        String sootClassPath =jreDir + File.pathSeparator + FileUtils.classPathParser(classesPath);
-        String sootClassPath = jreDir + File.pathSeparator + classesPath;
-        log.info("Current soot class path: {}", sootClassPath);
-        //设置Soot类路径
-        Options.v().set_soot_classpath(sootClassPath);
-        Options.v().set_whole_program(true);
-        Options.v().set_allow_phantom_refs(true);
-//        Options.v().set_process_dir(Collections.singletonList(classesPath));
-        //加载指定的类
-        excludeJDKLibrary();
-        SootClass appClass = Scene.v().loadClassAndSupport(className);
-        //将待分析类设为应用类
-        appClass.setApplicationClass();
-        //加载 Soot 依赖的类和命令行指定的类
-        Scene.v().loadNecessaryClasses();
-        Scene.v().loadBasicClasses();
-        commonSetup(constructCallGraph);
+    public void setupSoot(String className, Boolean constructCallGraph, String classesPath) {
+        setupSoot(className, constructCallGraph, classesPath, Collections.<String>emptyList());
     }
 
     /**
-     * Common setup for Soot
-     * @param constructCallGraph whether to construct call graph
+     * Configures Soot and, when requested, builds a call graph rooted at the
+     * supplied entry method signatures. If no signatures are supplied, the
+     * class's {@code main} method is preferred; classes without a main method
+     * use all of their concrete methods as analysis roots.
      */
-    private  void commonSetup(Boolean constructCallGraph) {
-        Options.v().set_keep_line_number(true);
-        Options.v().set_output_format(Options.output_format_jimple);
-        Options.v().set_verbose(true);
-        Options.v().setPhaseOption("jb","use-original-names:true");
+    public void setupSoot(String className, Boolean constructCallGraph, String classesPath,
+                          Collection<String> entryMethodSignatures) {
+        if (className == null || className.trim().isEmpty()) {
+            throw new IllegalArgumentException("The entry class must not be blank");
+        }
 
-        if (constructCallGraph) {
-            switch (this.callGraphAlgorithm) {
-                case "CHA":
-                    Options.v().setPhaseOption("cg.cha", "on");
-                    CHATransformer.v().transform();
-                    break;
-                case "Spark":
-                    Options.v().setPhaseOption("cg.spark","enabled:true");
-                    Options.v().setPhaseOption("cg.spark","verbose:true");
-                    Options.v().setPhaseOption("cg.spark","on-fly-cg:true");
-                    break;
-                case "VTA":
-                    Options.v().setPhaseOption("cg.spark", "on");
-                    Options.v().setPhaseOption("cg.spark", "vta:true");
-                    break;
-                case "RTA":
-                    Options.v().setPhaseOption("cg.spark", "on");
-                    Options.v().setPhaseOption("cg.spark", "rta:true");
-                    Options.v().setPhaseOption("cg.spark", "on-fly-cg:false");
-                    break;
-                default:
-                    throw new RuntimeException("Unknown call graph algorithm: " + this.callGraphAlgorithm);
+        synchronized (SootConfig.class) {
+            G.reset();
+            configureOptions(classesPath);
+
+            SootClass appClass = Scene.v().loadClassAndSupport(className.trim());
+            appClass.setApplicationClass();
+            Scene.v().loadNecessaryClasses();
+
+            List<SootMethod> entryPoints = resolveEntryPoints(appClass, entryMethodSignatures);
+            if (!entryPoints.isEmpty()) {
+                Scene.v().setEntryPoints(entryPoints);
+            }
+
+            if (constructCallGraph) {
+                configureCallGraphAlgorithm();
+                PackManager.v().runPacks();
             }
         }
-        PackManager.v().runPacks();
     }
 
-    private static void excludeJDKLibrary()
-    {
-        //exclude jdk classes
+    private void configureOptions(String classesPath) {
+        Options.v().set_prepend_classpath(true);
+        Options.v().set_whole_program(true);
+        Options.v().set_allow_phantom_refs(true);
+        Options.v().set_keep_line_number(true);
+        Options.v().set_output_format(Options.output_format_none);
+        Options.v().setPhaseOption("jb", "use-original-names:true");
         Options.v().set_exclude(SootUtils.excludeClassesList);
-        //this option must be disabled for a sound call graph
         Options.v().set_no_bodies_for_excluded(true);
+
+        List<String> inputEntries = splitClassPath(classesPath);
+        if (!inputEntries.isEmpty()) {
+            for (String entry : inputEntries) {
+                if (!new File(entry).exists()) {
+                    throw new IllegalArgumentException("Class path entry does not exist: " + entry);
+                }
+            }
+            Options.v().set_process_dir(inputEntries);
+        }
+
+        List<String> completeClassPath = new ArrayList<>(inputEntries);
+        completeClassPath.addAll(splitClassPath(JVM_CLASS_PATH));
+        if (!completeClassPath.isEmpty()) {
+            Options.v().set_soot_classpath(String.join(File.pathSeparator, completeClassPath));
+        }
+    }
+
+    private List<SootMethod> resolveEntryPoints(SootClass appClass, Collection<String> signatures) {
+        List<SootMethod> result = new ArrayList<>();
+        if (signatures != null) {
+            for (String signature : signatures) {
+                if (signature != null && !signature.trim().isEmpty()) {
+                    result.add(Scene.v().getMethod(signature.trim()));
+                }
+            }
+        }
+        if (!result.isEmpty()) {
+            return result;
+        }
+
+        for (SootMethod method : appClass.getMethods()) {
+            if (method.isMain()) {
+                Scene.v().setMainClass(appClass);
+                return Collections.singletonList(method);
+            }
+        }
+        for (SootMethod method : appClass.getMethods()) {
+            if (method.isConcrete()) {
+                result.add(method);
+            }
+        }
+        return result;
+    }
+
+    private void configureCallGraphAlgorithm() {
+        String algorithm = callGraphAlgorithm == null
+                ? "CHA"
+                : callGraphAlgorithm.trim().toUpperCase(Locale.ROOT);
+        switch (algorithm) {
+            case "CHA":
+                Options.v().setPhaseOption("cg.cha", "on");
+                break;
+            case "SPARK":
+                Options.v().setPhaseOption("cg.spark", "on");
+                Options.v().setPhaseOption("cg.spark", "on-fly-cg:true");
+                break;
+            case "VTA":
+                Options.v().setPhaseOption("cg.spark", "on");
+                Options.v().setPhaseOption("cg.spark", "vta:true");
+                break;
+            case "RTA":
+                Options.v().setPhaseOption("cg.spark", "on");
+                Options.v().setPhaseOption("cg.spark", "rta:true");
+                Options.v().setPhaseOption("cg.spark", "on-fly-cg:false");
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Unknown call graph algorithm '" + callGraphAlgorithm
+                                + "'. Supported values: CHA, Spark, VTA, RTA");
+        }
+    }
+
+    private static List<String> splitClassPath(String classPath) {
+        if (classPath == null || classPath.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> entries = new ArrayList<>();
+        for (String item : classPath.split(Pattern.quote(File.pathSeparator))) {
+            String value = item.trim();
+            if (!value.isEmpty() && !entries.contains(value)) {
+                entries.add(new File(value).getAbsolutePath());
+            }
+        }
+        return entries;
     }
 }

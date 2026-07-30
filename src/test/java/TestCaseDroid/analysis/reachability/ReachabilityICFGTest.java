@@ -1,37 +1,51 @@
 package TestCaseDroid.analysis.reachability;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import soot.Scene;
 import soot.SootMethod;
 
+import java.nio.file.Paths;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ReachabilityICFGTest {
+    private static final String CLASS = "TestCaseDroid.test.callgraph.CallGraphExamples";
+    private static final String CLASSES = Paths.get("target", "classes").toAbsolutePath().toString();
+    private ReachabilityICFG analysis;
 
-        @Test
-        void getExecutionPathFromEntryPoint() {
-        }
+    @BeforeAll
+    void setUpAnalysis() {
+        analysis = new ReachabilityICFG(CLASS, CLASSES);
+    }
 
-        @Test
-        void inDynamicExtent() {
-        }
+    @Test
+    void followsCallsAndReturnsToReachTargetMethod() {
+        List<Context> paths = analysis.inDynamicExtent(
+                method("diamondEntry"), method("diamondSink"));
 
-        @Test
-        void reachable() {
+        assertFalse(paths.isEmpty());
+        assertTrue(paths.stream().allMatch(path -> path.getReachedMethod().equals(method("diamondSink"))));
+    }
 
-        }
-        @Test
-        void execute() {
-            ReachabilityICFG ReachabilityICFG = new ReachabilityICFG("TestCaseDroid.test.Vulnerable");
-            SootMethod source = Scene.v().getSootClass("TestCaseDroid.test.Vulnerable").getMethod("void main(java.lang.String[])");
-            SootMethod target = Scene.v().getSootClass("TestCaseDroid.test.ICFG").getMethod("void test1()");
-            List<Context> reachedContext = ReachabilityICFG.inDynamicExtent(source, target);
-            if (reachedContext != null && !reachedContext.isEmpty()) {
-                System.out.println("The target method can be reached from the source method.");
-            } else {
-                System.out.println("The target method cannot be reached from the source method.");
-            }
-        }
+    @Test
+    void returnsEmptyListForUnreachableTarget() {
+        assertTrue(analysis.inDynamicExtent(
+                method("diamondEntry"), method("unreachableSink")).isEmpty());
+    }
 
+    @Test
+    void recursionIsBoundedAndCanReachAnExit() {
+        analysis.setMaxDepth(100);
+        assertFalse(analysis.inDynamicExtent(
+                method("recursiveEntry"), method("recursiveSink")).isEmpty());
+    }
+
+    private static SootMethod method(String name) {
+        return Scene.v().getMethod("<" + CLASS + ": void " + name + "()>");
+    }
 }

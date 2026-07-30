@@ -31,12 +31,15 @@ public class FileUtils {
         // 如果文件夹存在，则不做处理，如果不存在则创建
         if (!folder.exists()) {
             if (folder.mkdirs()) {
-                System.out.println(String.format("Creating %s output folder：", folderName) + folder.getAbsolutePath());
+                System.out.println(String.format(
+                        "Creating %s output folder: %s", folderName, folder.getAbsolutePath()));
             } else {
-                System.err.println(String.format("Unable to create %s output folder：", folderName) + folder.getAbsolutePath());
+                System.err.println(String.format(
+                        "Unable to create %s output folder: %s", folderName, folder.getAbsolutePath()));
             }
         } else {
-            System.out.println(String.format("%s output folder exist in：",folderName) + folder.getAbsolutePath());
+            System.out.println(String.format(
+                    "%s output folder exists at: %s", folderName, folder.getAbsolutePath()));
         }
     }
 

@@ -27,6 +27,7 @@ public class Context {
      */
     public Context() {
         callStack = new LinkedList<>();
+        methodCallStack = new LinkedList<>();
     }
 
     /**
@@ -46,7 +47,8 @@ public class Context {
      */
     public Context(Unit reachedNode, Deque<Unit> callStack) {
         this.reachedNode = reachedNode;
-        this.callStack = callStack;
+        this.callStack = callStack == null ? new LinkedList<Unit>() : callStack;
+        this.methodCallStack = new LinkedList<>();
     }
 
     /**
@@ -57,8 +59,8 @@ public class Context {
      */
     public Context(Unit reachedNode, Deque<Unit> callStack, Deque<SootMethod> methodCallStack) {
         this.reachedNode = reachedNode;
-        this.callStack = callStack;
-        this.methodCallStack = methodCallStack;
+        this.callStack = callStack == null ? new LinkedList<Unit>() : callStack;
+        this.methodCallStack = methodCallStack == null ? new LinkedList<SootMethod>() : methodCallStack;
     }
 
     /**
@@ -66,7 +68,11 @@ public class Context {
      * @return A new context that is a copy of the current context.
      */
     public Context copy() {
-        return new Context(this.reachedNode, new LinkedList<>(this.callStack), new LinkedList<>(this.methodCallStack));
+        Context copy = new Context(this.reachedNode, new LinkedList<>(this.callStack),
+                new LinkedList<>(this.methodCallStack));
+        copy.reachedMethod = this.reachedMethod;
+        copy.isBackward = this.isBackward;
+        return copy;
     }
 
     /**
@@ -82,9 +88,8 @@ public class Context {
             }
             currentMethod = method;
         }
-        if (sb.length() > 4) {
-            //remove the last " -> "
-            sb.delete(sb.length() - 4, sb.length());
+        if (currentMethod != null) {
+            sb.append(currentMethod.getSignature());
         }
         return sb.toString();
     }
@@ -109,6 +114,11 @@ public class Context {
             return Objects.equals(reachedNode, other.reachedNode) && callStack.equals(other.callStack);
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(reachedNode, callStack);
     }
 
     @Override

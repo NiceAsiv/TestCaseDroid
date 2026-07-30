@@ -1,53 +1,60 @@
 package TestCaseDroid.analysis.info;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+
+import java.nio.file.Paths;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SignatureSearchTest {
+    private static final String CLASSES = Paths.get("target", "classes").toAbsolutePath().toString();
+
     @Test
-    void shouldParseValidIDEARef() {
-        // TestCaseDroid.test.CFG#method2(int)
-        // TestCaseDroid.test.CFG#method2(java.lang.String)
-        // TestCaseDroid.test.CFG#method2()
-        // TestCaseDroid.test.CFG#method2(int, int)
-        String ideaRef = "TestCaseDroid.test.CFG#method2(int)";
-        assertTrue(SignatureSearch.parseIDEARef(ideaRef));
-        String ideaRef2 = "TestCaseDroid.test.CFG#method2(java.lang.String)";
-        assertTrue(SignatureSearch.parseIDEARef(ideaRef2));
-        String ideaRef3 = "TestCaseDroid.test.CFG#method2()";
-        assertTrue(SignatureSearch.parseIDEARef(ideaRef3));
-        String ideaRef4 = "TestCaseDroid.test.CFG#method2(int, int)";
-        assertTrue(SignatureSearch.parseIDEARef(ideaRef4));
-        String ideaRef5 = "TestCaseDroid.test.CFG#main";
-        assertTrue(SignatureSearch.parseIDEARef(ideaRef5));
+    void parsesSupportedIdeaReferenceForms() {
+        assertTrue(SignatureSearch.parseIDEARef("TestCaseDroid.test.CFG#method2(int)"));
+        assertTrue(SignatureSearch.parseIDEARef(
+                "a.b.C#run(java.util.List<java.lang.String>, java.lang.String...)"));
+        assertTrue(SignatureSearch.parseIDEARef("TestCaseDroid.test.CFG#method2()"));
+        assertTrue(SignatureSearch.parseIDEARef("TestCaseDroid.test.CallGraphs#main"));
     }
 
     @Test
-    void shouldNotParseInvalidIDEARef() {
-        String ideaRef = "TestCaseDroid.test.CFG#method2(int";
-        assertFalse(SignatureSearch.parseIDEARef(ideaRef));
+    void rejectsMalformedReferences() {
+        assertFalse(SignatureSearch.parseIDEARef("TestCaseDroid.test.CFG#method2(int"));
+        assertFalse(SignatureSearch.parseIDEARef("TestCaseDroid.test.CFG.method2"));
+        assertFalse(SignatureSearch.parseIDEARef(null));
     }
 
     @Test
-    void shouldGetMethodSignatureByValidIDEARef() {
-        String ideaRef = "TestCaseDroid.test.CFG#method2(int)";
-        String expectedSignature = "<TestCaseDroid.test.CFG: void method2(int)>";
-        assertEquals(expectedSignature, SignatureSearch.getMethodSignatureByIDEARef(ideaRef, "E:\\Tutorial\\TestCaseDroid\\target\\classes"));
-        String ideaRef2 = "TestCaseDroid.test.CallGraphs#main";
-        String expectedSignature2 = "<TestCaseDroid.test.CallGraphs: void main(java.lang.String[])>";
-        assertEquals(expectedSignature2, SignatureSearch.getMethodSignatureByIDEARef(ideaRef2, "E:\\Tutorial\\TestCaseDroid\\target\\classes"));
+    void resolvesExactOverloadsWithoutLeakingStateBetweenCalls() {
+        assertEquals("<TestCaseDroid.test.CFG: void method2(int)>",
+                SignatureSearch.getMethodSignatureByIDEARef(
+                        "TestCaseDroid.test.CFG#method2(int)", CLASSES));
+        assertEquals("<TestCaseDroid.test.CFG: void method2(java.lang.String)>",
+                SignatureSearch.getMethodSignatureByIDEARef(
+                        "TestCaseDroid.test.CFG#method2(java.lang.String)", CLASSES));
+        assertEquals("<TestCaseDroid.test.CFG: void method2()>",
+                SignatureSearch.getMethodSignatureByIDEARef(
+                        "TestCaseDroid.test.CFG#method2()", CLASSES));
     }
 
     @Test
-    void shouldReturnNullForInvalidIDEARef() {
-        String ideaRef = "InvalidRef";
-        assertNull(SignatureSearch.getMethodSignatureByIDEARef(ideaRef, "E:\\Tutorial\\TestCaseDroid\\target\\classes"));
+    void returnsNullForInvalidOrAmbiguousReference() {
+        assertNull(SignatureSearch.getMethodSignatureByIDEARef("InvalidRef", CLASSES));
+        assertNull(SignatureSearch.getMethodSignatureByIDEARef(
+                "TestCaseDroid.test.CFG#method2", CLASSES));
     }
 
     @Test
-    void shouldGetMethodSignature() {
-        SignatureSearch signatureSearch = new SignatureSearch("TestCaseDroid.test.CFG", "method2", "E:\\Tutorial\\TestCaseDroid\\target\\classes");
-        // TODO: Add assertions for the expected output
-        signatureSearch.getMethodSignature();
+    void returnsAllSignaturesForNameSearch() {
+        SignatureSearch search = new SignatureSearch(
+                "TestCaseDroid.test.CFG", "method2", CLASSES);
+        List<String> signatures = search.findMethodSignatures();
+        assertEquals(4, signatures.size());
+        assertTrue(signatures.contains("<TestCaseDroid.test.CFG: void method2(int,int)>"));
     }
 }

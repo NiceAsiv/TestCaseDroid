@@ -1,0 +1,161 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to publish, for example v1.4.0
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+
+concurrency:
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+jobs:
+  release:
+    name: Build and publish ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the release tag
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "11"
+          cache: maven
+
+      - name: Resolve and validate version
+        id: version
+        shell: bash
+        run: |
+          VERSION="$(python3 -c "import xml.etree.ElementTree as E; r=E.parse('pom.xml').getroot(); print(r.find('{http://maven.apache.org/POM/4.0.0}version').text)")"
+          if [[ "$RELEASE_TAG" != "v$VERSION" ]]; then
+            echo "Tag $RELEASE_TAG does not match pom.xml version $VERSION" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Test and package
+        env:
+          MAVEN_OPTS: -Djava.awt.headless=true -Dfile.encoding=UTF-8
+        run: mvn --batch-mode --no-transfer-progress clean verify
+
+      - name: Smoke-test CLI and AI report export
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          for JAR in \
+            "target/TestCaseDroid-$VERSION.jar" \
+            "target/TestCaseDroid-$VERSION-cli-all.jar" \
+            "target/TestCaseDroid-$VERSION-gui.jar" \
+            "target/TestCaseDroid-$VERSION-gui-all.jar"
+          do
+            test -s "$JAR"
+            java -Djava.awt.headless=true -jar "$JAR" --help
+          done
+          java -Djava.awt.headless=true \
+            -jar "target/TestCaseDroid-$VERSION-cli-all.jar" \
+            --path target/classes \
+            --entryClass TestCaseDroid.test.callgraph.CallGraphExamples \
+            --sourceMethodSig "TestCaseDroid.test.callgraph.CallGraphExamples#diamondEntry()" \
+            --reportOutput smoke-report \
+            --maxDepth 8 \
+            --maxNodes 100
+          test -s smoke-report/callgraph-summary-package.json
+          test -s smoke-report/callgraph-standard-method.md
+          test -s smoke-report/callgraph-detailed-call-site.json
+
+      - name: Assemble release archives
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          CLI_ROOT="release-stage/TestCaseDroid-$VERSION-cli"
+          GUI_ROOT="release-stage/TestCaseDroid-$VERSION-gui"
+          mkdir -p "$CLI_ROOT/bin" "$CLI_ROOT/lib" \
+            "$GUI_ROOT/bin" "$GUI_ROOT/lib" dist
+
+          cp "target/TestCaseDroid-$VERSION.jar" \
+            "dist/TestCaseDroid-$VERSION-cli.jar"
+          cp "target/TestCaseDroid-$VERSION-cli-all.jar" dist/
+          cp "target/TestCaseDroid-$VERSION-gui.jar" dist/
+          cp "target/TestCaseDroid-$VERSION-gui-all.jar" dist/
+
+          cp "target/TestCaseDroid-$VERSION-cli-all.jar" \
+            "$CLI_ROOT/lib/TestCaseDroid.jar"
+          cp scripts/testcasedroid "$CLI_ROOT/bin/testcasedroid"
+          cp scripts/testcasedroid.bat "$CLI_ROOT/bin/testcasedroid.bat"
+
+          cp "target/TestCaseDroid-$VERSION-gui-all.jar" \
+            "$GUI_ROOT/lib/TestCaseDroid.jar"
+          cp scripts/testcasedroid-gui "$GUI_ROOT/bin/testcasedroid-gui"
+          cp scripts/testcasedroid-gui.bat "$GUI_ROOT/bin/testcasedroid-gui.bat"
+
+          for ROOT in "$CLI_ROOT" "$GUI_ROOT"
+          do
+            cp README.md LICENSE "$ROOT/"
+            cp -R README.assets "$ROOT/"
+          done
+          chmod +x "$CLI_ROOT/bin/testcasedroid" \
+            "$GUI_ROOT/bin/testcasedroid-gui"
+
+          (
+            cd release-stage
+            zip -9 -r "../dist/TestCaseDroid-$VERSION-cli-portable.zip" \
+              "TestCaseDroid-$VERSION-cli"
+            tar -czf "../dist/TestCaseDroid-$VERSION-cli-portable.tar.gz" \
+              "TestCaseDroid-$VERSION-cli"
+            zip -9 -r "../dist/TestCaseDroid-$VERSION-gui-portable.zip" \
+              "TestCaseDroid-$VERSION-gui"
+            tar -czf "../dist/TestCaseDroid-$VERSION-gui-portable.tar.gz" \
+              "TestCaseDroid-$VERSION-gui"
+          )
+          (
+            cd target
+            zip -9 -r "../dist/TestCaseDroid-$VERSION-dependencies.zip" lib
+          )
+          (
+            cd dist
+            sha256sum *.jar *.zip *.tar.gz > SHA256SUMS.txt
+          )
+
+      - name: Attest release artifacts
+        uses: actions/attest@v4
+        with:
+          subject-checksums: dist/SHA256SUMS.txt
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" dist/* \
+              --repo "$GITHUB_REPOSITORY" \
+              --clobber
+          else
+            gh release create "$RELEASE_TAG" dist/* \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --title "TestCaseDroid $VERSION" \
+              --generate-notes
+          fi

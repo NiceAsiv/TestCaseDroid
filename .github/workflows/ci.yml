@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify on ${{ matrix.os }} / Java ${{ matrix.java }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+        java:
+          - "11"
+          - "17"
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+
+      - name: Test and package
+        env:
+          MAVEN_OPTS: -Djava.awt.headless=true -Dfile.encoding=UTF-8
+        run: mvn --batch-mode --no-transfer-progress clean verify
+
+      - name: Smoke-test the executable JAR
+        shell: bash
+        run: |
+          VERSION="$(python -c "import xml.etree.ElementTree as E; r=E.parse('pom.xml').getroot(); print(r.find('{http://maven.apache.org/POM/4.0.0}version').text)")"
+          for JAR in \
+            "target/TestCaseDroid-$VERSION.jar" \
+            "target/TestCaseDroid-$VERSION-cli-all.jar" \
+            "target/TestCaseDroid-$VERSION-gui.jar" \
+            "target/TestCaseDroid-$VERSION-gui-all.jar"
+          do
+            test -s "$JAR"
+            java -Djava.awt.headless=true -jar "$JAR" --help
+          done

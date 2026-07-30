@@ -7,6 +7,7 @@ import lombok.Setter;
 import soot.*;
 import soot.jimple.JimpleBody;
 import soot.jimple.ReturnStmt;
+import soot.jimple.ReturnVoidStmt;
 import soot.toolkits.graph.*;
 import soot.util.cfgcmd.CFGGraphType;
 import soot.util.cfgcmd.CFGToDotGraph;
@@ -22,13 +23,12 @@ import static TestCaseDroid.utils.FileUtils.folderExistenceTest;
 public class BuildControlFlowGraph {
     private static DotGraphWrapper dotGraph;
     private static CFGToDotGraph drawer;
-    private static final SootConfig sootConfig = new SootConfig();
 
     public static void buildControlFlowGraph(String classesPath, String targetClassName, MethodContext entryMethod) {
         if (classesPath != null) {
-            sootConfig.setupSoot(targetClassName, true, classesPath);
+            new SootConfig().setupSoot(targetClassName, false, classesPath);
         } else {
-            sootConfig.setupSoot(targetClassName, true);
+            new SootConfig().setupSoot(targetClassName, false);
         }
         dotGraph = new DotGraphWrapper(entryMethod.getMethodName());
 
@@ -53,9 +53,9 @@ public class BuildControlFlowGraph {
     public static void buildPrettyControlFlowGraph(String classPath, String classNameForAnalysis, MethodContext sourceMethodContext) {
 
         if (classPath != null) {
-            sootConfig.setupSoot(classNameForAnalysis, true, classPath);
+            new SootConfig().setupSoot(classNameForAnalysis, false, classPath);
         } else {
-            sootConfig.setupSoot(classNameForAnalysis, true);
+            new SootConfig().setupSoot(classNameForAnalysis, false);
         }
 
         SootMethod srcMethod = Scene.v().getMethod(sourceMethodContext.getMethodSignature());
@@ -68,13 +68,15 @@ public class BuildControlFlowGraph {
         int nodeId = 0;
         Map<Unit, Integer> nodeIds = new HashMap<>();//创建一个map用于存储basic block节点和节点的id
         for (Unit unit : cfg) {
+            if (!nodeIds.containsKey(unit)) {
+                nodeIds.put(unit, nodeId++);
+                dotGraph.drawNode(String.valueOf(nodeIds.get(unit)));
+            }
             List<Unit> successors = cfg.getSuccsOf(unit);//获取当前节点的后继节点
             for (Unit successor : successors) {
-                if (!nodeIds.containsKey(unit)) {//如果当前节点不在map中，将当前节点加入map
-                    nodeIds.put(unit, nodeId++);
-                }
                 if (!nodeIds.containsKey(successor)) {//如果后继节点不在map中，将后继节点加入map
                     nodeIds.put(successor, nodeId++);
+                    dotGraph.drawNode(String.valueOf(nodeIds.get(successor)));
                 }
                 dotGraph.drawEdge(String.valueOf(nodeIds.get(unit)), String.valueOf(nodeIds.get(successor)));//连接当前节点和后继节点
             }
@@ -84,7 +86,7 @@ public class BuildControlFlowGraph {
             Integer id = entry.getValue();
             DotGraphNode node = dotGraph.getNode(id.toString());
             node.setLabel(unit.toString());
-            if (unit instanceof ReturnStmt) {
+            if (unit instanceof ReturnStmt || unit instanceof ReturnVoidStmt) {
                 node.setAttribute("style", "filled");
                 node.setAttribute("fillcolor", "lightgray");
             } else if (unit.equals(cfg.getHeads().get(0))) {

@@ -83,7 +83,7 @@ public class SootUtils {
             reportSootEntryPointsInfo();
 
         } catch (RuntimeException e) {
-            log.error("发生了运行时异常，是否是类名和方法名设置错误？\n", e);
+            log.error("Failed to set Soot entry points. Check the class and method signatures.", e);
             //terminate the program
             System.exit(-1);
         }
@@ -115,7 +115,8 @@ public class SootUtils {
             }
 
         } catch (RuntimeException e) {
-            System.err.println("发生了运行时异常，是否是类名和方法名设置错误？\n" + e.getMessage());
+            System.err.println("Failed to set Soot entry points. Check the class and method signatures: "
+                    + e.getMessage());
             log.error(e.getMessage(), e);
         }
     }
