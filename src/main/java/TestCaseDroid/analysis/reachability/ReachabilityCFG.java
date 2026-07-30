@@ -2,216 +2,220 @@ package TestCaseDroid.analysis.reachability;
 
 import TestCaseDroid.config.SootConfig;
 import TestCaseDroid.utils.DotGraphWrapper;
-import soot.*;
-import soot.jimple.AssignStmt;
-import soot.jimple.InvokeExpr;
-import soot.jimple.InvokeStmt;
-import soot.jimple.ReturnStmt;
-import soot.toolkits.graph.*;
+import lombok.Setter;
+import soot.Scene;
+import soot.SootMethod;
+import soot.Unit;
+import soot.jimple.Stmt;
+import soot.toolkits.graph.CompleteUnitGraph;
 import soot.util.dot.DotGraphNode;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static TestCaseDroid.utils.DotGraphWrapper.contextToDotGraph;
 
+/**
+ * Finds invocation sites reachable inside one method's control-flow graph.
+ */
 public class ReachabilityCFG {
-    private MethodContext sourceMethodContext;
-    private MethodContext targetMethodContext;
+    private final MethodContext sourceMethodContext;
+    private final MethodContext targetMethodContext;
     private final CompleteUnitGraph cfg;
+    @Setter
+    private int maxDepth = 10_000;
+    @Setter
+    private int maxPaths = 1000;
 
     public ReachabilityCFG(String entryClass, String targetMethodSig, String sourceMethodSig) {
-        this.sourceMethodContext = new MethodContext(sourceMethodSig);
-        this.targetMethodContext = new MethodContext(targetMethodSig);
-        SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(entryClass, true);
-        SootMethod srcMethod = Scene.v().getMethod(sourceMethodContext.getMethodSignature());
-        this.cfg = new CompleteUnitGraph(srcMethod.getActiveBody());
+        this(entryClass, new MethodContext(sourceMethodSig),
+                new MethodContext(targetMethodSig), null);
     }
 
-    public ReachabilityCFG(String targetClass, String targetMethodSig, String sourceMethodSig, String classPath) {
-        this.sourceMethodContext = new MethodContext(sourceMethodSig);
-        this.targetMethodContext = new MethodContext(targetMethodSig);
-        SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(targetClass, true, classPath);
-        SootMethod srcMethod = Scene.v().getMethod(sourceMethodContext.getMethodSignature());
-        this.cfg = new CompleteUnitGraph(srcMethod.getActiveBody());
+    public ReachabilityCFG(String targetClass, String targetMethodSig,
+                           String sourceMethodSig, String classPath) {
+        this(targetClass, new MethodContext(sourceMethodSig),
+                new MethodContext(targetMethodSig), classPath);
     }
 
     public ReachabilityCFG(String classNameForAnalysis, MethodContext sourceMethodContext,
-            MethodContext targetMethodContext, String classPath) {
+                           MethodContext targetMethodContext, String classPath) {
         this.sourceMethodContext = sourceMethodContext;
         this.targetMethodContext = targetMethodContext;
-        SootConfig sootConfig = new SootConfig();
-        sootConfig.setupSoot(classNameForAnalysis, true, classPath);
-        SootMethod srcMethod = Scene.v().getMethod(sourceMethodContext.getMethodSignature());
-        this.cfg = new CompleteUnitGraph(srcMethod.getActiveBody());
+        new SootConfig().setupSoot(classNameForAnalysis, false, classPath);
+        SootMethod source = Scene.v().getMethod(sourceMethodContext.getMethodSignature());
+        this.cfg = new CompleteUnitGraph(source.retrieveActiveBody());
     }
 
-    /**
-     * 使用worklist算法进行分析 具体为：
-     * 1. 从cfg的入口点开始，将入口点加入worklist 2. 从worklist中取出一个节点，将其所有的后继节点加入worklist 3.
-     * 重复2，直到worklist为空
-     */
-    @Deprecated
     public void runAnalysis() {
-        SootMethod targetMethod = Scene.v().getMethod(targetMethodContext.getMethodSignature());
-        List<Context> paths = inDynamicExtent(targetMethod);
-        if (paths.isEmpty()) {
-            System.out.println("No path found from " + sourceMethodContext.getMethodSignature() + " to "
-                    + targetMethodContext.getMethodSignature());
-        } else {
-            int pathIndex = 0;
-            System.out.println("Found " + paths.size() + " paths from " + sourceMethodContext.getMethodSignature()
-                    + " to " + targetMethodContext.getMethodSignature());
-            for (Context path : paths) {
-                path.setBackward(true);
-                pathIndex++;
-                System.out.println("The No." + pathIndex + " path:");
-                System.out.println(path);
-                contextToDotGraph(path, targetMethodContext.getClassName(), targetMethodContext.getMethodName(),
-                        pathIndex);
-            }
+        List<Context> paths = inDynamicExtent(
+                Scene.v().getMethod(targetMethodContext.getMethodSignature()));
+        printSummary(paths);
+        int pathIndex = 0;
+        for (Context path : paths) {
+            pathIndex++;
+            System.out.println("Path " + pathIndex + ":");
+            System.out.println(path);
+            contextToDotGraph(path, targetMethodContext.getClassName(),
+                    targetMethodContext.getMethodName(), pathIndex);
         }
     }
 
     public List<Context> inDynamicExtent(SootMethod targetInvokeMethod) {
-        for (Unit start : cfg.getHeads()) {
-            if (reachable(start, targetInvokeMethod) != null) {
-                return reachable(start, targetInvokeMethod);
-            }
-        }
-        return null;
-    }
-
-    public List<Context> reachable(Unit source, SootMethod targetInvokeMethod) {
-        Deque<Unit> worklist = new LinkedList<>();
-        HashSet<Unit> visited = new HashSet<>();
+        validateBounds();
         List<Context> paths = new ArrayList<>();
-        worklist.add(source);
-        Context currentContext = new Context(source);
-        while (!worklist.isEmpty()) {
-            Unit current = worklist.poll();
-            currentContext.setReachedNode(current);
-            currentContext.getCallStack().push(current);
-            System.out.println("now visiting: " + current);
-            if (current instanceof InvokeStmt) {
-                InvokeStmt invokeStmt = (InvokeStmt) current;
-                SootMethod targetMethod = invokeStmt.getInvokeExpr().getMethod();
-                if (targetMethod.equals(targetInvokeMethod)) {
-                    paths.add(currentContext.copy());
-                }
-            } else if (current instanceof AssignStmt) {
-                // check if the target method is invoked in the right-hand side of the
-                // assignment
-                AssignStmt assignStmt = (AssignStmt) current;
-                if (assignStmt.containsInvokeExpr()) {
-                    InvokeExpr invokeExpr = assignStmt.getInvokeExpr();
-                    SootMethod targetMethod = invokeExpr.getMethod();
-                    if (targetMethod.equals(targetInvokeMethod)) {
-                        paths.add(currentContext.copy());
-                    }
-                }
-            }
-            for (Unit succ : cfg.getSuccsOf(current)) {
-                if (visited.add(succ)) {
-                    worklist.add(succ);
-                }
+        for (Unit start : cfg.getHeads()) {
+            paths.addAll(reachable(start, targetInvokeMethod));
+            if (paths.size() >= maxPaths) {
+                break;
             }
         }
         return paths;
     }
 
     /**
-     * 直接标记可达节点，直接输出可达路径
+     * Enumerates simple CFG paths ending at an invocation of the target method.
+     * Loop back-edges are not revisited within one path.
      */
+    public List<Context> reachable(Unit source, SootMethod targetInvokeMethod) {
+        if (source == null || targetInvokeMethod == null) {
+            throw new IllegalArgumentException("Source unit and target method must not be null");
+        }
+        validateBounds();
+        Deque<UnitPath> worklist = new ArrayDeque<>();
+        worklist.add(new UnitPath(source));
+        List<Context> paths = new ArrayList<>();
+
+        while (!worklist.isEmpty() && paths.size() < maxPaths) {
+            UnitPath current = worklist.removeFirst();
+            Unit unit = current.last();
+            if (isTargetNode(unit, targetInvokeMethod)) {
+                Context context = new Context(unit, new LinkedList<>(current.units));
+                context.setReachedMethod(targetInvokeMethod);
+                paths.add(context);
+                continue;
+            }
+            if (current.edgeCount() >= maxDepth) {
+                continue;
+            }
+            for (Unit successor : cfg.getSuccsOf(unit)) {
+                if (!current.contains(successor)) {
+                    worklist.addLast(current.append(successor));
+                }
+            }
+        }
+        return paths;
+    }
+
     public void runAnalysisUsingMarkNode() {
-        SootMethod targetMethod = Scene.v().getMethod(targetMethodContext.getMethodSignature());
         List<DotGraphWrapper> dotPaths = markNodeForReachable();
-        if (dotPaths.isEmpty()) {
-            System.out.println("No path found from " + sourceMethodContext.getMethodSignature() + " to "
-                    + targetMethodContext.getMethodSignature());
-        } else {
-            int pathIndex = 0;
-            System.out.println("Found " + dotPaths.size() + " paths from " + sourceMethodContext.getMethodSignature()
-                    + " to " + targetMethodContext.getMethodSignature());
-            for (DotGraphWrapper dotPath : dotPaths) {
-                pathIndex++;
-                dotPath.plot(sourceMethodContext, targetMethodContext, pathIndex);
-            }
-        }
-    }
-
-    public List<DotGraphWrapper> markNodeForReachable() {
-        DotGraphWrapper dotGraph = new DotGraphWrapper("cfg");
-        int nodeId = 0;
+        printSummaryCount(dotPaths.size());
         int pathIndex = 0;
-        List<DotGraphWrapper> dotPaths = new ArrayList<>();
-        Map<Unit, Integer> nodeIds = new HashMap<>();
-        boolean hasTargetNode = false;
-        for (Unit unit : cfg) {
-            if (hasTargetNode) {
-                System.out.println("Found a path to the target node in node: " + unit);
-                // DotGraphWrapper currentPath = dotGraph.copy();
-                pathIndex++;
-                DotGraphWrapper thisDotGraphWrapper = dotGraph.copy();
-                thisDotGraphWrapper.setGraphName(targetMethodContext.getMethodName() + "_path_" + pathIndex);
-                drawLabel(cfg, thisDotGraphWrapper, nodeIds);
-                dotPaths.add(thisDotGraphWrapper);
-                hasTargetNode = false;
-            }
-            List<Unit> successors = cfg.getSuccsOf(unit);
-            for (Unit successor : successors) {
-                if (!nodeIds.containsKey(unit)) {
-                    nodeIds.put(unit, nodeId++);
-                }
-                if (!nodeIds.containsKey(successor)) {
-                    nodeIds.put(successor, nodeId++);
-                }
-                if (isTargetNode(successor, Scene.v().getMethod(targetMethodContext.getMethodSignature()))) {
-                    hasTargetNode = true;
-                }
-                dotGraph.drawEdge(String.valueOf(nodeIds.get(unit)), String.valueOf(nodeIds.get(successor)));
-            }
-        }
-        return dotPaths;
-    }
-
-    private void drawLabel(CompleteUnitGraph cfg, DotGraphWrapper dotGraph, Map<Unit, Integer> nodeIds) {
-        for (Map.Entry<Unit, Integer> entry : nodeIds.entrySet()) {
-            Unit unit = entry.getKey();
-            Integer id = entry.getValue();
-            DotGraphNode node = dotGraph.getNode(id.toString());
-            node.setLabel(unit.toString());
-            if (unit instanceof ReturnStmt) {
-                node.setAttribute("style", "filled");
-                node.setAttribute("fillcolor", "lightgray");
-            } else if (unit.equals(cfg.getHeads().get(0))) {
-                node.setAttribute("style", "filled");
-                node.setAttribute("fillcolor", "gray");
-            }
+        for (DotGraphWrapper dotPath : dotPaths) {
+            dotPath.plot(sourceMethodContext, targetMethodContext, ++pathIndex);
         }
     }
 
-    // 判断是否为目标节点
+    /** Builds one DOT graph per real witness path. */
+    public List<DotGraphWrapper> markNodeForReachable() {
+        SootMethod target = Scene.v().getMethod(targetMethodContext.getMethodSignature());
+        List<DotGraphWrapper> result = new ArrayList<>();
+        int pathIndex = 0;
+        for (Context context : inDynamicExtent(target)) {
+            DotGraphWrapper graph = new DotGraphWrapper(
+                    targetMethodContext.getMethodName() + "_path_" + (++pathIndex));
+            Map<Unit, String> ids = new IdentityHashMap<>();
+            Unit previous = null;
+            int id = 0;
+            for (Unit unit : context.getCallStack()) {
+                String nodeId = ids.get(unit);
+                if (nodeId == null) {
+                    nodeId = Integer.toString(id++);
+                    ids.put(unit, nodeId);
+                    graph.drawNode(nodeId);
+                    DotGraphNode node = graph.getNode(nodeId);
+                    node.setLabel(unit.toString());
+                    if (unit.equals(context.getReachedNode())) {
+                        node.setAttribute("style", "filled");
+                        node.setAttribute("fillcolor", "lightgreen");
+                    }
+                }
+                if (previous != null) {
+                    graph.drawEdge(ids.get(previous), nodeId);
+                }
+                previous = unit;
+            }
+            result.add(graph);
+        }
+        return result;
+    }
+
     public Boolean isTargetNode(Unit unit, SootMethod targetInvokeMethod) {
-        if (unit instanceof InvokeStmt) {
-            InvokeStmt invokeStmt = (InvokeStmt) unit;
-            SootMethod method = invokeStmt.getInvokeExpr().getMethod();
-            return method.equals(targetInvokeMethod);
-        } else if (unit instanceof AssignStmt) {
-            AssignStmt assignStmt = (AssignStmt) unit;
-            if (assignStmt.containsInvokeExpr()) {
-                InvokeExpr invokeExpr = assignStmt.getInvokeExpr();
-                SootMethod method = invokeExpr.getMethod();
-                return method.equals(targetInvokeMethod);
-            }
+        if (!(unit instanceof Stmt)) {
+            return false;
         }
-        return false;
+        Stmt statement = (Stmt) unit;
+        return statement.containsInvokeExpr()
+                && statement.getInvokeExpr().getMethod().equals(targetInvokeMethod);
     }
 
-    public static void main(String[] args) {
-        ReachabilityCFG analysis = new ReachabilityCFG("TestCaseDroid.test.CFG",
-                "<TestCaseDroid.test.CFG: void method3()>", "<TestCaseDroid.test.CFG: void method1(int,int)>");
-        analysis.runAnalysisUsingMarkNode();
+    private void printSummary(List<Context> paths) {
+        printSummaryCount(paths.size());
+    }
+
+    private void printSummaryCount(int count) {
+        if (count == 0) {
+            System.out.println("No path found from " + sourceMethodContext.getMethodSignature()
+                    + " to " + targetMethodContext.getMethodSignature());
+        } else {
+            System.out.println("Found " + count + " paths from "
+                    + sourceMethodContext.getMethodSignature() + " to "
+                    + targetMethodContext.getMethodSignature());
+        }
+    }
+
+    private void validateBounds() {
+        if (maxDepth < 0) {
+            throw new IllegalStateException("maxDepth must be at least 0");
+        }
+        if (maxPaths < 1) {
+            throw new IllegalStateException("maxPaths must be at least 1");
+        }
+    }
+
+    private static final class UnitPath {
+        private final List<Unit> units;
+
+        private UnitPath(Unit source) {
+            this.units = Collections.singletonList(source);
+        }
+
+        private UnitPath(List<Unit> units) {
+            this.units = units;
+        }
+
+        private Unit last() {
+            return units.get(units.size() - 1);
+        }
+
+        private int edgeCount() {
+            return units.size() - 1;
+        }
+
+        private boolean contains(Unit unit) {
+            return units.contains(unit);
+        }
+
+        private UnitPath append(Unit unit) {
+            List<Unit> copy = new ArrayList<>(units);
+            copy.add(unit);
+            return new UnitPath(copy);
+        }
     }
 }

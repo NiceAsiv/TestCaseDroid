@@ -2,7 +2,6 @@ package TestCaseDroid.graph;
 
 import TestCaseDroid.config.SootConfig;
 import TestCaseDroid.utils.*;
-import com.google.gson.internal.LinkedHashTreeMap;
 import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Sources;
@@ -14,7 +13,7 @@ import java.util.*;
 public class BuildCallGraph  extends SceneTransformer {
     private static String targetClass = "com.alibaba.fastjson.JSON.createReadContext";
     public static String entryMethod = "main";
-    private static Map<String, Boolean> visited = new LinkedHashTreeMap<>();
+    private static Map<String, Boolean> visited = new LinkedHashMap<>();
     private static int numOfEdges = 0;
     private static final SootConfig sootConfig = new SootConfig();
 

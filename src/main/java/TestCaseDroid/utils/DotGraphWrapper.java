@@ -10,9 +10,13 @@ import soot.util.dot.DotGraphEdge;
 import soot.util.dot.DotGraphNode;
 
 import java.io.File;
-
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static TestCaseDroid.utils.FileUtils.folderExistenceTest;
 
@@ -21,9 +25,10 @@ import static TestCaseDroid.utils.FileUtils.folderExistenceTest;
  */
 @Slf4j
 public class DotGraphWrapper {
+    private static boolean graphvizWarningShown;
     private final DotGraph dotGraph;
     private String graphName;
-    private final Multimap<String, String> edgeMap;
+    private final Map<String, Set<String>> edgeMap;
 
     /**
      * Constructor
@@ -35,14 +40,14 @@ public class DotGraphWrapper {
         this.graphName = graphName;
         // 设置节点的形状
         this.dotGraph.setNodeShape("box");
-        edgeMap = ArrayListMultimap.create();
+        edgeMap = new LinkedHashMap<>();
         // this.dotGraph.setGraphAttribute("fontname", "Helvetica");
         // this.dotGraph.setGraphAttribute("fontsize", "12");
     }
 
     public void drawEdge(String src, String tgt) {
         this.dotGraph.drawEdge(src, tgt);
-        edgeMap.put(src, tgt);
+        edgeMap.computeIfAbsent(src, ignored -> new LinkedHashSet<>()).add(tgt);
     }
 
     public void drawNode(String node) {
@@ -59,9 +64,9 @@ public class DotGraphWrapper {
         DotGraphWrapper newDotGraphWrapper = new DotGraphWrapper(this.graphName);
 
         // 遍历EdgeMap，将原图中的节点加入新图
-        for (String src : edgeMap.keySet()) {
-            for (String target : edgeMap.get(src)) {
-                newDotGraphWrapper.drawEdge(src, target);
+        for (Map.Entry<String, Set<String>> entry : edgeMap.entrySet()) {
+            for (String target : entry.getValue()) {
+                newDotGraphWrapper.drawEdge(entry.getKey(), target);
             }
         }
         return newDotGraphWrapper;
@@ -236,46 +241,62 @@ public class DotGraphWrapper {
      * @param outputFilePath the output png file path
      */
     public static void convertDotToPng(String dotFilePath, String outputFilePath) {
+        String graphvizPath = graphvizExecutable();
+        folderExistenceTest(outputFilePath);
         try {
-            String graphvizFilePath = System.getenv("GRAPHVIZ");
-            String graphvizPath = getString(graphvizFilePath);
-            // Check if pic output folder exist
-            folderExistenceTest(outputFilePath);
-            // File folder = new File(outputFilePath.substring(0,
-            // outputFilePath.lastIndexOf("/")));
-            // if (!folder.exists()) {
-            // if (folder.mkdirs()) {
-            // System.out.println("Create pic output folder：" + folder.getAbsolutePath());
-            // } else {
-            // System.err.println("Unable to create pic output folder：" +
-            // folder.getAbsolutePath());
-            // }
-            // } else {
-            // System.out.println("Pic output folder exist in：" + folder.getAbsolutePath());
-            // }
-
-            String[] cmd = new String[] { graphvizPath, "-Tpng", dotFilePath, "-Gdpi=300", "-Gfontname=Arial", "-o",
-                    outputFilePath };
-            Runtime rt = Runtime.getRuntime();
-            rt.exec(cmd);
-        } catch (Exception ex) {
-            log.error(ex.getMessage(), ex);
+            Process process = new ProcessBuilder(
+                    graphvizPath, "-Tpng", dotFilePath, "-Gdpi=300",
+                    "-Gfontname=Arial", "-o", outputFilePath)
+                    .redirectErrorStream(true)
+                    .start();
+            StringBuilder output = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (output.length() > 0) {
+                        output.append(System.lineSeparator());
+                    }
+                    output.append(line);
+                }
+            }
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                log.warn("Graphviz exited with code {}. DOT output is still available at {}. {}",
+                        exitCode, dotFilePath, output);
+            }
+        } catch (IOException ex) {
+            warnGraphvizUnavailable(dotFilePath);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            log.warn("Graphviz conversion was interrupted. DOT output is available at {}.", dotFilePath);
         }
     }
 
-    private static String getString(String graphvizFilePath) {
-        String graphvizPath;
-        if (graphvizFilePath == null) {
-            throw new RuntimeException(
-                    "\nPlease set the installation folder for graphviz as an environment variable and name it \"GRAPHVIZ\".\n"
-                            +
-                            "The graphviz folder is like this: \"D:\\APPdata\\Graphviz-10.0.1-win64\".\n" +
-                            "You can download graphviz at https://graphviz.org/download/.\n" +
-                            "When you finish that, please restart your IDE.\n");
-        } else {
-            graphvizPath = graphvizFilePath + File.separator + "bin" + File.separator + "dot.exe";
+    private static String graphvizExecutable() {
+        String configured = System.getenv("GRAPHVIZ");
+        if (configured == null || configured.trim().isEmpty()) {
+            return "dot";
         }
-        return graphvizPath;
+        File configuredFile = new File(configured);
+        if (configuredFile.isFile()) {
+            return configuredFile.getAbsolutePath();
+        }
+        String executable = System.getProperty("os.name", "")
+                .toLowerCase().contains("win") ? "dot.exe" : "dot";
+        File inBin = new File(new File(configuredFile, "bin"), executable);
+        if (inBin.isFile()) {
+            return inBin.getAbsolutePath();
+        }
+        return new File(configuredFile, executable).getAbsolutePath();
+    }
+
+    private static synchronized void warnGraphvizUnavailable(String dotFilePath) {
+        if (!graphvizWarningShown) {
+            graphvizWarningShown = true;
+            log.warn("Graphviz was not found via GRAPHVIZ or PATH; PNG conversion is skipped. "
+                    + "DOT output is available at {}.", dotFilePath);
+        }
     }
 
 }
